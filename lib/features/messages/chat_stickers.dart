@@ -1,0 +1,47 @@
+/// Bộ sticker — đồng bộ với `web-blog/lib/messaging/stickers.ts`.
+class StickerGroup {
+  final String id;
+  final String label;
+  final List<String> stickers;
+
+  const StickerGroup({
+    required this.id,
+    required this.label,
+    required this.stickers,
+  });
+}
+
+const List<StickerGroup> kStickerGroups = [
+  StickerGroup(
+    id: 'smileys',
+    label: '😊',
+    stickers: ['😀', '😂', '🤣', '😊', '😍', '🥰', '😘', '😎', '🤩', '🥳', '😜', '🤪', '😇', '🙃', '😏', '🤗', '🤭', '😉'],
+  ),
+  StickerGroup(
+    id: 'moods',
+    label: '😢',
+    stickers: ['😢', '😭', '🥺', '😤', '😡', '😱', '😨', '😴', '🥱', '🤒', '🤕', '🤯', '😵‍💫', '🫠', '😬', '😳', '🙄', '😑'],
+  ),
+  StickerGroup(
+    id: 'love',
+    label: '❤️',
+    stickers: ['❤️', '🧡', '💛', '💚', '💙', '💜', '🖤', '🤍', '💖', '💘', '💝', '💞', '💕', '💓', '💗', '💌', '😻', '💐'],
+  ),
+  StickerGroup(
+    id: 'fun',
+    label: '🎉',
+    stickers: ['🎉', '🎊', '🔥', '✨', '⭐', '🌟', '💯', '👏', '🙌', '👍', '👎', '👌', '✌️', '🤞', '🫶', '💪', '🤝', '🙏'],
+  ),
+  StickerGroup(
+    id: 'animals',
+    label: '🐱',
+    stickers: ['🐶', '🐱', '🐰', '🦊', '🐻', '🐼', '🐨', '🐯', '🦁', '🐮', '🐷', '🐸', '🐵', '🦄', '🐥', '🦋', '🐢', '🐳'],
+  ),
+  StickerGroup(
+    id: 'food',
+    label: '🍕',
+    stickers: ['🍕', '🍔', '🍟', '🌭', '🍿', '🧁', '🍩', '🍪', '🍦', '🍫', '🍎', '🍓', '🍉', '🍜', '🍣', '☕', '🧋', '🍰'],
+  ),
+];
+
+const List<String> kQuickReactions = ['❤️', '👍', '😂', '😮', '😢', '🙏'];
