@@ -63,8 +63,10 @@ class _NewsletterSectionState extends State<NewsletterSection> {
       child: Container(
         padding: const EdgeInsets.all(32.0),
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.4),
-          border: Border.all(color: Colors.black.withValues(alpha: 0.05)),
+          color: AppColors.surface,
+          borderRadius: AppRadius.card,
+          border: Border.all(color: AppColors.border),
+          boxShadow: AppShadows.soft,
         ),
         child: Column(
           children: [
@@ -95,32 +97,43 @@ class _NewsletterSectionState extends State<NewsletterSection> {
               ),
             ),
             const SizedBox(height: 32),
-            Container(
-              decoration: BoxDecoration(
-                border: Border.all(color: Colors.black.withValues(alpha: 0.1)),
-                color: Colors.white.withValues(alpha: 0.3),
+            TextField(
+              controller: _email,
+              keyboardType: TextInputType.emailAddress,
+              autocorrect: false,
+              textAlign: TextAlign.center,
+              onSubmitted: (_) => _submitting ? null : _subscribe(),
+              style: GoogleFonts.inter(
+                fontSize: 12,
+                color: AppColors.homeTextDark,
               ),
-              child: TextField(
-                controller: _email,
-                keyboardType: TextInputType.emailAddress,
-                autocorrect: false,
-                textAlign: TextAlign.center,
-                onSubmitted: (_) => _submitting ? null : _subscribe(),
-                style: GoogleFonts.inter(
+              decoration: InputDecoration(
+                hintText: 'Your email address',
+                hintStyle: GoogleFonts.inter(
+                  color: AppColors.homeTextLight.withValues(alpha: 0.6),
                   fontSize: 12,
-                  color: AppColors.homeTextDark,
                 ),
-                decoration: InputDecoration(
-                  hintText: 'Your email address',
-                  hintStyle: GoogleFonts.inter(
-                    color: AppColors.homeTextLight.withValues(alpha: 0.6),
-                    fontSize: 12,
+                filled: true,
+                fillColor: AppColors.homeTextDark.withValues(alpha: 0.04),
+                border: OutlineInputBorder(
+                  borderRadius: AppRadius.input,
+                  borderSide: BorderSide.none,
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: AppRadius.input,
+                  borderSide: BorderSide.none,
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: AppRadius.input,
+                  borderSide: BorderSide(
+                    color: AppColors.primaryBrown.withValues(alpha: 0.45),
+                    width: 1.5,
                   ),
-                  border: InputBorder.none,
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 14,
-                  ),
+                ),
+                isDense: true,
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 14,
                 ),
               ),
             ),
@@ -132,7 +145,7 @@ class _NewsletterSectionState extends State<NewsletterSection> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.homeTextDark,
                   foregroundColor: Colors.white,
-                  shape: const RoundedRectangleBorder(),
+                  shape: const StadiumBorder(),
                   elevation: 0,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                 ),

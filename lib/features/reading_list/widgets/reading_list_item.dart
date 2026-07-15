@@ -47,13 +47,9 @@ class ReadingListItem extends StatelessWidget {
                       height: 380,
                       decoration: BoxDecoration(
                         color: Colors.white,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.02),
-                            blurRadius: 20,
-                            offset: const Offset(0, 10),
-                          ),
-                        ],
+                        borderRadius: AppRadius.card,
+                        border: Border.all(color: AppColors.border),
+                        boxShadow: AppShadows.soft,
                       ),
                       child: Center(
                         child: LibraryBookCover(
@@ -85,10 +81,8 @@ class ReadingListItem extends StatelessWidget {
                             vertical: 2,
                           ),
                           decoration: BoxDecoration(
-                            border: Border.all(
-                              color: Colors.black.withValues(alpha: 0.1),
-                            ),
-                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: AppColors.borderStrong),
+                            borderRadius: AppRadius.pill,
                           ),
                           child: Text(
                             'Review',

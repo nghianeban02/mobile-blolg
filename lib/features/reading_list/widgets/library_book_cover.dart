@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mobile/core/constants/api_constants.dart';
+import 'package:mobile/core/constants/app_colors.dart';
 import 'package:mobile/core/widgets/app_cached_image.dart';
 import 'package:mobile/data/models/dtos.dart';
 
@@ -86,7 +87,7 @@ class _LibraryBookCoverState extends State<LibraryBookCover> {
 
     if (bytes != null) {
       return ClipRRect(
-        borderRadius: BorderRadius.circular(2),
+        borderRadius: BorderRadius.circular(AppRadius.md),
         child: Image.memory(
           bytes,
           fit: BoxFit.cover,
@@ -100,7 +101,7 @@ class _LibraryBookCoverState extends State<LibraryBookCover> {
 
     if (coverUrl != null && !coverUrl.startsWith('data:')) {
       return ClipRRect(
-        borderRadius: BorderRadius.circular(2),
+        borderRadius: BorderRadius.circular(AppRadius.md),
         child: AppCachedImage.sized(
           context: context,
           url: coverUrl,
@@ -118,7 +119,10 @@ class _LibraryBookCoverState extends State<LibraryBookCover> {
     return Container(
       width: widget.width,
       height: widget.height,
-      color: widget.fallbackColor,
+      decoration: BoxDecoration(
+        color: widget.fallbackColor,
+        borderRadius: BorderRadius.circular(AppRadius.md),
+      ),
       padding: const EdgeInsets.all(12),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,

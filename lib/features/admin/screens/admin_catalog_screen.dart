@@ -154,6 +154,9 @@ class _AdminCatalogScreenState extends State<AdminCatalogScreen>
       context: context,
       isScrollControlled: true,
       backgroundColor: AppColors.homeBackground,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.xl)),
+      ),
       builder: (context) {
         return StatefulBuilder(
           builder: (context, setModalState) {
@@ -224,13 +227,14 @@ class _AdminCatalogScreenState extends State<AdminCatalogScreen>
                       backgroundColor: AppColors.primaryBrown,
                       foregroundColor: Colors.white,
                       elevation: 0,
+                      shape: const StadiumBorder(),
                       padding: const EdgeInsets.symmetric(vertical: 14),
                     ),
                     child: Text(
                       saving ? 'Saving…' : 'Save',
                       style: GoogleFonts.inter(
-                        fontSize: 11,
-                        fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),
@@ -436,7 +440,13 @@ class _CatalogList<T> extends StatelessWidget {
             final sub = subtitle?.call(item);
             return Container(
               margin: const EdgeInsets.only(bottom: 10),
-              color: Colors.white,
+              clipBehavior: Clip.antiAlias,
+              decoration: BoxDecoration(
+                color: AppColors.surface,
+                borderRadius: BorderRadius.circular(AppRadius.lg),
+                border: Border.all(color: AppColors.border),
+                boxShadow: AppShadows.soft,
+              ),
               child: ListTile(
                 title: Text(
                   label(item),

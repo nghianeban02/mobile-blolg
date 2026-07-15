@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mobile/core/constants/app_colors.dart';
 
-/// Underline input matching [LoginScreen] editorial auth forms.
+/// Filled input đồng bộ form đăng nhập của web (uiField):
+/// nền ink/4, bo rounded-xl, focus ring nâu; label nhỏ ở trên.
 class AuthFormField extends StatelessWidget {
   final String label;
   final String hint;
@@ -36,18 +37,18 @@ class AuthFormField extends StatelessWidget {
           children: [
             Expanded(
               child: Text(
-                label.toUpperCase(),
+                label,
                 style: GoogleFonts.inter(
-                  fontSize: 10,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 1.5,
-                  color: AppColors.homeTextDark.withValues(alpha: 0.8),
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.homeTextLight,
                 ),
               ),
             ),
             ?trailingLabel,
           ],
         ),
+        const SizedBox(height: 6),
         TextFormField(
           controller: controller,
           obscureText: obscureText,
@@ -57,25 +58,39 @@ class AuthFormField extends StatelessWidget {
           decoration: InputDecoration(
             hintText: hint,
             hintStyle: GoogleFonts.inter(
-              color: AppColors.homeTextLight.withValues(alpha: 0.4),
+              color: AppColors.homeTextLight.withValues(alpha: 0.5),
               fontSize: 16,
             ),
-            enabledBorder: UnderlineInputBorder(
+            filled: true,
+            fillColor: AppColors.homeTextDark.withValues(alpha: 0.04),
+            border: OutlineInputBorder(
+              borderRadius: AppRadius.input,
+              borderSide: BorderSide.none,
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: AppRadius.input,
+              borderSide: BorderSide.none,
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: AppRadius.input,
               borderSide: BorderSide(
-                color: AppColors.homeTextDark.withValues(alpha: 0.5),
+                color: AppColors.primaryBrown.withValues(alpha: 0.45),
+                width: 1.5,
               ),
             ),
-            focusedBorder: const UnderlineInputBorder(
-              borderSide: BorderSide(color: AppColors.primaryBrown, width: 2),
+            errorBorder: OutlineInputBorder(
+              borderRadius: AppRadius.input,
+              borderSide: const BorderSide(color: AppColors.error),
             ),
-            errorBorder: const UnderlineInputBorder(
-              borderSide: BorderSide(color: Colors.red),
-            ),
-            focusedErrorBorder: const UnderlineInputBorder(
-              borderSide: BorderSide(color: Colors.red, width: 2),
+            focusedErrorBorder: OutlineInputBorder(
+              borderRadius: AppRadius.input,
+              borderSide: const BorderSide(color: AppColors.error, width: 1.5),
             ),
             isDense: true,
-            contentPadding: const EdgeInsets.symmetric(vertical: 8),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 12,
+            ),
             suffixIcon: showVisibilityToggle
                 ? IconButton(
                     icon: Icon(
@@ -105,9 +120,9 @@ class AuthErrorBanner extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: AppColors.error.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(4),
-        border: Border.all(color: AppColors.error.withValues(alpha: 0.3)),
+        color: AppColors.error.withValues(alpha: 0.1),
+        borderRadius: AppRadius.input,
+        border: Border.all(color: AppColors.error.withValues(alpha: 0.25)),
       ),
       child: Row(
         children: [

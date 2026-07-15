@@ -94,6 +94,7 @@ class MainAppBarState extends State<MainAppBar> with WidgetsBindingObserver {
         padding: const EdgeInsets.symmetric(horizontal: 4),
         decoration: BoxDecoration(
           color: AppColors.error,
+          borderRadius: AppRadius.pill,
           border: Border.all(
             color: Theme.of(context).scaffoldBackgroundColor,
             width: 1.5,

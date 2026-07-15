@@ -3,6 +3,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:mobile/app/routes.dart';
 import 'package:mobile/core/constants/app_colors.dart';
 import 'package:mobile/core/preferences/display_preferences.dart';
+import 'package:mobile/core/widgets/editorial_surface_card.dart';
+import 'package:mobile/core/widgets/editorial_ui.dart';
 import 'package:mobile/data/auth/auth_repository.dart';
 import 'package:mobile/data/models/dtos.dart';
 import 'package:mobile/features/friends/screens/friends_screen.dart';
@@ -88,19 +90,8 @@ class ProfileCard extends StatelessWidget {
         : '"Your editorial voice lives here."';
     final email = profile?.email ?? profile?.username ?? '';
 
-    return Container(
+    return EditorialSurfaceCard(
       padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(4),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
-          ),
-        ],
-      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -110,9 +101,9 @@ class ProfileCard extends StatelessWidget {
               Container(
                 width: 72,
                 height: 72,
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   color: AppColors.coverSand,
-                  borderRadius: BorderRadius.circular(16),
+                  shape: BoxShape.circle,
                 ),
                 child: Center(
                   child: Text(
@@ -176,51 +167,18 @@ class ProfileCard extends StatelessWidget {
             ),
           ],
           const SizedBox(height: 24),
-          Row(
+          Wrap(
+            spacing: 12,
+            runSpacing: 12,
             children: [
-              ElevatedButton(
+              EditorialPillButton(
+                label: 'Edit Profile',
                 onPressed: isLoading ? null : onEdit,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primaryBrown,
-                  foregroundColor: Colors.white,
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 12,
-                  ),
-                ),
-                child: Text(
-                  'Edit Profile',
-                  style: GoogleFonts.inter(
-                    fontSize: 11,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
               ),
-              const SizedBox(width: 12),
-              OutlinedButton(
+              EditorialPillButton(
+                label: 'View Public Page',
+                outline: true,
                 onPressed: isLoading ? null : onViewPublic,
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: AppColors.homeTextDark,
-                  side: BorderSide(color: Colors.black.withValues(alpha: 0.1)),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 12,
-                  ),
-                ),
-                child: Text(
-                  'View Public Page',
-                  style: GoogleFonts.inter(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
               ),
             ],
           ),
@@ -411,6 +369,16 @@ class _ReadingExperienceSectionState extends State<ReadingExperienceSection> {
     if (mounted) setState(() {});
   }
 
+  ButtonStyle get _segmentedPillStyle => ButtonStyle(
+    shape: const WidgetStatePropertyAll(StadiumBorder()),
+    side: const WidgetStatePropertyAll(
+      BorderSide(color: AppColors.borderStrong),
+    ),
+    textStyle: WidgetStatePropertyAll(
+      GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w500),
+    ),
+  );
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -447,6 +415,7 @@ class _ReadingExperienceSectionState extends State<ReadingExperienceSection> {
           ],
           selected: {_preferences.themeMode},
           showSelectedIcon: false,
+          style: _segmentedPillStyle,
           onSelectionChanged: (value) => _preferences.setThemeMode(value.first),
         ),
         const SizedBox(height: 32),
@@ -467,6 +436,7 @@ class _ReadingExperienceSectionState extends State<ReadingExperienceSection> {
           ],
           selected: {_preferences.fontScale},
           showSelectedIcon: false,
+          style: _segmentedPillStyle,
           onSelectionChanged: (value) => _preferences.setFontScale(value.first),
         ),
       ],
@@ -528,8 +498,8 @@ class _NotificationsSectionState extends State<NotificationsSection> {
         Container(
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
-            color: Colors.black.withValues(alpha: 0.03),
-            borderRadius: BorderRadius.circular(4),
+            color: AppColors.hoverWash,
+            borderRadius: BorderRadius.circular(AppRadius.lg),
           ),
           child: Column(
             children: [
@@ -597,7 +567,10 @@ class SettingsFooter extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 40),
-        OutlinedButton(
+        EditorialPillButton(
+          label: 'Log Out Account',
+          destructive: true,
+          expanded: true,
           onPressed: () async {
             final repository = AuthRepository();
             await repository.logout();
@@ -607,20 +580,6 @@ class SettingsFooter extends StatelessWidget {
               ).pushNamedAndRemoveUntil(AppRoutes.login, (route) => false);
             }
           },
-          style: OutlinedButton.styleFrom(
-            foregroundColor: const Color(0xFFD3554A), // Deep red tag color
-            side: BorderSide(
-              color: const Color(0xFFD3554A).withValues(alpha: 0.3),
-            ),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(4),
-            ),
-            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-          ),
-          child: Text(
-            'Log Out Account',
-            style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.bold),
-          ),
         ),
       ],
     );

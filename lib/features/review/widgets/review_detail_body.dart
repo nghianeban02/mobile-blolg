@@ -137,7 +137,10 @@ class ReviewDetailBody extends StatelessWidget {
           const SizedBox(height: 12),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-            color: AppColors.error.withValues(alpha: 0.08),
+            decoration: BoxDecoration(
+              color: AppColors.error.withValues(alpha: 0.08),
+              borderRadius: AppRadius.pill,
+            ),
             child: Text(
               'CẢNH BÁO SPOILER',
               style: GoogleFonts.inter(

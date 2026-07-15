@@ -24,10 +24,8 @@ class CreatePostImageSlot extends StatelessWidget {
       width: double.infinity,
       decoration: BoxDecoration(
         color: AppColors.white,
-        borderRadius: BorderRadius.circular(4),
-        border: Border.all(
-          color: AppColors.homeTextDark.withValues(alpha: 0.12),
-        ),
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+        border: Border.all(color: AppColors.borderStrong),
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,

@@ -449,7 +449,6 @@ class _ApiDemoScreenState extends State<ApiDemoScreen> {
             controller: _reviewIdController,
             decoration: const InputDecoration(
               hintText: 'Paste review UUID',
-              border: OutlineInputBorder(),
               isDense: true,
             ),
           ),
@@ -564,9 +563,9 @@ class _ApiDemoScreenState extends State<ApiDemoScreen> {
       padding: const EdgeInsets.all(12),
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.black.withValues(alpha: 0.06)),
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(AppRadius.md),
+        border: Border.all(color: AppColors.border),
       ),
       child: SelectableText(
         text,

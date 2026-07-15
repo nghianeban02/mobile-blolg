@@ -174,6 +174,7 @@ class _NotesScreenState extends State<NotesScreen> {
             onPressed: _openEditor,
             backgroundColor: AppColors.primaryBrown,
             foregroundColor: Colors.white,
+            shape: const CircleBorder(),
             child: const Icon(Icons.add),
           )
         : null,
@@ -194,12 +195,6 @@ class _NotesScreenState extends State<NotesScreen> {
                       onPressed: _search.clear,
                       icon: const Icon(Icons.close),
                     ),
-              filled: true,
-              fillColor: Colors.white,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide.none,
-              ),
             ),
           ),
           const SizedBox(height: 16),
@@ -223,6 +218,9 @@ class _NotesScreenState extends State<NotesScreen> {
             ],
             selected: {_tab},
             showSelectedIcon: false,
+            style: const ButtonStyle(
+              shape: WidgetStatePropertyAll(StadiumBorder()),
+            ),
             onSelectionChanged: (value) {
               setState(() => _tab = value.first);
               _load();
@@ -237,6 +235,7 @@ class _NotesScreenState extends State<NotesScreen> {
                 children: [
                   ChoiceChip(
                     label: const Text('Tất cả thư mục'),
+                    shape: const StadiumBorder(),
                     selected: _folderId == null,
                     onSelected: (_) {
                       setState(() => _folderId = null);
@@ -249,6 +248,7 @@ class _NotesScreenState extends State<NotesScreen> {
                       padding: const EdgeInsets.only(right: 8),
                       child: ChoiceChip(
                         label: Text('${folder.icon ?? '📁'} ${folder.name}'),
+                        shape: const StadiumBorder(),
                         selected: _folderId == folder.id,
                         onSelected: (_) {
                           setState(() => _folderId = folder.id);
@@ -328,7 +328,7 @@ class _NoteCard extends StatelessWidget {
     elevation: note.pinned ? 2 : 0,
     child: InkWell(
       onTap: tab == _NotesTab.trash ? null : onOpen,
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: AppRadius.card,
       child: Padding(
         padding: const EdgeInsets.fromLTRB(18, 16, 8, 16),
         child: Row(
@@ -389,6 +389,9 @@ class _NoteCard extends StatelessWidget {
                           .map(
                             (label) => Chip(
                               visualDensity: VisualDensity.compact,
+                              shape: const StadiumBorder(
+                                side: BorderSide(color: AppColors.border),
+                              ),
                               label: Text(
                                 label.name,
                                 style: const TextStyle(fontSize: 10),

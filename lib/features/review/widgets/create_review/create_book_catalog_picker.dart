@@ -291,6 +291,7 @@ class _PickerChip extends StatelessWidget {
       backgroundColor: sandTone
           ? AppColors.coverSand.withValues(alpha: 0.5)
           : AppColors.coverTeal.withValues(alpha: 0.25),
+      shape: const StadiumBorder(),
       side: BorderSide(color: Colors.black.withValues(alpha: 0.06)),
       deleteIconColor: AppColors.primaryBrown,
       onDeleted: onDeleted,

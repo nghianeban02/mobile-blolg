@@ -16,7 +16,7 @@ Future<String?> showReadingStatusSheet(
     context: context,
     backgroundColor: AppColors.homeBackground,
     shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(8)),
+      borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.xl)),
     ),
     builder: (context) {
       return SafeArea(

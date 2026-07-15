@@ -21,14 +21,16 @@ class EditorsChoiceBanner extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 24.0),
       child: Material(
         color: const Color(0xFFF9F6F0),
+        shape: RoundedRectangleBorder(
+          borderRadius: AppRadius.card,
+          side: const BorderSide(color: AppColors.border),
+        ),
+        clipBehavior: Clip.antiAlias,
         child: InkWell(
           onTap: onTap,
           child: Container(
             width: double.infinity,
             padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              border: Border.all(color: Colors.black.withValues(alpha: 0.05)),
-            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [

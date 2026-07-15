@@ -76,24 +76,24 @@ class ReadingHeader extends StatelessWidget {
   }
 
   Widget _buildTab(String text, {bool isActive = false}) {
-    return Column(
-      children: [
-        Text(
-          text,
-          style: GoogleFonts.inter(
-            color: isActive
-                ? AppColors.homeTextDark
-                : AppColors.homeTextLight.withValues(alpha: 0.7),
-            fontSize: 11,
-            fontWeight: isActive ? FontWeight.bold : FontWeight.w500,
-          ),
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+      decoration: BoxDecoration(
+        color: isActive
+            ? AppColors.primaryBrown.withValues(alpha: 0.1)
+            : Colors.transparent,
+        borderRadius: AppRadius.pill,
+      ),
+      child: Text(
+        text,
+        style: GoogleFonts.inter(
+          color: isActive
+              ? AppColors.primaryBrown
+              : AppColors.homeTextLight.withValues(alpha: 0.7),
+          fontSize: 11,
+          fontWeight: isActive ? FontWeight.bold : FontWeight.w500,
         ),
-        const SizedBox(height: 8),
-        if (isActive)
-          Container(height: 2, width: 32, color: AppColors.primaryBrown)
-        else
-          const SizedBox(height: 2, width: 32),
-      ],
+      ),
     );
   }
 }

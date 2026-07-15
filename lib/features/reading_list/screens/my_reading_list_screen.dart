@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:mobile/core/constants/app_colors.dart';
 import 'package:mobile/core/widgets/async_loading_view.dart';
 import 'package:mobile/core/widgets/detail_app_bar.dart';
+import 'package:mobile/core/widgets/editorial_surface_card.dart';
 import 'package:mobile/data/models/dtos.dart';
 import 'package:mobile/data/repositories/books_repository.dart';
 import 'package:mobile/data/repositories/reading_list_repository.dart';
@@ -149,104 +150,110 @@ class _MyReadingListScreenState extends State<MyReadingListScreen> {
                           final entry = e.value;
                           final book = _bookById[entry.bookId];
                           final index = e.key;
-                          return Padding(
-                            padding: const EdgeInsets.only(bottom: 20),
-                            child: Material(
-                              color: Colors.white,
-                              child: InkWell(
-                                onTap: book != null
-                                    ? () {
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (_) =>
-                                                LibraryBookDetailScreen(
-                                                  bookId: book.id,
-                                                  initialBook: book,
-                                                  colorIndex: index,
-                                                ),
-                                          ),
-                                        );
-                                      }
-                                    : null,
-                                child: Padding(
-                                  padding: const EdgeInsets.all(16),
-                                  child: Row(
+                          return EditorialSurfaceCard(
+                            margin: const EdgeInsets.only(bottom: 20),
+                            padding: const EdgeInsets.all(16),
+                            onTap: book != null
+                                ? () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) =>
+                                            LibraryBookDetailScreen(
+                                              bookId: book.id,
+                                              initialBook: book,
+                                              colorIndex: index,
+                                            ),
+                                      ),
+                                    );
+                                  }
+                                : null,
+                            child: Row(
+                              children: [
+                                if (book != null)
+                                  LibraryBookCover(
+                                    book: book,
+                                    fallbackColor: LibraryBookStyle.coverColor(
+                                      index,
+                                    ),
+                                    width: 56,
+                                    height: 76,
+                                  )
+                                else
+                                  Container(
+                                    width: 56,
+                                    height: 76,
+                                    decoration: BoxDecoration(
+                                      color: AppColors.coverSand,
+                                      borderRadius: BorderRadius.circular(
+                                        AppRadius.md,
+                                      ),
+                                    ),
+                                  ),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
-                                      if (book != null)
-                                        LibraryBookCover(
-                                          book: book,
-                                          fallbackColor:
-                                              LibraryBookStyle.coverColor(
-                                                index,
-                                              ),
-                                          width: 56,
-                                          height: 76,
-                                        )
-                                      else
-                                        Container(
-                                          width: 56,
-                                          height: 76,
-                                          color: AppColors.coverSand,
-                                        ),
-                                      const SizedBox(width: 16),
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              book?.title ?? entry.bookId,
-                                              style:
-                                                  GoogleFonts.playfairDisplay(
-                                                    fontSize: 16,
-                                                    fontWeight: FontWeight.w600,
-                                                  ),
-                                            ),
-                                            const SizedBox(height: 6),
-                                            GestureDetector(
-                                              onTap: () => _updateStatus(entry),
-                                              behavior: HitTestBehavior.opaque,
-                                              child: Row(
-                                                children: [
-                                                  Text(
-                                                    _statusLabel(
-                                                      entry.status,
-                                                    ).toUpperCase(),
-                                                    style: GoogleFonts.inter(
-                                                      fontSize: 9,
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                      letterSpacing: 1,
-                                                      color: AppColors
-                                                          .primaryBrown,
-                                                    ),
-                                                  ),
-                                                  const SizedBox(width: 4),
-                                                  const Icon(
-                                                    Icons.expand_more,
-                                                    size: 14,
-                                                    color:
-                                                        AppColors.primaryBrown,
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                          ],
+                                      Text(
+                                        book?.title ?? entry.bookId,
+                                        style: GoogleFonts.playfairDisplay(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w600,
                                         ),
                                       ),
-                                      IconButton(
-                                        onPressed: () => _remove(entry),
-                                        icon: const Icon(
-                                          Icons.close,
-                                          size: 18,
-                                          color: AppColors.homeTextLight,
+                                      const SizedBox(height: 6),
+                                      GestureDetector(
+                                        onTap: () => _updateStatus(entry),
+                                        behavior: HitTestBehavior.opaque,
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 10,
+                                            vertical: 4,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: AppColors.primaryBrown
+                                                .withValues(alpha: 0.1),
+                                            borderRadius: AppRadius.pill,
+                                          ),
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Text(
+                                                _statusLabel(
+                                                  entry.status,
+                                                ).toUpperCase(),
+                                                style: GoogleFonts.inter(
+                                                  fontSize: 9,
+                                                  fontWeight: FontWeight.bold,
+                                                  letterSpacing: 1,
+                                                  color:
+                                                      AppColors.primaryBrown,
+                                                ),
+                                              ),
+                                              const SizedBox(width: 4),
+                                              const Icon(
+                                                Icons.expand_more,
+                                                size: 14,
+                                                color: AppColors.primaryBrown,
+                                              ),
+                                            ],
+                                          ),
                                         ),
                                       ),
                                     ],
                                   ),
                                 ),
-                              ),
+                                IconButton(
+                                  onPressed: () => _remove(entry),
+                                  icon: const Icon(
+                                    Icons.close,
+                                    size: 18,
+                                    color: AppColors.homeTextLight,
+                                  ),
+                                ),
+                              ],
                             ),
                           );
                         }),

@@ -34,8 +34,13 @@ class CreatePostSubmitBar extends StatelessWidget {
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 12,
-            offset: const Offset(0, -4),
+            blurRadius: 8,
+            offset: const Offset(0, -2),
+          ),
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 24,
+            offset: const Offset(0, -8),
           ),
         ],
       ),
@@ -73,34 +78,41 @@ class CreatePostSubmitBar extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 16),
-          FilledButton(
-            onPressed: isLoading ? null : onPublish,
-            style: FilledButton.styleFrom(
-              backgroundColor: AppColors.primaryBrown,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(4),
-              ),
-              elevation: 0,
+          DecoratedBox(
+            decoration: BoxDecoration(
+              borderRadius: AppRadius.pill,
+              boxShadow: isLoading ? null : AppShadows.primaryButton,
             ),
-            child: isLoading
-                ? const SizedBox(
-                    width: 22,
-                    height: 22,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: Colors.white,
+            child: FilledButton(
+              onPressed: isLoading ? null : onPublish,
+              style: FilledButton.styleFrom(
+                backgroundColor: AppColors.primaryBrown,
+                foregroundColor: Colors.white,
+                minimumSize: const Size(0, 44),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 10,
+                ),
+                shape: const StadiumBorder(),
+                elevation: 0,
+              ),
+              child: isLoading
+                  ? const SizedBox(
+                      width: 22,
+                      height: 22,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : Text(
+                      'Publish',
+                      style: GoogleFonts.inter(
+                        fontWeight: FontWeight.w500,
+                        fontSize: 14,
+                      ),
                     ),
-                  )
-                : Text(
-                    'Publish',
-                    style: GoogleFonts.inter(
-                      fontWeight: FontWeight.w700,
-                      fontSize: 13,
-                      letterSpacing: 0.5,
-                    ),
-                  ),
+            ),
           ),
         ],
       ),

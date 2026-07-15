@@ -35,7 +35,7 @@ class CreateReviewRatingRow extends StatelessWidget {
               padding: const EdgeInsets.only(right: 8),
               child: InkWell(
                 onTap: () => onRatingChanged(value),
-                borderRadius: BorderRadius.circular(4),
+                customBorder: const CircleBorder(),
                 child: Icon(
                   filled ? Icons.star : Icons.star_border,
                   color: AppColors.primaryBrown,

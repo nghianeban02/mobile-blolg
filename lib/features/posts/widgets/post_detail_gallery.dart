@@ -36,7 +36,7 @@ class PostDetailGallery extends StatelessWidget {
             itemBuilder: (context, index) {
               final img = images[index];
               return ClipRRect(
-                borderRadius: BorderRadius.circular(4),
+                borderRadius: AppRadius.input,
                 child: SizedBox(
                   width: 140,
                   child: PostNetworkImage(

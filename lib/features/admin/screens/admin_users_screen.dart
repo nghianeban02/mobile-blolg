@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:mobile/core/constants/app_colors.dart';
 import 'package:mobile/core/widgets/async_loading_view.dart';
 import 'package:mobile/core/widgets/detail_app_bar.dart';
+import 'package:mobile/core/widgets/editorial_surface_card.dart';
 import 'package:mobile/data/models/dtos.dart';
 import 'package:mobile/data/repositories/users_repository.dart';
 import 'package:mobile/features/posts/widgets/post_section_label.dart';
@@ -101,11 +102,6 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                           fontSize: 13,
                           color: AppColors.homeTextLight,
                         ),
-                        filled: true,
-                        fillColor: Colors.white,
-                        border: const OutlineInputBorder(
-                          borderRadius: BorderRadius.zero,
-                        ),
                         suffixIcon: IconButton(
                           icon: const Icon(Icons.search),
                           color: AppColors.primaryBrown,
@@ -135,60 +131,54 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                       else
                         ..._users.map((u) {
                           final display = u.displayName;
-                          return Material(
-                            color: Colors.white,
-                            child: InkWell(
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) => UserProfileScreen(
-                                      userId: u.id,
-                                      initialDisplayName: display,
+                          return EditorialSurfaceCard(
+                            margin: const EdgeInsets.only(bottom: 12),
+                            padding: const EdgeInsets.all(16),
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => UserProfileScreen(
+                                    userId: u.id,
+                                    initialDisplayName: display,
+                                  ),
+                                ),
+                              );
+                            },
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  display,
+                                  style: GoogleFonts.playfairDisplay(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                const SizedBox(height: 6),
+                                Text(
+                                  '@${u.username}',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 12,
+                                    color: AppColors.homeTextLight,
+                                  ),
+                                ),
+                                if (u.bio != null &&
+                                    u.bio!.trim().isNotEmpty) ...[
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    u.bio!.trim(),
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: GoogleFonts.inter(
+                                      fontSize: 12,
+                                      fontStyle: FontStyle.italic,
+                                      color: AppColors.homeTextLight,
+                                      height: 1.4,
                                     ),
                                   ),
-                                );
-                              },
-                              child: Container(
-                                width: double.infinity,
-                                margin: const EdgeInsets.only(bottom: 12),
-                                padding: const EdgeInsets.all(16),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      display,
-                                      style: GoogleFonts.playfairDisplay(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 6),
-                                    Text(
-                                      '@${u.username}',
-                                      style: GoogleFonts.inter(
-                                        fontSize: 12,
-                                        color: AppColors.homeTextLight,
-                                      ),
-                                    ),
-                                    if (u.bio != null &&
-                                        u.bio!.trim().isNotEmpty) ...[
-                                      const SizedBox(height: 8),
-                                      Text(
-                                        u.bio!.trim(),
-                                        maxLines: 2,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: GoogleFonts.inter(
-                                          fontSize: 12,
-                                          fontStyle: FontStyle.italic,
-                                          color: AppColors.homeTextLight,
-                                          height: 1.4,
-                                        ),
-                                      ),
-                                    ],
-                                  ],
-                                ),
-                              ),
+                                ],
+                              ],
                             ),
                           );
                         }),

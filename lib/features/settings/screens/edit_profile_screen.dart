@@ -117,8 +117,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       initialValue: _feedVisibility,
                       decoration: const InputDecoration(
                         isDense: true,
-                        contentPadding: EdgeInsets.symmetric(vertical: 8),
+                        contentPadding: EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
                       ),
+                      borderRadius: AppRadius.input,
                       items: _feedVisibilityOptions
                           .map(
                             (e) => DropdownMenuItem(
@@ -142,11 +146,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         backgroundColor: AppColors.primaryBrown,
                         foregroundColor: Colors.white,
                         elevation: 0,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: const StadiumBorder(),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
                       ),
                       child: Text(
                         _saving ? 'Saving…' : 'Save profile',
-                        style: GoogleFonts.inter(fontWeight: FontWeight.bold),
+                        style: GoogleFonts.inter(fontWeight: FontWeight.w600),
                       ),
                     ),
                   ],

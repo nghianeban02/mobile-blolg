@@ -158,7 +158,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.homeBackground,
-        shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+        shape: RoundedRectangleBorder(borderRadius: AppRadius.card),
         title: Text(
           'Từ chối bài viết?',
           style: GoogleFonts.playfairDisplay(fontWeight: FontWeight.w600),
@@ -177,9 +177,25 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
               maxLines: 3,
               maxLength: 300,
               style: GoogleFonts.inter(fontSize: 14),
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 hintText: 'Lý do từ chối…',
-                border: OutlineInputBorder(borderRadius: BorderRadius.zero),
+                filled: true,
+                fillColor: AppColors.homeTextDark.withValues(alpha: 0.04),
+                border: OutlineInputBorder(
+                  borderRadius: AppRadius.input,
+                  borderSide: BorderSide.none,
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: AppRadius.input,
+                  borderSide: BorderSide.none,
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: AppRadius.input,
+                  borderSide: BorderSide(
+                    color: AppColors.primaryBrown.withValues(alpha: 0.45),
+                    width: 1.5,
+                  ),
+                ),
               ),
             ),
           ],
@@ -501,7 +517,7 @@ class _PostStatusBanner extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.06),
-        borderRadius: BorderRadius.circular(4),
+        borderRadius: AppRadius.input,
         border: Border.all(color: color.withValues(alpha: 0.2)),
       ),
       child: Column(
@@ -585,9 +601,8 @@ class _ModerationBar extends StatelessWidget {
             style: FilledButton.styleFrom(
               backgroundColor: AppColors.primaryBrown,
               foregroundColor: Colors.white,
-              shape: const RoundedRectangleBorder(
-                borderRadius: BorderRadius.zero,
-              ),
+              minimumSize: const Size(0, 44),
+              shape: const StadiumBorder(),
             ),
           ),
         ),
@@ -606,9 +621,8 @@ class _ModerationBar extends StatelessWidget {
             style: OutlinedButton.styleFrom(
               foregroundColor: AppColors.error,
               side: const BorderSide(color: AppColors.error),
-              shape: const RoundedRectangleBorder(
-                borderRadius: BorderRadius.zero,
-              ),
+              minimumSize: const Size(0, 44),
+              shape: const StadiumBorder(),
             ),
           ),
         ),

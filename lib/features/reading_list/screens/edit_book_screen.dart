@@ -268,8 +268,8 @@ class _EditBookScreenState extends State<EditBookScreen> {
                         child: Text(
                           _saving ? 'Saving…' : 'Save changes',
                           style: GoogleFonts.inter(
-                            fontSize: 11,
-                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
                           ),
                         ),
                       ),
@@ -286,8 +286,8 @@ class _EditBookScreenState extends State<EditBookScreen> {
                         child: Text(
                           _deleting ? 'Deleting…' : 'Delete book',
                           style: GoogleFonts.inter(
-                            fontSize: 11,
-                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
                           ),
                         ),
                       ),

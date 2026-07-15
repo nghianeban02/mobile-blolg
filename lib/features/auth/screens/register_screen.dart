@@ -100,9 +100,6 @@ class _RegisterScreenState extends State<RegisterScreen>
               ),
               backgroundColor: AppColors.success,
               behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
             ),
           );
         }
@@ -117,9 +114,6 @@ class _RegisterScreenState extends State<RegisterScreen>
           ),
           backgroundColor: AppColors.success,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
         ),
       );
       Navigator.pop(context);
@@ -165,14 +159,10 @@ class _RegisterScreenState extends State<RegisterScreen>
                       vertical: 40,
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.white,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.02),
-                          blurRadius: 20,
-                          offset: const Offset(0, 10),
-                        ),
-                      ],
+                      color: AppColors.surface,
+                      borderRadius: AppRadius.card,
+                      border: Border.all(color: AppColors.border),
+                      boxShadow: AppShadows.soft,
                     ),
                     child: Form(
                       key: _formKey,
@@ -305,33 +295,41 @@ class _RegisterScreenState extends State<RegisterScreen>
   }
 
   Widget _buildRegisterButton() {
-    return ElevatedButton(
-      onPressed: _loading ? null : _register,
-      style: ElevatedButton.styleFrom(
-        backgroundColor: AppColors.primaryBrown,
-        foregroundColor: Colors.white,
-        disabledBackgroundColor: AppColors.primaryBrown.withValues(alpha: 0.6),
-        padding: const EdgeInsets.symmetric(vertical: 18),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(2)),
-        elevation: 0,
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        borderRadius: AppRadius.pill,
+        boxShadow: _loading ? null : AppShadows.primaryButton,
       ),
-      child: _loading
-          ? const SizedBox(
-              height: 20,
-              width: 20,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                valueColor: AlwaysStoppedAnimation(Colors.white),
+      child: ElevatedButton(
+        onPressed: _loading ? null : _register,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: AppColors.primaryBrown,
+          foregroundColor: Colors.white,
+          disabledBackgroundColor: AppColors.primaryBrown.withValues(
+            alpha: 0.6,
+          ),
+          padding: const EdgeInsets.symmetric(vertical: 18),
+          shape: const StadiumBorder(),
+          elevation: 0,
+        ),
+        child: _loading
+            ? const SizedBox(
+                height: 20,
+                width: 20,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  valueColor: AlwaysStoppedAnimation(Colors.white),
+                ),
+              )
+            : Text(
+                'SIGN UP',
+                style: GoogleFonts.inter(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 2,
+                ),
               ),
-            )
-          : Text(
-              'SIGN UP',
-              style: GoogleFonts.inter(
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 2,
-              ),
-            ),
+      ),
     );
   }
 }

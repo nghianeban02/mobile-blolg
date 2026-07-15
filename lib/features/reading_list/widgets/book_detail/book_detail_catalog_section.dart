@@ -340,6 +340,8 @@ class _BookDetailCatalogSectionState extends State<BookDetailCatalogSection> {
                         fontWeight: FontWeight.w600,
                       ),
                     ),
+                    shape: const StadiumBorder(),
+                    side: BorderSide.none,
                     backgroundColor: AppColors.coverTeal.withValues(
                       alpha: 0.25,
                     ),

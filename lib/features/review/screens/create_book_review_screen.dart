@@ -286,14 +286,9 @@ class _CreateBookReviewScreenState extends State<CreateBookReviewScreen> {
         padding: const EdgeInsets.fromLTRB(24, 24, 24, 28),
         decoration: BoxDecoration(
           color: AppColors.white,
-          borderRadius: BorderRadius.circular(4),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.03),
-              blurRadius: 16,
-              offset: const Offset(0, 6),
-            ),
-          ],
+          borderRadius: AppRadius.card,
+          border: Border.all(color: AppColors.border),
+          boxShadow: AppShadows.soft,
         ),
         child: CreatePostSection(
           label: 'The book',
@@ -412,14 +407,9 @@ class _CreateBookReviewScreenState extends State<CreateBookReviewScreen> {
       padding: const EdgeInsets.fromLTRB(24, 24, 24, 28),
       decoration: BoxDecoration(
         color: AppColors.white,
-        borderRadius: BorderRadius.circular(4),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 16,
-            offset: const Offset(0, 6),
-          ),
-        ],
+        borderRadius: AppRadius.card,
+        border: Border.all(color: AppColors.border),
+        boxShadow: AppShadows.soft,
       ),
       child: CreatePostSection(
         label: 'Your review',
@@ -531,21 +521,18 @@ class _StatusChip extends StatelessWidget {
   Widget build(BuildContext context) {
     return Material(
       color: selected ? AppColors.primaryBrown : AppColors.white,
-      borderRadius: BorderRadius.circular(4),
+      shape: selected
+          ? const StadiumBorder()
+          : const StadiumBorder(
+              side: BorderSide(color: AppColors.borderStrong),
+            ),
+      clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(4),
         child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 12),
+          constraints: const BoxConstraints(minHeight: 44),
+          padding: const EdgeInsets.symmetric(vertical: 10),
           alignment: Alignment.center,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(4),
-            border: selected
-                ? null
-                : Border.all(
-                    color: AppColors.homeTextDark.withValues(alpha: 0.12),
-                  ),
-          ),
           child: Text(
             label,
             style: GoogleFonts.inter(

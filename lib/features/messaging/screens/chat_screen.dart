@@ -471,11 +471,35 @@ class _ChatScreenState extends State<ChatScreen> {
                       maxLines: 5,
                       maxLength: 4000,
                       textCapitalization: TextCapitalization.sentences,
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
                         hintText: 'Nhập tin nhắn…',
                         counterText: '',
-                        border: OutlineInputBorder(),
                         isDense: true,
+                        filled: true,
+                        fillColor: theme.brightness == Brightness.dark
+                            ? Colors.white.withValues(alpha: 0.06)
+                            : AppColors.homeTextDark.withValues(alpha: 0.04),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 10,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(22),
+                          borderSide: BorderSide.none,
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(22),
+                          borderSide: BorderSide.none,
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(22),
+                          borderSide: BorderSide(
+                            color: AppColors.primaryBrown.withValues(
+                              alpha: 0.45,
+                            ),
+                            width: 1.5,
+                          ),
+                        ),
                       ),
                     ),
                   ),
@@ -519,8 +543,8 @@ class _MessageBubble extends StatelessWidget {
     final theme = Theme.of(context);
     final revoked = message.revokedAt != null;
     final otherBubble = theme.brightness == Brightness.dark
-        ? theme.colorScheme.surfaceContainerHigh
-        : Colors.white;
+        ? Colors.white.withValues(alpha: 0.08)
+        : AppColors.homeTextDark.withValues(alpha: 0.06);
     final otherText = theme.brightness == Brightness.dark
         ? theme.colorScheme.onSurface
         : AppColors.homeTextDark;
@@ -539,9 +563,9 @@ class _MessageBubble extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 10),
           decoration: BoxDecoration(
             color: mine ? AppColors.primaryBrown : otherBubble,
-            borderRadius: BorderRadius.circular(16).copyWith(
-              bottomRight: mine ? const Radius.circular(3) : null,
-              bottomLeft: mine ? null : const Radius.circular(3),
+            borderRadius: BorderRadius.circular(20).copyWith(
+              bottomRight: mine ? const Radius.circular(6) : null,
+              bottomLeft: mine ? null : const Radius.circular(6),
             ),
           ),
           child: Column(

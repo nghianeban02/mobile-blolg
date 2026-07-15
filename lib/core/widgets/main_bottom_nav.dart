@@ -1,8 +1,12 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mobile/core/constants/app_colors.dart';
 
-/// Centralized bottom navigation bar for the main tab shell.
+/// Bottom nav đồng bộ web (mobile-nav): 5 mục
+/// Home · Search · Write (nút nâu tròn nổi bật) · Library · Me,
+/// nền glass mờ + viền trên mảnh, label 10px.
 class MainBottomNavBar extends StatelessWidget {
   final int currentIndex;
   final ValueChanged<int>? onIndexChanged;
@@ -13,77 +17,81 @@ class MainBottomNavBar extends StatelessWidget {
     super.key,
     required this.currentIndex,
     this.onIndexChanged,
-    this.showCreateButton = false,
+    this.showCreateButton = true,
     this.onCreateTap,
   });
 
-  static const _items = <({IconData icon, String label})>[
-    (icon: Icons.home_filled, label: 'HOME'),
-    (icon: Icons.search_rounded, label: 'SEARCH'),
-    (icon: Icons.library_books_outlined, label: 'LIBRARY'),
-    (icon: Icons.settings_outlined, label: 'SETTINGS'),
+  static const _items = <({IconData icon, IconData activeIcon, String label})>[
+    (
+      icon: Icons.home_outlined,
+      activeIcon: Icons.home_rounded,
+      label: 'Home',
+    ),
+    (
+      icon: Icons.search_rounded,
+      activeIcon: Icons.search_rounded,
+      label: 'Search',
+    ),
+    (
+      icon: Icons.auto_stories_outlined,
+      activeIcon: Icons.auto_stories_rounded,
+      label: 'Library',
+    ),
+    (
+      icon: Icons.person_outline_rounded,
+      activeIcon: Icons.person_rounded,
+      label: 'Me',
+    ),
   ];
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.homeBackground,
-        border: Border(
-          top: BorderSide(
-            color: Colors.black.withValues(alpha: 0.05),
-            width: 1,
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final barColor = (isDark ? AppColors.darkBackground : AppColors.surface)
+        .withValues(alpha: 0.85);
+    final borderColor = isDark ? AppColors.darkBorder : AppColors.border;
+
+    return ClipRect(
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+        child: Container(
+          decoration: BoxDecoration(
+            color: barColor,
+            border: Border(top: BorderSide(color: borderColor)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.05),
+                blurRadius: 12,
+                offset: const Offset(0, -1),
+              ),
+            ],
           ),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.02),
-            blurRadius: 10,
-            offset: const Offset(0, -5),
+          child: SafeArea(
+            child: SizedBox(
+              height: 60,
+              child: Row(
+                children: [
+                  Expanded(child: _tab(context, 0)),
+                  Expanded(child: _tab(context, 1)),
+                  Expanded(child: _WriteButton(onTap: onCreateTap)),
+                  Expanded(child: _tab(context, 2)),
+                  Expanded(child: _tab(context, 3)),
+                ],
+              ),
+            ),
           ),
-        ],
-      ),
-      child: SafeArea(
-        child: SizedBox(
-          height: showCreateButton ? 72 : 64,
-          child: showCreateButton
-              ? Stack(
-                  clipBehavior: Clip.none,
-                  alignment: Alignment.bottomCenter,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.only(top: 8),
-                      child: Row(
-                        children: [
-                          Expanded(child: _tab(0)),
-                          Expanded(child: _tab(1)),
-                          const SizedBox(width: 56),
-                          Expanded(child: _tab(2)),
-                          Expanded(child: _tab(3)),
-                        ],
-                      ),
-                    ),
-                    Positioned(
-                      top: 0,
-                      child: _CreateCenterButton(onTap: onCreateTap),
-                    ),
-                  ],
-                )
-              : Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: List.generate(_items.length, (i) => _tab(i)),
-                ),
         ),
       ),
     );
   }
 
-  Widget _tab(int index) {
+  Widget _tab(BuildContext context, int index) {
     final item = _items[index];
+    final selected = index == currentIndex;
     return _NavItem(
-      icon: item.icon,
+      icon: selected ? item.activeIcon : item.icon,
       label: item.label,
-      isSelected: index == currentIndex,
+      isSelected: selected,
       onTap: () {
         if (index == currentIndex) return;
         onIndexChanged?.call(index);
@@ -92,27 +100,47 @@ class MainBottomNavBar extends StatelessWidget {
   }
 }
 
-class _CreateCenterButton extends StatelessWidget {
+/// Nút Write ở giữa — vòng tròn nâu nổi giống web mobile-nav.
+class _WriteButton extends StatelessWidget {
   final VoidCallback? onTap;
 
-  const _CreateCenterButton({this.onTap});
+  const _WriteButton({this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: AppColors.primaryBrown,
-      elevation: 4,
-      shadowColor: AppColors.primaryBrown.withValues(alpha: 0.35),
-      shape: const CircleBorder(),
-      child: InkWell(
-        onTap: onTap,
-        customBorder: const CircleBorder(),
-        child: const SizedBox(
-          width: 52,
-          height: 52,
-          child: Icon(Icons.add_rounded, color: Colors.white, size: 28),
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        DecoratedBox(
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            boxShadow: AppShadows.primaryButton,
+          ),
+          child: Material(
+            color: AppColors.primaryBrown,
+            shape: const CircleBorder(),
+            clipBehavior: Clip.antiAlias,
+            child: InkWell(
+              onTap: onTap,
+              customBorder: const CircleBorder(),
+              child: const SizedBox(
+                width: 40,
+                height: 40,
+                child: Icon(Icons.add_rounded, color: Colors.white, size: 24),
+              ),
+            ),
+          ),
         ),
-      ),
+        const SizedBox(height: 2),
+        Text(
+          'Write',
+          style: GoogleFonts.inter(
+            color: AppColors.primaryBrown,
+            fontSize: 10,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ],
     );
   }
 }
@@ -132,34 +160,39 @@ class _NavItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = isSelected
-        ? AppColors.primaryBrown
-        : AppColors.homeTextLight.withValues(alpha: 0.6);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final activeColor = isDark ? AppColors.darkAccent : AppColors.primaryBrown;
+    final inactiveColor = isDark
+        ? AppColors.darkMuted
+        : AppColors.homeTextLight;
+    final color = isSelected ? activeColor : inactiveColor;
 
     return InkWell(
       onTap: onTap,
+      customBorder: const StadiumBorder(),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: isSelected
-                ? BoxDecoration(
-                    color: AppColors.primaryBrown.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  )
-                : null,
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 180),
+            curve: Curves.easeOut,
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+            decoration: BoxDecoration(
+              color: isSelected
+                  ? activeColor.withValues(alpha: 0.12)
+                  : Colors.transparent,
+              borderRadius: AppRadius.pill,
+            ),
             child: Icon(icon, color: color, size: 22),
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 2),
           Text(
             label,
             style: GoogleFonts.inter(
               color: color,
-              fontSize: 8,
-              fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
-              letterSpacing: 0.5,
+              fontSize: 10,
+              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
             ),
           ),
         ],

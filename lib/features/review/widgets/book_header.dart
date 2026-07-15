@@ -19,16 +19,12 @@ class BookHeader extends StatelessWidget {
           Container(
             width: double.infinity,
             height: 420,
+            clipBehavior: Clip.antiAlias,
             decoration: BoxDecoration(
               color: const Color(0xFF0F3144), // Dark blue like the mockup
+              borderRadius: BorderRadius.circular(AppRadius.lg),
               border: Border.all(color: Colors.black.withValues(alpha: 0.1)),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.15),
-                  blurRadius: 15,
-                  offset: const Offset(0, 10),
-                ),
-              ],
+              boxShadow: AppShadows.lift,
             ),
             child: Stack(
               children: [
@@ -97,9 +93,10 @@ class BookHeader extends StatelessWidget {
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primaryBrown,
                 foregroundColor: Colors.white,
-                shape: const RoundedRectangleBorder(),
+                shape: const StadiumBorder(),
                 elevation: 0,
-                padding: const EdgeInsets.symmetric(vertical: 16),
+                minimumSize: const Size(0, 44),
+                padding: const EdgeInsets.symmetric(vertical: 12),
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -159,7 +156,7 @@ class BookHeader extends StatelessWidget {
                 ),
                 decoration: BoxDecoration(
                   color: AppColors.success.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: AppRadius.pill,
                 ),
                 child: Text(
                   review.status.toUpperCase(),
@@ -178,7 +175,7 @@ class BookHeader extends StatelessWidget {
                 ),
                 decoration: BoxDecoration(
                   color: Colors.grey.shade200,
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: AppRadius.pill,
                   border: Border.all(
                     color: Colors.black.withValues(alpha: 0.05),
                   ),

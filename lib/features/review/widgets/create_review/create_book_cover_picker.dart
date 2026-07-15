@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:mobile/core/constants/app_colors.dart';
 import 'package:mobile/features/posts/widgets/create_post/create_post_image_slot.dart';
 import 'package:mobile/features/posts/widgets/create_post/create_post_pick_actions.dart';
 
@@ -33,7 +34,7 @@ class CreateBookCoverPicker extends StatelessWidget {
           Stack(
             children: [
               ClipRRect(
-                borderRadius: BorderRadius.circular(4),
+                borderRadius: BorderRadius.circular(AppRadius.lg),
                 child: SizedBox(
                   height: _previewHeight,
                   width: double.infinity,
@@ -45,10 +46,10 @@ class CreateBookCoverPicker extends StatelessWidget {
                 right: 8,
                 child: Material(
                   color: Colors.black54,
-                  borderRadius: BorderRadius.circular(4),
+                  shape: const StadiumBorder(),
+                  clipBehavior: Clip.antiAlias,
                   child: InkWell(
                     onTap: enabled ? onRemove : null,
-                    borderRadius: BorderRadius.circular(4),
                     child: Padding(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 10,

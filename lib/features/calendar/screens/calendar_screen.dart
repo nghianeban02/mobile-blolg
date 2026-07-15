@@ -141,6 +141,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
       onPressed: _edit,
       backgroundColor: AppColors.primaryBrown,
       foregroundColor: Colors.white,
+      shape: const StadiumBorder(),
       icon: const Icon(Icons.add),
       label: const Text('Công việc'),
     ),
@@ -152,7 +153,6 @@ class _CalendarScreenState extends State<CalendarScreen> {
         children: [
           Card(
             elevation: 0,
-            color: Colors.white,
             child: CalendarDatePicker(
               initialDate: _selected,
               firstDate: DateTime(2020),
@@ -246,7 +246,6 @@ class _EntryCard extends StatelessWidget {
   Widget build(BuildContext context) => Card(
     margin: const EdgeInsets.only(bottom: 10),
     elevation: 0,
-    color: Colors.white,
     child: Padding(
       padding: const EdgeInsets.fromLTRB(8, 10, 8, 10),
       child: Row(
@@ -592,6 +591,7 @@ class _PomodoroSheetState extends State<_PomodoroSheet>
                   onPressed: _toggle,
                   backgroundColor: AppColors.primaryBrown,
                   foregroundColor: Colors.white,
+                  shape: const CircleBorder(),
                   child: Icon(
                     _running ? Icons.pause : Icons.play_arrow,
                     size: 40,

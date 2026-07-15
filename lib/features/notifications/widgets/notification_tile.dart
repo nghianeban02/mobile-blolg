@@ -71,7 +71,10 @@ class NotificationTile extends StatelessWidget {
           Container(
             width: 40,
             height: 40,
-            color: _accent.withValues(alpha: 0.12),
+            decoration: BoxDecoration(
+              color: _accent.withValues(alpha: 0.12),
+              shape: BoxShape.circle,
+            ),
             alignment: Alignment.center,
             child: Icon(_icon, size: 20, color: _accent),
           ),
@@ -101,7 +104,7 @@ class NotificationTile extends StatelessWidget {
                         height: 8,
                         margin: const EdgeInsets.only(left: 8),
                         decoration: const BoxDecoration(
-                          color: AppColors.primaryBrown,
+                          color: AppColors.error,
                           shape: BoxShape.circle,
                         ),
                       ),

@@ -80,8 +80,10 @@ class _BookDetailReadingListBarState extends State<BookDetailReadingListBar> {
               onPressed: _busy ? null : _toggle,
               style: OutlinedButton.styleFrom(
                 foregroundColor: AppColors.homeTextDark,
-                side: BorderSide(color: Colors.black.withValues(alpha: 0.12)),
+                side: const BorderSide(color: AppColors.borderStrong),
                 padding: const EdgeInsets.symmetric(vertical: 14),
+                minimumSize: const Size(0, 44),
+                shape: const StadiumBorder(),
               ),
               child: Text(
                 _onList ? 'ON YOUR LIST' : 'ADD TO READING LIST',

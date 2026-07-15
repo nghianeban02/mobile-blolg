@@ -212,6 +212,7 @@ class _ReviewTagsSectionState extends State<ReviewTagsSection> {
                     ),
                   ),
                   backgroundColor: AppColors.coverSand.withValues(alpha: 0.5),
+                  shape: const StadiumBorder(),
                   side: BorderSide(color: Colors.black.withValues(alpha: 0.06)),
                   onDeleted: _canEdit && !_busy ? () => _removeTag(t) : null,
                   deleteIconColor: AppColors.primaryBrown,

@@ -90,8 +90,7 @@ class _AdminPostsScreenState extends State<AdminPostsScreen> {
     return showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppColors.homeBackground,
-        shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Text(
           'Từ chối bài viết?',
           style: GoogleFonts.playfairDisplay(fontWeight: FontWeight.w600),
@@ -115,9 +114,6 @@ class _AdminPostsScreenState extends State<AdminPostsScreen> {
                 hintStyle: GoogleFonts.inter(
                   fontSize: 13,
                   color: AppColors.homeTextLight,
-                ),
-                border: const OutlineInputBorder(
-                  borderRadius: BorderRadius.zero,
                 ),
               ),
             ),
@@ -290,17 +286,24 @@ class _PendingPostCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Material(
-      color: AppColors.white,
-      borderRadius: BorderRadius.circular(4),
+      color: isDark ? AppColors.darkSurface : AppColors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: AppRadius.card,
+        side: BorderSide(
+          color: isDark ? AppColors.darkBorder : AppColors.border,
+        ),
+      ),
+      clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onOpen,
-        borderRadius: BorderRadius.circular(4),
+        borderRadius: AppRadius.card,
         child: Container(
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(4),
-            boxShadow: editorialSoftShadow(),
+            borderRadius: AppRadius.card,
+            boxShadow: isDark ? null : editorialSoftShadow(),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -366,9 +369,7 @@ class _PendingPostCard extends StatelessWidget {
                         style: FilledButton.styleFrom(
                           backgroundColor: AppColors.primaryBrown,
                           foregroundColor: Colors.white,
-                          shape: const RoundedRectangleBorder(
-                            borderRadius: BorderRadius.zero,
-                          ),
+                          shape: const StadiumBorder(),
                         ),
                         child: Text(
                           'Duyệt',
@@ -386,9 +387,7 @@ class _PendingPostCard extends StatelessWidget {
                         style: OutlinedButton.styleFrom(
                           foregroundColor: AppColors.error,
                           side: const BorderSide(color: AppColors.error),
-                          shape: const RoundedRectangleBorder(
-                            borderRadius: BorderRadius.zero,
-                          ),
+                          shape: const StadiumBorder(),
                         ),
                         child: Text(
                           'Từ chối',

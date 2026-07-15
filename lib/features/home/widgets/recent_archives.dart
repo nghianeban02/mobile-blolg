@@ -157,12 +157,15 @@ class _ArchiveCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           RepaintBoundary(
-            child: SizedBox(
-              width: 220,
-              height: 260,
-              child: ColoredBox(
-                color: color.withValues(alpha: 0.8),
-                child: _ArchiveCover(post: post, color: color),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(AppRadius.lg),
+              child: SizedBox(
+                width: 220,
+                height: 260,
+                child: ColoredBox(
+                  color: color.withValues(alpha: 0.8),
+                  child: _ArchiveCover(post: post, color: color),
+                ),
               ),
             ),
           ),
@@ -241,6 +244,7 @@ class _ArchiveCover extends StatelessWidget {
         height: 200,
         decoration: BoxDecoration(
           color: color,
+          borderRadius: BorderRadius.circular(AppRadius.md),
           border: Border.all(color: Colors.white.withValues(alpha: 0.5)),
           boxShadow: [
             BoxShadow(

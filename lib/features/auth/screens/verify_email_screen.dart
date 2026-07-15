@@ -51,9 +51,6 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
           ),
           backgroundColor: AppColors.success,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
         ),
       );
       Navigator.of(context).pop(true);
@@ -108,9 +105,9 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
               Container(
                 width: 72,
                 height: 72,
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   color: AppColors.coverSand,
-                  borderRadius: BorderRadius.circular(16),
+                  shape: BoxShape.circle,
                 ),
                 child: const Icon(
                   Icons.mark_email_unread_outlined,
@@ -159,15 +156,10 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
                   vertical: 28,
                 ),
                 decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(4),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.03),
-                      blurRadius: 20,
-                      offset: const Offset(0, 10),
-                    ),
-                  ],
+                  color: AppColors.surface,
+                  borderRadius: AppRadius.card,
+                  border: Border.all(color: AppColors.border),
+                  boxShadow: AppShadows.soft,
                 ),
                 child: Form(
                   key: _formKey,
@@ -195,9 +187,7 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
                           disabledBackgroundColor: AppColors.primaryBrown
                               .withValues(alpha: 0.6),
                           padding: const EdgeInsets.symmetric(vertical: 18),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(2),
-                          ),
+                          shape: const StadiumBorder(),
                           elevation: 0,
                         ),
                         child: _verifying

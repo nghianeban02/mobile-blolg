@@ -153,20 +153,30 @@ class _EditReviewScreenState extends State<EditReviewScreen> {
                         onChanged: (v) => setState(() => _containsSpoilers = v),
                       ),
                       const SizedBox(height: 32),
-                      ElevatedButton(
-                        onPressed: _saving ? null : _save,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primaryBrown,
-                          foregroundColor: Colors.white,
-                          elevation: 0,
-                          padding: const EdgeInsets.symmetric(vertical: 16),
+                      DecoratedBox(
+                        decoration: BoxDecoration(
+                          borderRadius: AppRadius.pill,
+                          boxShadow: _saving ? null : AppShadows.primaryButton,
                         ),
-                        child: Text(
-                          _saving ? 'Saving…' : 'Save changes',
-                          style: GoogleFonts.inter(
-                            fontSize: 11,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 1,
+                        child: ElevatedButton(
+                          onPressed: _saving ? null : _save,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primaryBrown,
+                            foregroundColor: Colors.white,
+                            elevation: 0,
+                            minimumSize: const Size(0, 44),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 20,
+                              vertical: 10,
+                            ),
+                            shape: const StadiumBorder(),
+                          ),
+                          child: Text(
+                            _saving ? 'Saving…' : 'Save changes',
+                            style: GoogleFonts.inter(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                            ),
                           ),
                         ),
                       ),

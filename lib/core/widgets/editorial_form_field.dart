@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mobile/core/constants/app_colors.dart';
 
-/// Underline text field matching login / editorial compose screens.
+/// Filled text field kiểu web (uiField): nền ink/4, bo rounded-xl,
+/// không viền, focus ring nâu nhạt. Label nhỏ chữ hoa ở trên.
 class EditorialFormField extends StatelessWidget {
   final String label;
   final String hint;
@@ -25,19 +26,28 @@ class EditorialFormField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor = isDark
+        ? AppColors.darkForeground
+        : AppColors.homeTextDark;
+    final mutedColor = isDark ? AppColors.darkMuted : AppColors.homeTextLight;
+    final accent = isDark ? AppColors.darkAccent : AppColors.primaryBrown;
+    final fill = isDark
+        ? Colors.white.withValues(alpha: 0.06)
+        : AppColors.homeTextDark.withValues(alpha: 0.04);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          label.toUpperCase(),
+          label,
           style: GoogleFonts.inter(
-            fontSize: 10,
-            fontWeight: FontWeight.bold,
-            letterSpacing: 1.5,
-            color: AppColors.homeTextDark.withValues(alpha: 0.8),
+            fontSize: 12,
+            fontWeight: FontWeight.w500,
+            color: mutedColor,
           ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 6),
         TextFormField(
           controller: controller,
           maxLines: maxLines,
@@ -45,34 +55,46 @@ class EditorialFormField extends StatelessWidget {
           obscureText: obscureText,
           validator: validator,
           style: GoogleFonts.inter(
-            color: AppColors.homeTextDark,
+            color: textColor,
             fontSize: maxLines > 1 ? 15 : 16,
-            height: maxLines > 1 ? 1.65 : 1.2,
+            height: maxLines > 1 ? 1.65 : 1.3,
           ),
           decoration: InputDecoration(
             hintText: hint,
             hintStyle: GoogleFonts.inter(
-              color: AppColors.homeTextLight.withValues(alpha: 0.4),
+              color: mutedColor.withValues(alpha: 0.6),
               fontSize: maxLines > 1 ? 15 : 16,
-              height: maxLines > 1 ? 1.65 : 1.2,
+              height: maxLines > 1 ? 1.65 : 1.3,
             ),
-            enabledBorder: UnderlineInputBorder(
+            filled: true,
+            fillColor: fill,
+            border: OutlineInputBorder(
+              borderRadius: AppRadius.input,
+              borderSide: BorderSide.none,
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: AppRadius.input,
+              borderSide: BorderSide.none,
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: AppRadius.input,
               borderSide: BorderSide(
-                color: AppColors.homeTextDark.withValues(alpha: 0.2),
+                color: accent.withValues(alpha: 0.45),
+                width: 1.5,
               ),
             ),
-            focusedBorder: const UnderlineInputBorder(
-              borderSide: BorderSide(color: AppColors.primaryBrown, width: 2),
+            errorBorder: OutlineInputBorder(
+              borderRadius: AppRadius.input,
+              borderSide: const BorderSide(color: AppColors.error),
             ),
-            errorBorder: const UnderlineInputBorder(
-              borderSide: BorderSide(color: AppColors.error),
-            ),
-            focusedErrorBorder: const UnderlineInputBorder(
-              borderSide: BorderSide(color: AppColors.error, width: 2),
+            focusedErrorBorder: OutlineInputBorder(
+              borderRadius: AppRadius.input,
+              borderSide: const BorderSide(color: AppColors.error, width: 1.5),
             ),
             isDense: true,
-            contentPadding: EdgeInsets.symmetric(
-              vertical: maxLines > 1 ? 12 : 8,
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 12,
             ),
           ),
         ),

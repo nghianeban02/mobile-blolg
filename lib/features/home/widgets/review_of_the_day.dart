@@ -47,6 +47,7 @@ class ReviewOfTheDay extends StatelessWidget {
               height: 300,
               decoration: BoxDecoration(
                 color: AppColors.coverTeal.withValues(alpha: 0.85),
+                borderRadius: BorderRadius.circular(AppRadius.lg),
                 boxShadow: editorialSoftShadow(opacity: 0.08),
               ),
               child: Center(
@@ -55,6 +56,7 @@ class ReviewOfTheDay extends StatelessWidget {
                   height: 236,
                   decoration: BoxDecoration(
                     color: AppColors.coverTeal,
+                    borderRadius: BorderRadius.circular(AppRadius.md),
                     border: Border.all(
                       color: Colors.white.withValues(alpha: 0.35),
                     ),
@@ -183,7 +185,7 @@ class ReviewOfTheDay extends StatelessWidget {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primaryBrown,
                   foregroundColor: Colors.white,
-                  shape: const RoundedRectangleBorder(),
+                  shape: const StadiumBorder(),
                   elevation: 0,
                   padding: const EdgeInsets.symmetric(
                     horizontal: 22,

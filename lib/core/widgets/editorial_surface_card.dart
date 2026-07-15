@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:mobile/core/constants/app_colors.dart';
-import 'package:mobile/core/widgets/editorial_ui.dart';
 
-/// White editorial panel used across social / profile screens.
+/// Panel surface editorial — đồng bộ card của web:
+/// bo góc radius-xl (22px), viền mảnh, shadow soft 2 lớp.
 class EditorialSurfaceCard extends StatelessWidget {
   final Widget child;
   final EdgeInsetsGeometry padding;
@@ -15,7 +15,7 @@ class EditorialSurfaceCard extends StatelessWidget {
   const EditorialSurfaceCard({
     super.key,
     required this.child,
-    this.padding = const EdgeInsets.all(16),
+    this.padding = const EdgeInsets.all(20),
     this.onTap,
     this.showAccentBar = false,
     this.accentColor,
@@ -25,30 +25,58 @@ class EditorialSurfaceCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final barColor = accentColor ?? AppColors.primaryBrown;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final barColor =
+        accentColor ??
+        (isDark ? AppColors.darkAccent : AppColors.primaryBrown);
+    final surfaceColor = isDark ? AppColors.darkSurface : AppColors.surface;
+    final borderColor = isDark ? AppColors.darkBorder : AppColors.border;
+
+    Widget inner = Padding(padding: padding, child: child);
+    if (showAccentBar) {
+      inner = Stack(
+        children: [
+          inner,
+          Positioned(
+            left: 0,
+            top: 0,
+            bottom: 0,
+            child: Container(
+              width: 3,
+              decoration: BoxDecoration(
+                color: barColor,
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(AppRadius.xl),
+                  bottomLeft: Radius.circular(AppRadius.xl),
+                ),
+              ),
+            ),
+          ),
+        ],
+      );
+    }
 
     Widget content = Container(
       width: double.infinity,
       margin: margin,
       decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: elevated ? editorialSoftShadow() : null,
-        border: Border(
-          left: showAccentBar
-              ? BorderSide(color: barColor, width: 3)
-              : BorderSide.none,
-          top: BorderSide(color: Colors.black.withValues(alpha: 0.06)),
-          right: BorderSide(color: Colors.black.withValues(alpha: 0.06)),
-          bottom: BorderSide(color: Colors.black.withValues(alpha: 0.06)),
-        ),
+        color: surfaceColor,
+        borderRadius: AppRadius.card,
+        border: Border.all(color: borderColor),
+        boxShadow: elevated && !isDark ? AppShadows.soft : null,
       ),
-      child: Padding(padding: padding, child: child),
+      clipBehavior: Clip.antiAlias,
+      child: inner,
     );
 
     if (onTap != null) {
       content = Material(
         color: Colors.transparent,
-        child: InkWell(onTap: onTap, child: content),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: AppRadius.card,
+          child: content,
+        ),
       );
     }
 

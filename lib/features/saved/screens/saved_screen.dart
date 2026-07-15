@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mobile/core/constants/app_colors.dart';
 import 'package:mobile/core/utils/format_datetime.dart';
+import 'package:mobile/core/widgets/editorial_surface_card.dart';
 import 'package:mobile/data/models/engagement_dtos.dart';
 import 'package:mobile/data/repositories/engagement_repository.dart';
 import 'package:mobile/features/posts/screens/post_detail_screen.dart';
@@ -113,26 +114,16 @@ class _SavedScreenState extends State<SavedScreen> {
             )
           else if (_items.isEmpty)
             const Padding(
-              padding: EdgeInsets.symmetric(vertical: 64),
-              child: Column(
-                children: [
-                  Icon(Icons.bookmark_border, size: 52),
-                  SizedBox(height: 12),
-                  Text('Bạn chưa lưu nội dung nào.'),
-                ],
-              ),
+              padding: EdgeInsets.symmetric(vertical: 40),
+              child: _EmptySavedPanel(),
             )
           else
             ..._items.map(
-              (item) => Card(
-                elevation: 0,
-                color: Colors.white,
+              (item) => EditorialSurfaceCard(
+                onTap: () => _open(item),
                 margin: const EdgeInsets.only(bottom: 12),
-                child: InkWell(
-                  onTap: () => _open(item),
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(18, 16, 8, 16),
-                    child: Row(
+                padding: const EdgeInsets.fromLTRB(18, 16, 8, 16),
+                child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Expanded(
@@ -191,12 +182,90 @@ class _SavedScreenState extends State<SavedScreen> {
                         ),
                       ],
                     ),
-                  ),
-                ),
               ),
             ),
         ],
       ),
     ),
   );
+}
+
+/// Empty state kiểu web: panel bo 22, viền đứt, icon tròn nền nâu/10.
+class _EmptySavedPanel extends StatelessWidget {
+  const _EmptySavedPanel();
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomPaint(
+      painter: _DashedBorderPainter(
+        color: AppColors.borderStrong,
+        radius: AppRadius.xl,
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 24),
+        child: Column(
+          children: [
+            Container(
+              width: 48,
+              height: 48,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: AppColors.primaryBrown.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.bookmark_border,
+                size: 22,
+                color: AppColors.primaryBrown,
+              ),
+            ),
+            const SizedBox(height: 14),
+            Text(
+              'Bạn chưa lưu nội dung nào.',
+              style: GoogleFonts.inter(
+                fontSize: 13,
+                color: AppColors.homeTextLight,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Vẽ viền đứt (dashed) quanh RRect — Flutter chưa hỗ trợ border dashed sẵn.
+class _DashedBorderPainter extends CustomPainter {
+  final Color color;
+  final double radius;
+
+  const _DashedBorderPainter({required this.color, required this.radius});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1;
+    final path = Path()
+      ..addRRect(
+        RRect.fromRectAndRadius(Offset.zero & size, Radius.circular(radius)),
+      );
+    const dashWidth = 6.0;
+    const dashSpace = 5.0;
+    for (final metric in path.computeMetrics()) {
+      var distance = 0.0;
+      while (distance < metric.length) {
+        canvas.drawPath(
+          metric.extractPath(distance, distance + dashWidth),
+          paint,
+        );
+        distance += dashWidth + dashSpace;
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _DashedBorderPainter oldDelegate) =>
+      oldDelegate.color != color || oldDelegate.radius != radius;
 }

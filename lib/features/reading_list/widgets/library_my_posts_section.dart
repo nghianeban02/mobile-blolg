@@ -46,7 +46,12 @@ class LibraryMyPostsSection extends StatelessWidget {
                 child: Container(
                   width: 220,
                   padding: const EdgeInsets.all(16),
-                  color: Colors.white,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: AppRadius.card,
+                    border: Border.all(color: AppColors.border),
+                    boxShadow: AppShadows.soft,
+                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [

@@ -34,17 +34,13 @@ class _MainShellState extends State<MainShell> {
     }
   }
 
-  /// Home: new post; Library: new book + review (any logged-in user per be-blog).
-  bool get _showCreateButton => _currentIndex == 0 || _currentIndex == 2;
-
+  /// Nút Write luôn hiển thị (đồng bộ bottom nav web):
+  /// mặc định tạo bài viết, riêng tab Library tạo review sách.
   void _onCreateTap() {
-    switch (_currentIndex) {
-      case 0:
-        _openCreatePost();
-      case 2:
-        _openCreateBookReview();
-      default:
-        break;
+    if (_currentIndex == 2) {
+      _openCreateBookReview();
+    } else {
+      _openCreatePost();
     }
   }
 
@@ -92,7 +88,6 @@ class _MainShellState extends State<MainShell> {
       ),
       bottomNavigationBar: MainBottomNavBar(
         currentIndex: _currentIndex,
-        showCreateButton: _showCreateButton,
         onCreateTap: _onCreateTap,
         onIndexChanged: _onTabChanged,
       ),

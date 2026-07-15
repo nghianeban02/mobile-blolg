@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:mobile/core/constants/app_colors.dart';
 import 'package:mobile/data/repositories/engagement_repository.dart';
 import 'package:mobile/features/reading_list/screens/my_reading_list_screen.dart';
 
@@ -44,9 +45,13 @@ class _ReadingStreakBoxState extends State<ReadingStreakBox> {
         ? 'Bắt đầu hôm nay'
         : '$_current ngày liên tiếp';
 
-    return Material(
-      color: const Color(0xFF6E7E66),
-      child: InkWell(
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      child: Material(
+        color: const Color(0xFF6E7E66),
+        shape: RoundedRectangleBorder(borderRadius: AppRadius.card),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
         onTap: () {
           Navigator.push(
             context,
@@ -106,6 +111,7 @@ class _ReadingStreakBoxState extends State<ReadingStreakBox> {
               ),
             ],
           ),
+        ),
         ),
       ),
     );

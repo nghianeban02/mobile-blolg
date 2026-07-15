@@ -38,7 +38,7 @@ class SettingsCheckboxTile extends StatelessWidget {
                     ? AppColors.primaryBrown
                     : Colors.black.withValues(alpha: 0.2),
               ),
-              borderRadius: BorderRadius.circular(4),
+              borderRadius: BorderRadius.circular(6),
             ),
             child: isChecked
                 ? const Icon(Icons.check, size: 14, color: Colors.white)

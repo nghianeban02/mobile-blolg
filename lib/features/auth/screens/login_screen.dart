@@ -76,13 +76,10 @@ class _LoginScreenState extends State<LoginScreen>
     if (response.success) {
       Navigator.of(context).pushReplacementNamed(AppRoutes.home);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Đăng nhập thành công!'),
+        const SnackBar(
+          content: Text('Đăng nhập thành công!'),
           backgroundColor: AppColors.success,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
         ),
       );
     } else {
@@ -147,14 +144,10 @@ class _LoginScreenState extends State<LoginScreen>
                       vertical: 40,
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.white,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.02),
-                          blurRadius: 20,
-                          offset: const Offset(0, 10),
-                        ),
-                      ],
+                      color: AppColors.surface,
+                      borderRadius: AppRadius.card,
+                      border: Border.all(color: AppColors.border),
+                      boxShadow: AppShadows.soft,
                     ),
                     child: Form(
                       key: _formKey,
@@ -221,6 +214,10 @@ class _LoginScreenState extends State<LoginScreen>
                             label: const Text('BROWSE AS GUEST'),
                             style: OutlinedButton.styleFrom(
                               foregroundColor: AppColors.homeTextDark,
+                              side: const BorderSide(
+                                color: AppColors.borderStrong,
+                              ),
+                              shape: const StadiumBorder(),
                               padding: const EdgeInsets.symmetric(vertical: 14),
                             ),
                           ),
@@ -299,7 +296,7 @@ class _LoginScreenState extends State<LoginScreen>
         foregroundColor: AppColors.primaryBrown,
         side: BorderSide(color: AppColors.primaryBrown.withValues(alpha: 0.5)),
         padding: const EdgeInsets.symmetric(vertical: 16),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(2)),
+        shape: const StadiumBorder(),
       ),
       child: Text(
         'CREATE ACCOUNT',
@@ -315,6 +312,10 @@ class _LoginScreenState extends State<LoginScreen>
   Widget _buildLoginButton() {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 200),
+      decoration: BoxDecoration(
+        borderRadius: AppRadius.pill,
+        boxShadow: _isLoading ? null : AppShadows.primaryButton,
+      ),
       child: ElevatedButton(
         onPressed: _isLoading ? null : _handleLogin,
         style: ElevatedButton.styleFrom(
@@ -324,7 +325,7 @@ class _LoginScreenState extends State<LoginScreen>
             alpha: 0.6,
           ),
           padding: const EdgeInsets.symmetric(vertical: 18),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(2)),
+          shape: const StadiumBorder(),
           elevation: 0,
         ),
         child: _isLoading

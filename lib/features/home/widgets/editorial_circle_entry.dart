@@ -28,7 +28,10 @@ class EditorialCircleEntry extends StatelessWidget {
             Container(
               width: 52,
               height: 52,
-              color: AppColors.coverTeal.withValues(alpha: 0.25),
+              decoration: BoxDecoration(
+                color: AppColors.coverTeal.withValues(alpha: 0.25),
+                shape: BoxShape.circle,
+              ),
               alignment: Alignment.center,
               child: const Icon(
                 Icons.people_outline,

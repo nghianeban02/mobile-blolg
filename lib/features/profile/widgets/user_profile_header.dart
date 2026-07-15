@@ -58,7 +58,10 @@ class UserProfileHeader extends StatelessWidget {
                   Container(
                     width: 72,
                     height: 72,
-                    color: AppColors.primaryBrown.withValues(alpha: 0.12),
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryBrown.withValues(alpha: 0.12),
+                      shape: BoxShape.circle,
+                    ),
                     alignment: Alignment.center,
                     child: Text(
                       initial,
@@ -98,7 +101,10 @@ class UserProfileHeader extends StatelessWidget {
                             horizontal: 10,
                             vertical: 4,
                           ),
-                          color: AppColors.coverSand.withValues(alpha: 0.7),
+                          decoration: BoxDecoration(
+                            color: AppColors.coverSand.withValues(alpha: 0.7),
+                            borderRadius: AppRadius.pill,
+                          ),
                           child: Text(
                             _relationLabel.toUpperCase(),
                             style: GoogleFonts.inter(
@@ -160,7 +166,10 @@ class _StatChip extends StatelessWidget {
     return Expanded(
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 6),
-        color: AppColors.homeBackground,
+        decoration: BoxDecoration(
+          color: AppColors.homeBackground,
+          borderRadius: BorderRadius.circular(AppRadius.md),
+        ),
         child: Column(
           children: [
             Text(

@@ -131,6 +131,7 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
       ),
       floatingActionButton: FloatingActionButton(
         backgroundColor: AppColors.primaryBrown,
+        shape: const CircleBorder(),
         onPressed: _openNewChat,
         child: const Icon(Icons.edit_outlined, color: Colors.white),
       ),
@@ -472,6 +473,9 @@ class _NewChatSheetState extends State<_NewChatSheet> {
               ButtonSegment(value: false, label: Text('Nhắn tin 1–1')),
               ButtonSegment(value: true, label: Text('Tạo nhóm')),
             ],
+            style: const ButtonStyle(
+              shape: WidgetStatePropertyAll(StadiumBorder()),
+            ),
             selected: {_group},
             onSelectionChanged: (value) => setState(() {
               _group = value.first;

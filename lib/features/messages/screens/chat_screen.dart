@@ -711,12 +711,14 @@ class _MessageBubble extends StatelessWidget {
             decoration: BoxDecoration(
               color: mine
                   ? AppColors.primaryBrown
-                  : theme.colorScheme.onSurface.withValues(alpha: 0.07),
+                  : theme.brightness == Brightness.dark
+                      ? Colors.white.withValues(alpha: 0.08)
+                      : theme.colorScheme.onSurface.withValues(alpha: 0.06),
               borderRadius: BorderRadius.only(
-                topLeft: const Radius.circular(18),
-                topRight: const Radius.circular(18),
-                bottomLeft: Radius.circular(mine ? 18 : 5),
-                bottomRight: Radius.circular(mine ? 5 : 18),
+                topLeft: const Radius.circular(20),
+                topRight: const Radius.circular(20),
+                bottomLeft: Radius.circular(mine ? 20 : 6),
+                bottomRight: Radius.circular(mine ? 6 : 20),
               ),
             ),
             child: body,

@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:mobile/core/constants/app_colors.dart';
 import 'package:mobile/features/posts/widgets/create_post/create_post_image_slot.dart';
 import 'package:mobile/features/posts/widgets/create_post/create_post_pick_actions.dart';
 import 'package:mobile/features/posts/widgets/create_post/create_post_section.dart';
@@ -34,7 +35,7 @@ class CreatePostTitleImagePicker extends StatelessWidget {
             Stack(
               children: [
                 ClipRRect(
-                  borderRadius: BorderRadius.circular(4),
+                  borderRadius: BorderRadius.circular(AppRadius.lg),
                   child: SizedBox(
                     height: _previewHeight,
                     width: double.infinity,
@@ -74,10 +75,10 @@ class _RemoveButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Material(
       color: Colors.black54,
-      borderRadius: BorderRadius.circular(4),
+      shape: const StadiumBorder(),
+      clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onPressed,
-        borderRadius: BorderRadius.circular(4),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
           child: Row(

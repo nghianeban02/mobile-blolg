@@ -62,20 +62,18 @@ class RecommendedList extends StatelessWidget {
         Container(
           width: double.infinity,
           height: 380,
-          color: coverColor.withValues(alpha: 0.3), // Background tone
+          decoration: BoxDecoration(
+            color: coverColor.withValues(alpha: 0.3), // Background tone
+            borderRadius: BorderRadius.circular(AppRadius.lg),
+          ),
           child: Center(
             child: Container(
               width: 160,
               height: 240,
               decoration: BoxDecoration(
                 color: coverColor,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.15),
-                    blurRadius: 15,
-                    offset: const Offset(-5, 5),
-                  ),
-                ],
+                borderRadius: BorderRadius.circular(AppRadius.sm),
+                boxShadow: AppShadows.lift,
               ),
               child: Center(
                 child: Text(

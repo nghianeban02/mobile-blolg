@@ -32,7 +32,10 @@ class FriendUserTile extends StatelessWidget {
             width: 48,
             height: 48,
             alignment: Alignment.center,
-            color: AppColors.primaryBrown.withValues(alpha: 0.1),
+            decoration: BoxDecoration(
+              color: AppColors.primaryBrown.withValues(alpha: 0.1),
+              shape: BoxShape.circle,
+            ),
             child: Text(
               initial,
               style: GoogleFonts.playfairDisplay(

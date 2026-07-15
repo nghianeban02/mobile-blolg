@@ -14,13 +14,9 @@ class EditorialVerdict extends StatelessWidget {
         padding: const EdgeInsets.all(32),
         decoration: BoxDecoration(
           color: Colors.white,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.04),
-              blurRadius: 20,
-              offset: const Offset(0, 10),
-            ),
-          ],
+          borderRadius: AppRadius.card,
+          border: Border.all(color: AppColors.border),
+          boxShadow: AppShadows.soft,
         ),
         child: Column(
           children: [
@@ -79,6 +75,7 @@ class EditorialVerdict extends StatelessWidget {
         color: isSecondary
             ? Colors.grey.shade100
             : AppColors.success.withValues(alpha: 0.15),
+        borderRadius: AppRadius.pill,
       ),
       child: Text(
         text,

@@ -127,6 +127,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                   backgroundColor: AppColors.primaryBrown,
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 17),
+                  shape: const StadiumBorder(),
                 ),
                 child: _loading
                     ? const SizedBox.square(

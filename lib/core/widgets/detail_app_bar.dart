@@ -106,7 +106,7 @@ class DetailSliverAppBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SliverAppBar(
-      backgroundColor: AppColors.homeBackground,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       toolbarHeight: DetailAppBar.toolbarHeight,
       expandedHeight: DetailAppBar.toolbarHeight,
       floating: true,

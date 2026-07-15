@@ -93,6 +93,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                   backgroundColor: AppColors.primaryBrown,
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 17),
+                  shape: const StadiumBorder(),
                 ),
                 child: _loading
                     ? const SizedBox.square(
@@ -126,8 +127,11 @@ class _MessageBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Container(
     padding: const EdgeInsets.all(14),
-    color: (result.success ? AppColors.success : AppColors.error).withValues(
-      alpha: 0.1,
+    decoration: BoxDecoration(
+      color: (result.success ? AppColors.success : AppColors.error).withValues(
+        alpha: 0.1,
+      ),
+      borderRadius: AppRadius.input,
     ),
     child: Text(
       result.message,

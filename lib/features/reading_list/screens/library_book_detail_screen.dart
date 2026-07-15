@@ -205,7 +205,7 @@ class _LibraryBookDetailScreenState extends State<LibraryBookDetailScreen> {
                               foregroundColor: Colors.white,
                               elevation: 0,
                               padding: const EdgeInsets.symmetric(vertical: 16),
-                              shape: const RoundedRectangleBorder(),
+                              shape: const StadiumBorder(),
                             ),
                             child: Text(
                               _reviews.length == 1

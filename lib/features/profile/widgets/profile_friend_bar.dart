@@ -184,16 +184,23 @@ class _ProfileFriendBarState extends State<ProfileFriendBar> {
     return SizedBox(
       width: double.infinity,
       height: 44,
-      child: FilledButton(
-        onPressed: onTap,
-        style: FilledButton.styleFrom(
-          backgroundColor: AppColors.primaryBrown,
-          foregroundColor: Colors.white,
-          shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          borderRadius: AppRadius.pill,
+          boxShadow: AppShadows.primaryButton,
         ),
-        child: Text(
-          label,
-          style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600),
+        child: FilledButton(
+          onPressed: onTap,
+          style: FilledButton.styleFrom(
+            backgroundColor: AppColors.primaryBrown,
+            foregroundColor: Colors.white,
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+            shape: const StadiumBorder(),
+          ),
+          child: Text(
+            label,
+            style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w500),
+          ),
         ),
       ),
     );
@@ -206,13 +213,14 @@ class _ProfileFriendBarState extends State<ProfileFriendBar> {
       child: OutlinedButton(
         onPressed: onTap,
         style: OutlinedButton.styleFrom(
-          foregroundColor: AppColors.primaryBrown,
-          side: const BorderSide(color: AppColors.primaryBrown),
-          shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+          foregroundColor: AppColors.homeTextDark,
+          side: const BorderSide(color: AppColors.borderStrong),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+          shape: const StadiumBorder(),
         ),
         child: Text(
           label,
-          style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w600),
+          style: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w500),
         ),
       ),
     );

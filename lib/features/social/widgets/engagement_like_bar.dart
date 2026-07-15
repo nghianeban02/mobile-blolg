@@ -145,7 +145,7 @@ class _EngagementLikeBarState extends State<EngagementLikeBar> {
                     height: 36,
                     decoration: BoxDecoration(
                       color: AppColors.homeTextDark.withValues(alpha: 0.05),
-                      borderRadius: BorderRadius.circular(18),
+                      borderRadius: AppRadius.pill,
                     ),
                   );
                 }
@@ -204,22 +204,20 @@ class _ReactionChip extends StatelessWidget {
       child: Material(
         color: active
             ? AppColors.primaryBrown.withValues(alpha: 0.15)
-            : onSurface.withValues(alpha: 0.04),
-        borderRadius: BorderRadius.circular(18),
+            : Colors.transparent,
+        shape: StadiumBorder(
+          side: BorderSide(
+            color: active
+                ? AppColors.primaryBrown.withValues(alpha: 0.4)
+                : onSurface.withValues(alpha: 0.08),
+            width: active ? 1.6 : 1,
+          ),
+        ),
+        clipBehavior: Clip.antiAlias,
         child: InkWell(
-          borderRadius: BorderRadius.circular(18),
           onTap: busy ? null : onTap,
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(18),
-              border: Border.all(
-                color: active
-                    ? AppColors.primaryBrown.withValues(alpha: 0.4)
-                    : onSurface.withValues(alpha: 0.08),
-                width: active ? 1.6 : 1,
-              ),
-            ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [

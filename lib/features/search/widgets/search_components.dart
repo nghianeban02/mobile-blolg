@@ -39,7 +39,7 @@ class SearchHeader extends StatelessWidget {
               fontStyle: FontStyle.italic,
             ),
             prefixIcon: const Padding(
-              padding: EdgeInsets.only(right: 12.0),
+              padding: EdgeInsets.only(left: 12.0, right: 12.0),
               child: Icon(
                 Icons.search_rounded,
                 color: AppColors.homeTextLight,
@@ -47,16 +47,28 @@ class SearchHeader extends StatelessWidget {
               ),
             ),
             prefixIconConstraints: const BoxConstraints(minWidth: 24),
-            enabledBorder: UnderlineInputBorder(
+            filled: true,
+            fillColor: AppColors.homeTextDark.withValues(alpha: 0.04),
+            border: OutlineInputBorder(
+              borderRadius: AppRadius.input,
+              borderSide: BorderSide.none,
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: AppRadius.input,
+              borderSide: BorderSide.none,
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: AppRadius.input,
               borderSide: BorderSide(
-                color: Colors.black.withValues(alpha: 0.1),
+                color: AppColors.primaryBrown.withValues(alpha: 0.45),
+                width: 1.5,
               ),
             ),
-            focusedBorder: const UnderlineInputBorder(
-              borderSide: BorderSide(color: AppColors.primaryBrown, width: 2),
-            ),
             isDense: true,
-            contentPadding: const EdgeInsets.symmetric(vertical: 12),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 12,
+            ),
           ),
         ),
         const SizedBox(height: 12),
@@ -129,8 +141,10 @@ class LibrariansNote extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
       decoration: BoxDecoration(
-        color: const Color(0xFFF9F9F4), // Very soft cream tint
-        border: Border.all(color: Colors.black.withValues(alpha: 0.03)),
+        color: AppColors.surface,
+        borderRadius: AppRadius.card,
+        border: Border.all(color: AppColors.border),
+        boxShadow: AppShadows.soft,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -217,7 +231,7 @@ class SearchResultCard extends StatelessWidget {
                 color:
                     floatingTagColor ??
                     AppColors.success.withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: AppRadius.pill,
               ),
               child: Text(
                 floatingTagText!,
@@ -242,6 +256,7 @@ class SearchResultCard extends StatelessWidget {
                 color: Colors.black.withValues(
                   alpha: 0.04,
                 ), // soft grey background
+                borderRadius: BorderRadius.circular(AppRadius.lg),
               ),
               child: Center(
                 child: Container(
@@ -250,6 +265,7 @@ class SearchResultCard extends StatelessWidget {
                   padding: const EdgeInsets.all(24),
                   decoration: BoxDecoration(
                     color: coverColor,
+                    borderRadius: BorderRadius.circular(AppRadius.md),
                     boxShadow: [
                       BoxShadow(
                         color: Colors.black.withValues(alpha: 0.15),
@@ -289,7 +305,7 @@ class SearchResultCard extends StatelessWidget {
                     color:
                         floatingTagColor ??
                         AppColors.success.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: AppRadius.pill,
                   ),
                   child: Text(
                     floatingTagText!,
@@ -387,7 +403,7 @@ class SearchResultCard extends StatelessWidget {
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.primaryBrown,
           foregroundColor: Colors.white,
-          shape: const RoundedRectangleBorder(),
+          shape: const StadiumBorder(),
           elevation: 0,
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
         ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mobile/core/constants/app_colors.dart';
 import 'package:mobile/core/widgets/detail_app_bar.dart';
+import 'package:mobile/core/widgets/editorial_surface_card.dart';
 import 'package:mobile/data/repositories/users_repository.dart';
 import 'package:mobile/features/auth/widgets/auth_form_field.dart';
 
@@ -100,21 +101,10 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                         ),
                       ),
                       const SizedBox(height: 32),
-                      Container(
+                      EditorialSurfaceCard(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 24,
                           vertical: 28,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(4),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.03),
-                              blurRadius: 20,
-                              offset: const Offset(0, 10),
-                            ),
-                          ],
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -181,11 +171,9 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                                 disabledBackgroundColor: AppColors.primaryBrown
                                     .withValues(alpha: 0.6),
                                 padding: const EdgeInsets.symmetric(
-                                  vertical: 18,
+                                  vertical: 14,
                                 ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(2),
-                                ),
+                                shape: const StadiumBorder(),
                                 elevation: 0,
                               ),
                               child: _saving

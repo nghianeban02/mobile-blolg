@@ -100,15 +100,18 @@ class _IncomingRequestTileState extends State<IncomingRequestTile> {
                         style: FilledButton.styleFrom(
                           backgroundColor: AppColors.primaryBrown,
                           foregroundColor: Colors.white,
-                          shape: const RoundedRectangleBorder(
-                            borderRadius: BorderRadius.zero,
+                          minimumSize: const Size(0, 44),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 10,
                           ),
+                          shape: const StadiumBorder(),
                         ),
                         child: Text(
                           'Chấp nhận',
                           style: GoogleFonts.inter(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
                           ),
                         ),
                       ),
@@ -118,17 +121,22 @@ class _IncomingRequestTileState extends State<IncomingRequestTile> {
                       child: OutlinedButton(
                         onPressed: _reject,
                         style: OutlinedButton.styleFrom(
-                          foregroundColor: AppColors.primaryBrown,
-                          side: const BorderSide(color: AppColors.primaryBrown),
-                          shape: const RoundedRectangleBorder(
-                            borderRadius: BorderRadius.zero,
+                          foregroundColor: AppColors.homeTextDark,
+                          side: const BorderSide(
+                            color: AppColors.borderStrong,
                           ),
+                          minimumSize: const Size(0, 44),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 10,
+                          ),
+                          shape: const StadiumBorder(),
                         ),
                         child: Text(
                           'Từ chối',
                           style: GoogleFonts.inter(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
                           ),
                         ),
                       ),

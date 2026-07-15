@@ -169,6 +169,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
       onPressed: _newConversation,
       backgroundColor: AppColors.primaryBrown,
       foregroundColor: Colors.white,
+      shape: const CircleBorder(),
       child: const Icon(Icons.add_comment_outlined),
     ),
     body: RefreshIndicator(
@@ -180,17 +181,9 @@ class _MessagesScreenState extends State<MessagesScreen> {
           TextField(
             controller: _search,
             onChanged: (_) => setState(() {}),
-            decoration: InputDecoration(
+            decoration: const InputDecoration(
               hintText: 'Tìm cuộc trò chuyện…',
-              prefixIcon: const Icon(Icons.search),
-              filled: true,
-              fillColor: Theme.of(context).brightness == Brightness.dark
-                  ? Theme.of(context).colorScheme.surfaceContainerHigh
-                  : Colors.white,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(14),
-                borderSide: BorderSide.none,
-              ),
+              prefixIcon: Icon(Icons.search),
             ),
           ),
           const SizedBox(height: 18),
@@ -279,9 +272,6 @@ class _ConversationTile extends StatelessWidget {
         : (last?.content ?? 'Bắt đầu trò chuyện');
     return Card(
       elevation: 0,
-      color: Theme.of(context).brightness == Brightness.dark
-          ? null
-          : Colors.white,
       margin: const EdgeInsets.only(bottom: 8),
       child: ListTile(
         onTap: onTap,
@@ -400,6 +390,9 @@ class _NewConversationSheetState extends State<_NewConversationSheet> {
                 const Spacer(),
                 FilterChip(
                   label: const Text('Nhóm'),
+                  shape: const StadiumBorder(
+                    side: BorderSide(color: AppColors.border),
+                  ),
                   selected: _group,
                   onSelected: (value) => setState(() {
                     _group = value;

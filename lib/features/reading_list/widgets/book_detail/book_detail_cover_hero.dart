@@ -21,7 +21,14 @@ class BookDetailCoverHero extends StatelessWidget {
 
     return Container(
       width: double.infinity,
-      color: Colors.white,
+      margin: const EdgeInsets.symmetric(horizontal: 24),
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: AppRadius.card,
+        border: Border.all(color: AppColors.border),
+        boxShadow: AppShadows.soft,
+      ),
       child: Stack(
         children: [
           Positioned.fill(
@@ -31,15 +38,7 @@ class BookDetailCoverHero extends StatelessWidget {
             padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
             child: Center(
               child: Container(
-                decoration: BoxDecoration(
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.12),
-                      blurRadius: 24,
-                      offset: const Offset(0, 14),
-                    ),
-                  ],
-                ),
+                decoration: BoxDecoration(boxShadow: AppShadows.lift),
                 child: LibraryBookCover(
                   book: book,
                   fallbackColor: fallback,
@@ -54,7 +53,10 @@ class BookDetailCoverHero extends StatelessWidget {
             bottom: 20,
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-              color: AppColors.primaryBrown.withValues(alpha: 0.12),
+              decoration: BoxDecoration(
+                color: AppColors.primaryBrown.withValues(alpha: 0.12),
+                borderRadius: AppRadius.pill,
+              ),
               child: Text(
                 LibraryBookStyle.catalogTag(book, colorIndex),
                 style: const TextStyle(

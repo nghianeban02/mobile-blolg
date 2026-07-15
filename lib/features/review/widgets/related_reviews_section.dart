@@ -46,6 +46,11 @@ class RelatedReviewsSection extends StatelessWidget {
               padding: const EdgeInsets.only(bottom: 24),
               child: Material(
                 color: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: AppRadius.card,
+                  side: const BorderSide(color: AppColors.border),
+                ),
+                clipBehavior: Clip.antiAlias,
                 child: InkWell(
                   onTap: () {
                     Navigator.push(
@@ -62,11 +67,6 @@ class RelatedReviewsSection extends StatelessWidget {
                   child: Container(
                     width: double.infinity,
                     padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      border: Border.all(
-                        color: Colors.black.withValues(alpha: 0.06),
-                      ),
-                    ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [

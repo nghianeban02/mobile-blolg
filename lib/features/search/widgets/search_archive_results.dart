@@ -126,69 +126,77 @@ class _SearchHitTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: Colors.white,
-      child: InkWell(
-        onTap: () => _open(context),
-        child: Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            border: Border.all(color: Colors.black.withValues(alpha: 0.06)),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                _tag,
-                style: GoogleFonts.inter(
-                  color: AppColors.primaryBrown,
-                  fontSize: 8,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 1.4,
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        borderRadius: AppRadius.card,
+        boxShadow: AppShadows.soft,
+      ),
+      child: Material(
+        color: AppColors.surface,
+        shape: RoundedRectangleBorder(
+          borderRadius: AppRadius.card,
+          side: const BorderSide(color: AppColors.border),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: () => _open(context),
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  _tag,
+                  style: GoogleFonts.inter(
+                    color: AppColors.primaryBrown,
+                    fontSize: 8,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1.4,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 10),
-              Text(
-                hit.title,
-                style: GoogleFonts.playfairDisplay(
-                  color: AppColors.homeTextDark,
-                  fontSize: 20,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const SizedBox(height: 6),
-              Text(
-                hit.subtitle,
-                style: GoogleFonts.inter(
-                  color: AppColors.homeTextLight,
-                  fontSize: 11,
-                  fontStyle: FontStyle.italic,
-                ),
-              ),
-              if (hit.excerpt.isNotEmpty) ...[
                 const SizedBox(height: 10),
                 Text(
-                  textExcerpt(hit.excerpt, maxLength: 140),
+                  hit.title,
+                  style: GoogleFonts.playfairDisplay(
+                    color: AppColors.homeTextDark,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  hit.subtitle,
                   style: GoogleFonts.inter(
                     color: AppColors.homeTextLight,
-                    fontSize: 12,
-                    height: 1.5,
+                    fontSize: 11,
+                    fontStyle: FontStyle.italic,
                   ),
-                  maxLines: 3,
-                  overflow: TextOverflow.ellipsis,
+                ),
+                if (hit.excerpt.isNotEmpty) ...[
+                  const SizedBox(height: 10),
+                  Text(
+                    textExcerpt(hit.excerpt, maxLength: 140),
+                    style: GoogleFonts.inter(
+                      color: AppColors.homeTextLight,
+                      fontSize: 12,
+                      height: 1.5,
+                    ),
+                    maxLines: 3,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+                const SizedBox(height: 12),
+                Text(
+                  'Open →',
+                  style: GoogleFonts.inter(
+                    color: AppColors.primaryBrown,
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ],
-              const SizedBox(height: 12),
-              Text(
-                'Open →',
-                style: GoogleFonts.inter(
-                  color: AppColors.primaryBrown,
-                  fontSize: 10,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
+            ),
           ),
         ),
       ),

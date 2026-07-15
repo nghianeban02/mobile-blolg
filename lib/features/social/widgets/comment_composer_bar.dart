@@ -4,7 +4,7 @@ import 'package:mobile/core/constants/app_colors.dart';
 import 'package:mobile/core/widgets/editorial_ui.dart';
 import 'package:mobile/core/widgets/editorial_surface_card.dart';
 
-/// Ô nhập bình luận — underline editorial trong surface card.
+/// Ô nhập bình luận — filled rounded field trong surface card.
 class CommentComposerBar extends StatelessWidget {
   final TextEditingController controller;
   final String hint;
@@ -58,20 +58,27 @@ class CommentComposerBar extends StatelessWidget {
               fontSize: 14,
               color: AppColors.homeTextLight,
             ),
-            border: UnderlineInputBorder(
+            filled: true,
+            fillColor: AppColors.homeTextDark.withValues(alpha: 0.04),
+            border: OutlineInputBorder(
+              borderRadius: AppRadius.input,
+              borderSide: BorderSide.none,
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: AppRadius.input,
+              borderSide: BorderSide.none,
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: AppRadius.input,
               borderSide: BorderSide(
-                color: AppColors.homeTextDark.withValues(alpha: 0.15),
+                color: AppColors.primaryBrown.withValues(alpha: 0.45),
+                width: 1.5,
               ),
             ),
-            enabledBorder: UnderlineInputBorder(
-              borderSide: BorderSide(
-                color: AppColors.homeTextDark.withValues(alpha: 0.15),
-              ),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 12,
+              vertical: 10,
             ),
-            focusedBorder: const UnderlineInputBorder(
-              borderSide: BorderSide(color: AppColors.primaryBrown, width: 1.5),
-            ),
-            contentPadding: const EdgeInsets.only(bottom: 8),
           ),
         ),
         const SizedBox(height: 8),

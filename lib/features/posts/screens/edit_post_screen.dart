@@ -272,7 +272,7 @@ class _EditPostScreenState extends State<EditPostScreen> {
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: AppColors.error.withValues(alpha: 0.06),
-          borderRadius: BorderRadius.circular(4),
+          borderRadius: AppRadius.input,
           border: Border.all(color: AppColors.error.withValues(alpha: 0.2)),
         ),
         child: Column(
@@ -321,14 +321,9 @@ class _EditPostScreenState extends State<EditPostScreen> {
         padding: const EdgeInsets.fromLTRB(24, 28, 24, 32),
         decoration: BoxDecoration(
           color: AppColors.white,
-          borderRadius: BorderRadius.circular(4),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.03),
-              blurRadius: 16,
-              offset: const Offset(0, 6),
-            ),
-          ],
+          borderRadius: AppRadius.card,
+          border: Border.all(color: AppColors.border),
+          boxShadow: AppShadows.soft,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -363,7 +358,7 @@ class _EditPostScreenState extends State<EditPostScreen> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           ClipRRect(
-            borderRadius: BorderRadius.circular(4),
+            borderRadius: BorderRadius.circular(AppRadius.lg),
             child: SizedBox(
               height: 220,
               width: double.infinity,
@@ -515,34 +510,41 @@ class _EditPostScreenState extends State<EditPostScreen> {
             ),
           ),
           const SizedBox(width: 16),
-          FilledButton(
-            onPressed: _isSaving ? null : _save,
-            style: FilledButton.styleFrom(
-              backgroundColor: AppColors.primaryBrown,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(4),
-              ),
-              elevation: 0,
+          DecoratedBox(
+            decoration: BoxDecoration(
+              borderRadius: AppRadius.pill,
+              boxShadow: _isSaving ? null : AppShadows.primaryButton,
             ),
-            child: _isSaving
-                ? const SizedBox(
-                    width: 22,
-                    height: 22,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: Colors.white,
+            child: FilledButton(
+              onPressed: _isSaving ? null : _save,
+              style: FilledButton.styleFrom(
+                backgroundColor: AppColors.primaryBrown,
+                foregroundColor: Colors.white,
+                minimumSize: const Size(0, 44),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 10,
+                ),
+                shape: const StadiumBorder(),
+                elevation: 0,
+              ),
+              child: _isSaving
+                  ? const SizedBox(
+                      width: 22,
+                      height: 22,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : Text(
+                      'Save',
+                      style: GoogleFonts.inter(
+                        fontWeight: FontWeight.w500,
+                        fontSize: 14,
+                      ),
                     ),
-                  )
-                : Text(
-                    'Save',
-                    style: GoogleFonts.inter(
-                      fontWeight: FontWeight.w700,
-                      fontSize: 13,
-                      letterSpacing: 0.5,
-                    ),
-                  ),
+            ),
           ),
         ],
       ),
@@ -570,7 +572,7 @@ class _ExistingGalleryThumb extends StatelessWidget {
       child: Stack(
         children: [
           ClipRRect(
-            borderRadius: BorderRadius.circular(4),
+            borderRadius: AppRadius.input,
             child: SizedBox(
               width: _size,
               height: _size,
@@ -580,7 +582,7 @@ class _ExistingGalleryThumb extends StatelessWidget {
           if (markedForRemoval)
             Positioned.fill(
               child: ClipRRect(
-                borderRadius: BorderRadius.circular(4),
+                borderRadius: AppRadius.input,
                 child: Container(
                   color: Colors.black.withValues(alpha: 0.55),
                   child: const Center(

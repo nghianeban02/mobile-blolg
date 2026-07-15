@@ -38,19 +38,15 @@ class CurrentlyReadingCard extends StatelessWidget {
             color: Colors.transparent,
             child: InkWell(
               onTap: book != null ? onOpenBook : null,
+              borderRadius: AppRadius.card,
               child: Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(4),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.04),
-                      blurRadius: 20,
-                      offset: const Offset(0, 10),
-                    ),
-                  ],
+                  borderRadius: AppRadius.card,
+                  border: Border.all(color: AppColors.border),
+                  boxShadow: AppShadows.soft,
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -62,16 +58,9 @@ class CurrentlyReadingCard extends StatelessWidget {
                         margin: const EdgeInsets.symmetric(horizontal: 16),
                         decoration: BoxDecoration(
                           color: Colors.white,
-                          border: Border.all(
-                            color: Colors.black.withValues(alpha: 0.05),
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.1),
-                              blurRadius: 15,
-                              offset: const Offset(0, 10),
-                            ),
-                          ],
+                          borderRadius: BorderRadius.circular(AppRadius.lg),
+                          border: Border.all(color: AppColors.border),
+                          boxShadow: AppShadows.soft,
                         ),
                         child: book != null
                             ? Center(
@@ -173,7 +162,7 @@ class CurrentlyReadingCard extends StatelessWidget {
                               backgroundColor: AppColors.primaryBrown,
                               foregroundColor: Colors.white,
                               elevation: 0,
-                              shape: const RoundedRectangleBorder(),
+                              shape: const StadiumBorder(),
                               padding: const EdgeInsets.symmetric(vertical: 14),
                             ),
                             child: Text(
@@ -193,10 +182,10 @@ class CurrentlyReadingCard extends StatelessWidget {
                             onPressed: review != null ? onReadReview : null,
                             style: OutlinedButton.styleFrom(
                               foregroundColor: AppColors.homeTextDark,
-                              side: BorderSide(
-                                color: Colors.black.withValues(alpha: 0.1),
+                              side: const BorderSide(
+                                color: AppColors.borderStrong,
                               ),
-                              shape: const RoundedRectangleBorder(),
+                              shape: const StadiumBorder(),
                               padding: const EdgeInsets.symmetric(vertical: 14),
                             ),
                             child: Text(
@@ -224,7 +213,7 @@ class CurrentlyReadingCard extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
                 color: AppColors.success.withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: AppRadius.pill,
               ),
               child: Text(
                 book != null ? 'IN YOUR LIBRARY' : 'CURRENTLY READING',

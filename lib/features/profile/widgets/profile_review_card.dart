@@ -29,7 +29,10 @@ class ProfileReviewCard extends StatelessWidget {
           Container(
             width: 56,
             height: 72,
-            color: AppColors.coverTeal.withValues(alpha: 0.35),
+            decoration: BoxDecoration(
+              color: AppColors.coverTeal.withValues(alpha: 0.35),
+              borderRadius: BorderRadius.circular(AppRadius.md),
+            ),
             alignment: Alignment.center,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,

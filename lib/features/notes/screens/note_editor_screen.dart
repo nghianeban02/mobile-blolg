@@ -163,7 +163,10 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
                     ),
                     decoration: const InputDecoration(
                       hintText: 'Tiêu đề',
+                      filled: false,
                       border: InputBorder.none,
+                      enabledBorder: InputBorder.none,
+                      focusedBorder: InputBorder.none,
                       counterText: '',
                     ),
                   ),
@@ -177,7 +180,10 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
                     style: GoogleFonts.inter(fontSize: 16, height: 1.6),
                     decoration: const InputDecoration(
                       hintText: 'Bắt đầu viết…',
+                      filled: false,
                       border: InputBorder.none,
+                      enabledBorder: InputBorder.none,
+                      focusedBorder: InputBorder.none,
                     ),
                   ),
                   const SizedBox(height: 24),
@@ -241,6 +247,9 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
                           .map(
                             (label) => FilterChip(
                               label: Text(label.name),
+                              shape: const StadiumBorder(
+                                side: BorderSide(color: AppColors.border),
+                              ),
                               selected: _selectedLabelIds.contains(label.id),
                               onSelected: (selected) => setState(() {
                                 if (selected) {

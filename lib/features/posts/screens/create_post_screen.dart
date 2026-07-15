@@ -242,14 +242,9 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
         padding: const EdgeInsets.fromLTRB(24, 28, 24, 32),
         decoration: BoxDecoration(
           color: AppColors.white,
-          borderRadius: BorderRadius.circular(4),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.03),
-              blurRadius: 16,
-              offset: const Offset(0, 6),
-            ),
-          ],
+          borderRadius: AppRadius.card,
+          border: Border.all(color: AppColors.border),
+          boxShadow: AppShadows.soft,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
