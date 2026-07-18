@@ -1,7 +1,5 @@
 import 'dart:io';
 
-import 'package:http/http.dart' as http;
-
 import 'package:mobile/core/cache/api_list_cache.dart';
 import 'package:mobile/core/constants/api_constants.dart';
 import 'package:mobile/core/network/be_blog_http.dart';
@@ -80,36 +78,24 @@ class BeBlogBooksRepository {
     DateTime? publishedDate,
     File? coverImageFile,
   }) async {
-    final uri = BeBlogHttp.uri(ApiConstants.books);
-    final request = http.MultipartRequest('POST', uri);
-    request.headers.addAll(await BeBlogHttp.multipartHeaders(auth: true));
-    request.fields['title'] = title;
-    if (description != null && description.isNotEmpty) {
-      request.fields['description'] = description;
-    }
-    if (isbn != null && isbn.isNotEmpty) request.fields['isbn'] = isbn;
-    if (language != null && language.isNotEmpty) {
-      request.fields['language'] = language;
-    }
-    if (pageCount != null) {
-      request.fields['pageCount'] = pageCount.toString();
-    }
-    if (publishedDate != null) {
-      final d = publishedDate;
-      request.fields['publishedDate'] =
-          '${d.year.toString().padLeft(4, '0')}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
-    }
-    if (coverImageFile != null) {
-      request.files.add(
-        await http.MultipartFile.fromPath('coverImage', coverImageFile.path),
-      );
-    }
-
     try {
-      final streamed = await request.send().timeout(
-        ApiConstants.connectTimeout,
+      final response = await BeBlogHttp.multipart(
+        'POST',
+        ApiConstants.books,
+        fields: {
+          'title': title,
+          if (description != null && description.isNotEmpty)
+            'description': description,
+          if (isbn != null && isbn.isNotEmpty) 'isbn': isbn,
+          if (language != null && language.isNotEmpty) 'language': language,
+          if (pageCount != null) 'pageCount': pageCount.toString(),
+          if (publishedDate != null)
+            'publishedDate': _isoDate(publishedDate),
+        },
+        files: {
+          if (coverImageFile != null) 'coverImage': [coverImageFile],
+        },
       );
-      final response = await http.Response.fromStream(streamed);
       final result = BeBlogResponseParser.one(response, BookDto.fromJson);
       if (result.success) {
         ApiListCache.invalidateBooks();
@@ -120,6 +106,11 @@ class BeBlogBooksRepository {
       return BeBlogRepoResult.fail(0, e.toString());
     }
   }
+
+  static String _isoDate(DateTime d) =>
+      '${d.year.toString().padLeft(4, '0')}-'
+      '${d.month.toString().padLeft(2, '0')}-'
+      '${d.day.toString().padLeft(2, '0')}';
 
   Future<BeBlogRepoResult<BookDto>> update(String id, BookDto patch) async {
     final response = await BeBlogHttp.putJson(
@@ -142,34 +133,23 @@ class BeBlogBooksRepository {
     DateTime? publishedDate,
     File? coverImageFile,
   }) async {
-    final request = http.MultipartRequest(
-      'PUT',
-      BeBlogHttp.uri('${ApiConstants.books}/$id'),
-    );
-    request.headers.addAll(await BeBlogHttp.multipartHeaders(auth: true));
-    request.fields['title'] = title;
-    if (description?.isNotEmpty == true) {
-      request.fields['description'] = description!;
-    }
-    if (isbn?.isNotEmpty == true) request.fields['isbn'] = isbn!;
-    if (language?.isNotEmpty == true) request.fields['language'] = language!;
-    if (pageCount != null) request.fields['pageCount'] = '$pageCount';
-    if (publishedDate != null) {
-      request.fields['publishedDate'] =
-          '${publishedDate.year.toString().padLeft(4, '0')}-'
-          '${publishedDate.month.toString().padLeft(2, '0')}-'
-          '${publishedDate.day.toString().padLeft(2, '0')}';
-    }
-    if (coverImageFile != null) {
-      request.files.add(
-        await http.MultipartFile.fromPath('coverImage', coverImageFile.path),
-      );
-    }
     try {
-      final streamed = await request.send().timeout(
-        ApiConstants.connectTimeout,
+      final response = await BeBlogHttp.multipart(
+        'PUT',
+        '${ApiConstants.books}/$id',
+        fields: {
+          'title': title,
+          if (description?.isNotEmpty == true) 'description': description!,
+          if (isbn?.isNotEmpty == true) 'isbn': isbn!,
+          if (language?.isNotEmpty == true) 'language': language!,
+          if (pageCount != null) 'pageCount': '$pageCount',
+          if (publishedDate != null)
+            'publishedDate': _isoDate(publishedDate),
+        },
+        files: {
+          if (coverImageFile != null) 'coverImage': [coverImageFile],
+        },
       );
-      final response = await http.Response.fromStream(streamed);
       final result = BeBlogResponseParser.one(response, BookDto.fromJson);
       if (result.success) ApiListCache.invalidateBooks();
       return result;

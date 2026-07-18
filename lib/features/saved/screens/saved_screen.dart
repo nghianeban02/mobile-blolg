@@ -46,7 +46,7 @@ class _SavedScreenState extends State<SavedScreen> {
   void _open(BookmarkItemDto item) {
     Navigator.push(
       context,
-      MaterialPageRoute(
+      MaterialPageRoute<void>(
         builder: (_) => item.entityType == BookmarkEntityType.post
             ? PostDetailScreen(postId: item.entityId)
             : BookDetailScreen(reviewId: item.entityId),

@@ -2,11 +2,12 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mobile/core/constants/app_colors.dart';
-import 'package:mobile/data/repositories/posts_repository.dart';
 import 'package:mobile/core/widgets/editorial_form_field.dart';
+import 'package:mobile/features/posts/presentation/bloc/create_post_bloc.dart';
 import 'package:mobile/features/posts/widgets/create_post/create_post_gallery_picker.dart';
 import 'package:mobile/features/posts/widgets/create_post/create_post_submit_bar.dart';
 import 'package:mobile/features/posts/widgets/create_post/create_post_title_image_picker.dart';
@@ -24,15 +25,21 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
   final _formKey = GlobalKey<FormState>();
   final _titleController = TextEditingController();
   final _contentController = TextEditingController();
-  final _postsRepo = BeBlogPostsRepository();
   final _imagePicker = ImagePicker();
+  late final CreatePostBloc _bloc;
 
-  bool _isLoading = false;
   File? _titleImageFile;
   final List<File> _galleryImageFiles = [];
 
   @override
+  void initState() {
+    super.initState();
+    _bloc = CreatePostBloc();
+  }
+
+  @override
   void dispose() {
+    _bloc.close();
     _titleController.dispose();
     _contentController.dispose();
     super.dispose();
@@ -101,103 +108,128 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
     setState(() => _galleryImageFiles.removeAt(index));
   }
 
-  Future<void> _submit() async {
+  void _submit() {
     if (!_formKey.currentState!.validate()) return;
-
-    setState(() => _isLoading = true);
-
-    final result = await _postsRepo.createMultipart(
-      title: _titleController.text.trim(),
-      content: _contentController.text.trim(),
-      titleImageFile: _titleImageFile,
-      galleryImageFiles: List.unmodifiable(_galleryImageFiles),
-    );
-
-    if (!mounted) return;
-
-    final message = result.success
-        ? 'Đã tạo bài viết.'
-        : (result.message ??
-              'Không thể tạo bài viết (HTTP ${result.statusCode}).');
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message, style: GoogleFonts.inter()),
-        backgroundColor: result.success ? AppColors.success : AppColors.error,
-        behavior: SnackBarBehavior.floating,
+    _bloc.add(
+      CreatePostSubmitted(
+        title: _titleController.text.trim(),
+        content: _contentController.text.trim(),
+        titleImageFile: _titleImageFile,
+        galleryImageFiles: List.unmodifiable(_galleryImageFiles),
       ),
     );
+  }
 
-    if (result.success) {
+  void _onCreateState(BuildContext context, CreatePostState state) {
+    if (state.status == CreatePostStatus.success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Đã tạo bài viết.', style: GoogleFonts.inter()),
+          backgroundColor: AppColors.success,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
       Navigator.pop(context, true);
       return;
     }
-
-    setState(() => _isLoading = false);
+    if (state.status == CreatePostStatus.failure) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            state.errorMessage ?? 'Không thể tạo bài viết.',
+            style: GoogleFonts.inter(),
+          ),
+          backgroundColor: AppColors.error,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.homeBackground,
-      resizeToAvoidBottomInset: true,
-      appBar: AppBar(
-        backgroundColor: AppColors.homeBackground,
-        surfaceTintColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, size: 20),
-          color: AppColors.homeTextDark,
-          onPressed: _isLoading ? null : () => Navigator.pop(context),
-        ),
-        title: Text(
-          'New entry',
-          style: GoogleFonts.inter(
-            fontSize: 13,
-            fontWeight: FontWeight.w600,
-            color: AppColors.homeTextLight,
-            letterSpacing: 0.5,
-          ),
-        ),
-        centerTitle: true,
-      ),
-      body: Form(
-        key: _formKey,
-        child: CustomScrollView(
-          physics: const BouncingScrollPhysics(),
-          slivers: [
-            SliverToBoxAdapter(child: _buildHeader()),
-            SliverToBoxAdapter(child: _buildCopyCard()),
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: CreatePostTitleImagePicker(
-                  imageFile: _titleImageFile,
-                  onPickGallery: () => _pickTitleImage(ImageSource.gallery),
-                  onPickCamera: () => _pickTitleImage(ImageSource.camera),
-                  onRemove: () => setState(() => _titleImageFile = null),
+    return BlocProvider.value(
+      value: _bloc,
+      child: BlocConsumer<CreatePostBloc, CreatePostState>(
+        listener: _onCreateState,
+        builder: (context, state) {
+          final isLoading = state.isSubmitting;
+          return Scaffold(
+            backgroundColor: AppColors.homeBackground,
+            resizeToAvoidBottomInset: true,
+            appBar: AppBar(
+              backgroundColor: AppColors.homeBackground,
+              surfaceTintColor: Colors.transparent,
+              elevation: 0,
+              leading: IconButton(
+                icon: const Icon(Icons.arrow_back_ios_new, size: 20),
+                color: AppColors.homeTextDark,
+                onPressed: isLoading ? null : () => Navigator.pop(context),
+              ),
+              title: Text(
+                'New entry',
+                style: GoogleFonts.inter(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.homeTextLight,
+                  letterSpacing: 0.5,
                 ),
               ),
+              centerTitle: true,
             ),
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: CreatePostGalleryPicker(
-                  imageFiles: _galleryImageFiles,
-                  onAdd: _pickGalleryImages,
-                  onRemoveAt: _removeGalleryAt,
-                ),
+            body: Form(
+              key: _formKey,
+              child: CustomScrollView(
+                physics: const BouncingScrollPhysics(),
+                slivers: [
+                  SliverToBoxAdapter(child: _buildHeader()),
+                  SliverToBoxAdapter(child: _buildCopyCard()),
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      child: CreatePostTitleImagePicker(
+                        imageFile: _titleImageFile,
+                        onPickGallery: () =>
+                            _pickTitleImage(ImageSource.gallery),
+                        onPickCamera: () => _pickTitleImage(ImageSource.camera),
+                        onRemove: () => setState(() => _titleImageFile = null),
+                      ),
+                    ),
+                  ),
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      child: CreatePostGalleryPicker(
+                        imageFiles: _galleryImageFiles,
+                        onAdd: _pickGalleryImages,
+                        onRemoveAt: _removeGalleryAt,
+                      ),
+                    ),
+                  ),
+                  if (isLoading)
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(24, 8, 24, 0),
+                        child: LinearProgressIndicator(
+                          value: state.uploadProgress > 0
+                              ? state.uploadProgress
+                              : null,
+                          color: AppColors.primaryBrown,
+                        ),
+                      ),
+                    ),
+                  const SliverPadding(padding: EdgeInsets.only(bottom: 120)),
+                ],
               ),
             ),
-            const SliverPadding(padding: EdgeInsets.only(bottom: 120)),
-          ],
-        ),
-      ),
-      bottomNavigationBar: CreatePostSubmitBar(
-        isLoading: _isLoading,
-        hasCover: _titleImageFile != null,
-        galleryCount: _galleryImageFiles.length,
-        onPublish: _submit,
+            bottomNavigationBar: CreatePostSubmitBar(
+              isLoading: isLoading,
+              hasCover: _titleImageFile != null,
+              galleryCount: _galleryImageFiles.length,
+              onPublish: _submit,
+            ),
+          );
+        },
       ),
     );
   }

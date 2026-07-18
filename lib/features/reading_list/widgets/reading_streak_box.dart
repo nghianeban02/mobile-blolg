@@ -55,7 +55,7 @@ class _ReadingStreakBoxState extends State<ReadingStreakBox> {
         onTap: () {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (_) => const MyReadingListScreen()),
+            MaterialPageRoute<void>(builder: (_) => const MyReadingListScreen()),
           );
         },
         child: Container(

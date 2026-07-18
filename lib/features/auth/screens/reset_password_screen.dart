@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:mobile/app/routes.dart';
 import 'package:mobile/core/constants/app_colors.dart';
+import 'package:mobile/core/router/app_router.dart';
 import 'package:mobile/data/auth/auth_repository.dart';
 import 'package:mobile/features/auth/widgets/auth_form_field.dart';
 
@@ -60,9 +61,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
         backgroundColor: AppColors.success,
       ),
     );
-    Navigator.of(
-      context,
-    ).pushNamedAndRemoveUntil(AppRoutes.login, (route) => false);
+    context.go(AppRoutes.login);
   }
 
   @override

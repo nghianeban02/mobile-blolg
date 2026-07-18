@@ -57,7 +57,9 @@
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>Lưu ảnh từ bài viết vào thư viện ảnh trên thiết bị.</string>
 	<key>NSCameraUsageDescription</key>
-	<string>Chụp ảnh minh họa cho bài viết.</string>
+	<string>Chụp ảnh minh họa cho bài viết và gọi video.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Dùng micro cho cuộc gọi thoại và video.</string>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsLocalNetworking</key>

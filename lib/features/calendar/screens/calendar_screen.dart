@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mobile/core/constants/app_colors.dart';
+import 'package:mobile/core/pomodoro/pomodoro_timer_controller.dart';
 import 'package:mobile/core/widgets/editorial_confirm_dialog.dart';
 import 'package:mobile/data/models/productivity_dtos.dart';
 import 'package:mobile/data/repositories/calendar_repository.dart';
@@ -16,6 +17,8 @@ class CalendarScreen extends StatefulWidget {
 
 class _CalendarScreenState extends State<CalendarScreen> {
   final _repository = BeBlogCalendarRepository();
+  final _pomodoro = PomodoroTimerController.instance;
+  DateTime? _observedCompletedAt;
   DateTime _selected = _day(DateTime.now());
   DateTime _displayedMonth = DateTime(
     DateTime.now().year,
@@ -31,7 +34,30 @@ class _CalendarScreenState extends State<CalendarScreen> {
   @override
   void initState() {
     super.initState();
+    _observedCompletedAt = _pomodoro.lastCompletedAt;
+    _pomodoro.addListener(_onPomodoroChanged);
     _loadMonth();
+  }
+
+  @override
+  void dispose() {
+    _pomodoro.removeListener(_onPomodoroChanged);
+    super.dispose();
+  }
+
+  void _onPomodoroChanged() {
+    if (!mounted) return;
+    setState(() {});
+    final completed = _pomodoro.lastCompletedAt;
+    if (completed != null && completed != _observedCompletedAt) {
+      _observedCompletedAt = completed;
+      unawaited(_loadMonth());
+    }
+    final error = _pomodoro.lastError;
+    if (error != null) {
+      _pomodoro.lastError = null;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(error)));
+    }
   }
 
   Future<void> _loadMonth() async {
@@ -77,14 +103,14 @@ class _CalendarScreenState extends State<CalendarScreen> {
     }
     _selected = _day(updated.eventDate);
     _displayedMonth = DateTime(_selected.year, _selected.month);
-    _loadMonth();
+    unawaited(_loadMonth());
   }
 
   Future<void> _toggle(CalendarEntryDto entry, bool completed) async {
     final result = await _repository.update(
       entry.copyWith(completed: completed),
     );
-    if (result.success) _loadMonth();
+    if (result.success) unawaited(_loadMonth());
   }
 
   Future<void> _delete(CalendarEntryDto entry) async {
@@ -97,24 +123,25 @@ class _CalendarScreenState extends State<CalendarScreen> {
     );
     if (!confirmed) return;
     final result = await _repository.delete(entry.id);
-    if (result.success) _loadMonth();
+    if (result.success) unawaited(_loadMonth());
   }
 
-  Future<void> _startTimer(CalendarEntryDto entry) async {
-    final recorded = await showModalBottomSheet<_FocusResult>(
-      context: context,
-      isScrollControlled: true,
-      isDismissible: false,
-      enableDrag: false,
-      builder: (context) => _PomodoroSheet(entry: entry),
-    );
-    if (recorded == null || recorded.focusSeconds <= 0) return;
-    final updated = entry.copyWith(
-      pomodoroCompleted: entry.pomodoroCompleted + (recorded.completed ? 1 : 0),
-      totalFocusSeconds: entry.totalFocusSeconds + recorded.focusSeconds,
-    );
-    await _repository.update(updated);
-    _loadMonth();
+  void _startTimer(CalendarEntryDto entry) {
+    if (_pomodoro.isActive && _pomodoro.activeEntryId != entry.id) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Đang có phiên Pomodoro khác — hãy kết thúc trước.'),
+        ),
+      );
+      return;
+    }
+    if (_pomodoro.activeEntryId == entry.id) {
+      if (_pomodoro.isPaused) {
+        _pomodoro.resumeTimer();
+      }
+      return;
+    }
+    _pomodoro.startTimer(entry);
   }
 
   @override
@@ -151,6 +178,10 @@ class _CalendarScreenState extends State<CalendarScreen> {
         physics: const AlwaysScrollableScrollPhysics(),
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
         children: [
+          if (_pomodoro.isActive) ...[
+            _ActivePomodoroCard(timer: _pomodoro),
+            const SizedBox(height: 14),
+          ],
           Card(
             elevation: 0,
             child: CalendarDatePicker(
@@ -205,6 +236,9 @@ class _CalendarScreenState extends State<CalendarScreen> {
             ..._selectedEntries.map(
               (entry) => _EntryCard(
                 entry: entry,
+                isActiveFocus: _pomodoro.activeEntryId == entry.id,
+                isPaused: _pomodoro.isPaused &&
+                    _pomodoro.activeEntryId == entry.id,
                 onChanged: (value) => _toggle(entry, value),
                 onEdit: () => _edit(entry),
                 onDelete: () => _delete(entry),
@@ -227,8 +261,114 @@ class _CalendarScreenState extends State<CalendarScreen> {
   ][weekday - 1];
 }
 
+class _ActivePomodoroCard extends StatelessWidget {
+  final PomodoroTimerController timer;
+
+  const _ActivePomodoroCard({required this.timer});
+
+  static String _format(int seconds) {
+    final m = (seconds ~/ 60).toString().padLeft(2, '0');
+    final s = (seconds % 60).toString().padLeft(2, '0');
+    return '$m:$s';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final accent =
+        timer.isRunning ? AppColors.primaryBrown : const Color(0xFFD97706);
+    return Card(
+      elevation: 0,
+      color: accent.withValues(alpha: 0.08),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppRadius.xl),
+        side: BorderSide(color: accent.withValues(alpha: 0.25)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 14, 8, 14),
+        child: Row(
+          children: [
+            SizedBox(
+              width: 56,
+              height: 56,
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  CircularProgressIndicator(
+                    value: timer.progress,
+                    strokeWidth: 3.5,
+                    backgroundColor: accent.withValues(alpha: 0.15),
+                    color: accent,
+                  ),
+                  Text(
+                    _format(timer.remainingSeconds),
+                    style: TextStyle(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 12,
+                      color: accent,
+                      fontFeatures: const [FontFeature.tabularFigures()],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    timer.isPaused ? 'Đã tạm dừng' : 'Đang tập trung',
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.8,
+                      color: accent,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    timer.entryMeta?.title ?? 'Pomodoro',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 15,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (timer.isRunning)
+              IconButton(
+                tooltip: 'Tạm dừng',
+                onPressed: timer.pauseTimer,
+                icon: const Icon(Icons.pause_rounded),
+                color: accent,
+              )
+            else
+              IconButton(
+                tooltip: 'Tiếp tục',
+                onPressed: timer.resumeTimer,
+                icon: const Icon(Icons.play_arrow_rounded),
+                color: accent,
+              ),
+            IconButton(
+              tooltip: 'Kết thúc',
+              onPressed: timer.stopTimer,
+              icon: const Icon(Icons.stop_rounded),
+              color: AppColors.homeTextLight,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _EntryCard extends StatelessWidget {
   final CalendarEntryDto entry;
+  final bool isActiveFocus;
+  final bool isPaused;
   final ValueChanged<bool> onChanged;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
@@ -236,6 +376,8 @@ class _EntryCard extends StatelessWidget {
 
   const _EntryCard({
     required this.entry,
+    this.isActiveFocus = false,
+    this.isPaused = false,
     required this.onChanged,
     required this.onEdit,
     required this.onDelete,
@@ -246,6 +388,17 @@ class _EntryCard extends StatelessWidget {
   Widget build(BuildContext context) => Card(
     margin: const EdgeInsets.only(bottom: 10),
     elevation: 0,
+    color: isActiveFocus
+        ? AppColors.primaryBrown.withValues(alpha: 0.06)
+        : null,
+    shape: isActiveFocus
+        ? RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppRadius.md),
+            side: BorderSide(
+              color: AppColors.primaryBrown.withValues(alpha: 0.3),
+            ),
+          )
+        : null,
     child: Padding(
       padding: const EdgeInsets.fromLTRB(8, 10, 8, 10),
       child: Row(
@@ -282,10 +435,18 @@ class _EntryCard extends StatelessWidget {
                   ],
                   const SizedBox(height: 8),
                   Text(
-                    '${entry.pomodoroMinutes} phút · ${entry.pomodoroCompleted} phiên · ${_focusTime(entry.totalFocusSeconds)} tập trung',
-                    style: const TextStyle(
+                    isActiveFocus
+                        ? (isPaused
+                            ? 'Pomodoro đang tạm dừng'
+                            : 'Đang chạy Pomodoro')
+                        : '${entry.pomodoroMinutes} phút · ${entry.pomodoroCompleted} phiên · ${_focusTime(entry.totalFocusSeconds)} tập trung',
+                    style: TextStyle(
                       fontSize: 10,
-                      color: AppColors.homeTextLight,
+                      color: isActiveFocus
+                          ? AppColors.primaryBrown
+                          : AppColors.homeTextLight,
+                      fontWeight:
+                          isActiveFocus ? FontWeight.w600 : FontWeight.w400,
                     ),
                   ),
                 ],
@@ -293,9 +454,16 @@ class _EntryCard extends StatelessWidget {
             ),
           ),
           IconButton(
-            tooltip: 'Bắt đầu tập trung',
+            tooltip: isActiveFocus
+                ? (isPaused ? 'Tiếp tục' : 'Đang tập trung')
+                : 'Bắt đầu tập trung',
             onPressed: entry.completed ? null : onStartFocus,
-            icon: const Icon(Icons.timer_outlined),
+            icon: Icon(
+              isActiveFocus
+                  ? (isPaused ? Icons.play_arrow_rounded : Icons.timelapse)
+                  : Icons.timer_outlined,
+              color: isActiveFocus ? AppColors.primaryBrown : null,
+            ),
           ),
           PopupMenuButton<String>(
             onSelected: (value) => value == 'edit' ? onEdit() : onDelete(),
@@ -435,175 +603,4 @@ class _EntryDialogState extends State<_EntryDialog> {
       FilledButton(onPressed: _save, child: const Text('Lưu')),
     ],
   );
-}
-
-class _FocusResult {
-  final int focusSeconds;
-  final bool completed;
-
-  const _FocusResult({required this.focusSeconds, required this.completed});
-}
-
-class _PomodoroSheet extends StatefulWidget {
-  final CalendarEntryDto entry;
-
-  const _PomodoroSheet({required this.entry});
-
-  @override
-  State<_PomodoroSheet> createState() => _PomodoroSheetState();
-}
-
-class _PomodoroSheetState extends State<_PomodoroSheet>
-    with WidgetsBindingObserver {
-  Timer? _ticker;
-  late final int _totalSeconds;
-  late int _remaining;
-  DateTime? _deadline;
-  bool _running = false;
-
-  int get _elapsed => _totalSeconds - _remaining;
-
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addObserver(this);
-    _totalSeconds = widget.entry.pomodoroMinutes * 60;
-    _remaining = _totalSeconds;
-  }
-
-  @override
-  void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
-    _ticker?.cancel();
-    super.dispose();
-  }
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) _syncClock();
-  }
-
-  void _toggle() {
-    if (_running) {
-      _syncClock();
-      _ticker?.cancel();
-      setState(() {
-        _running = false;
-        _deadline = null;
-      });
-      return;
-    }
-    _deadline = DateTime.now().add(Duration(seconds: _remaining));
-    setState(() => _running = true);
-    _ticker = Timer.periodic(const Duration(seconds: 1), (_) => _syncClock());
-  }
-
-  void _syncClock() {
-    final deadline = _deadline;
-    if (!_running || deadline == null || !mounted) return;
-    final remaining = deadline
-        .difference(DateTime.now())
-        .inSeconds
-        .clamp(0, _totalSeconds);
-    setState(() => _remaining = remaining);
-    if (remaining == 0) {
-      _ticker?.cancel();
-      Navigator.pop(
-        context,
-        _FocusResult(focusSeconds: _totalSeconds, completed: true),
-      );
-    }
-  }
-
-  Future<void> _close() async {
-    final shouldSave = _elapsed > 0
-        ? await showDialog<bool>(
-            context: context,
-            builder: (context) => AlertDialog(
-              title: const Text('Kết thúc phiên?'),
-              content: const Text('Thời gian đã tập trung sẽ được ghi lại.'),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context, false),
-                  child: const Text('Tiếp tục'),
-                ),
-                FilledButton(
-                  onPressed: () => Navigator.pop(context, true),
-                  child: const Text('Kết thúc'),
-                ),
-              ],
-            ),
-          )
-        : true;
-    if (shouldSave == true && mounted) {
-      Navigator.pop(
-        context,
-        _FocusResult(focusSeconds: _elapsed, completed: false),
-      );
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final minutes = (_remaining ~/ 60).toString().padLeft(2, '0');
-    final seconds = (_remaining % 60).toString().padLeft(2, '0');
-    return PopScope(
-      canPop: false,
-      child: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(28, 10, 28, 36),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Row(
-                children: [
-                  const Icon(
-                    Icons.self_improvement,
-                    color: AppColors.primaryBrown,
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Text(
-                      widget.entry.title,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(fontWeight: FontWeight.w600),
-                    ),
-                  ),
-                  IconButton(onPressed: _close, icon: const Icon(Icons.close)),
-                ],
-              ),
-              const SizedBox(height: 28),
-              Text(
-                '$minutes:$seconds',
-                style: GoogleFonts.playfairDisplay(
-                  fontSize: 66,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.homeTextDark,
-                ),
-              ),
-              const SizedBox(height: 20),
-              SizedBox(
-                width: 84,
-                height: 84,
-                child: FloatingActionButton(
-                  heroTag: 'pomodoro-control',
-                  onPressed: _toggle,
-                  backgroundColor: AppColors.primaryBrown,
-                  foregroundColor: Colors.white,
-                  shape: const CircleBorder(),
-                  child: Icon(
-                    _running ? Icons.pause : Icons.play_arrow,
-                    size: 40,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              Text(_running ? 'Đang tập trung' : 'Sẵn sàng bắt đầu'),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
 }

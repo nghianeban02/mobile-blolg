@@ -1,22 +1,10 @@
-import 'package:mobile/core/constants/api_base_url.dart';
+import 'package:mobile/core/config/app_config.dart';
 
 /// REST paths aligned with [be-blog] Spring controllers.
 ///
-/// **Base URL** ([baseUrl]): mặc định [productionBaseUrl] — xem [ApiBaseUrl].
-///
-/// Dev local: `flutter run --dart-define=USE_LOCAL_API=true`
-/// Override: `flutter run --dart-define=API_BASE_URL=http://192.168.1.5:8080`
+/// **Base URL** ([baseUrl]): resolve qua [AppConfig] (dart-define).
 class ApiConstants {
-  /// Backend production (Railway) — cùng URL với web-blog `NEXT_PUBLIC_API_URL`.
-  static const String productionBaseUrl =
-      'https://be-blog-production.up.railway.app';
-
-  /// IP LAN Mac — chỉ dùng khi `USE_LOCAL_API=true` trên iPhone/iPad thật.
-  static const String devLanHost = '192.168.1.3';
-
-  static const int apiPort = 8080;
-
-  static String get baseUrl => ApiBaseUrl.current;
+  static String get baseUrl => AppConfig.apiBaseUrl;
 
   // --- Auth ---
   static const String authLogin = '/api/auth/login';
@@ -87,6 +75,7 @@ class ApiConstants {
       '/api/notifications/$id/read';
   static const String notificationsMarkAllRead = '/api/notifications/read-all';
   static const String notificationDevices = '/api/notifications/devices';
+  static const String notificationsPreferences = '/api/notifications/preferences';
 
   // --- Friends ---
   static const String friends = '/api/friends';
@@ -100,6 +89,6 @@ class ApiConstants {
   static String userBooks(String userId) => '/api/users/$userId/books';
   static String userReviews(String userId) => '/api/users/$userId/reviews';
 
-  static const Duration connectTimeout = Duration(seconds: 30);
-  static const Duration receiveTimeout = Duration(seconds: 30);
+  static const Duration connectTimeout = AppConfig.connectTimeout;
+  static const Duration receiveTimeout = AppConfig.receiveTimeout;
 }

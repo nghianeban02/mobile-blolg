@@ -19,7 +19,7 @@ class EditorialCircleEntry extends StatelessWidget {
         onTap: () {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (_) => const FriendsScreen()),
+            MaterialPageRoute<void>(builder: (_) => const FriendsScreen()),
           );
         },
         padding: const EdgeInsets.all(20),

@@ -15,7 +15,8 @@ void main() async {
   PaintingBinding.instance.imageCache.maximumSizeBytes = 80 << 20;
 
   CacheManager.logLevel = CacheManagerLogLevel.warning;
-  AppImageCache.manager;
+  // Khởi tạo sớm disk cache để lần load ảnh đầu tiên không tốn chi phí setup.
+  final _ = AppImageCache.manager;
 
   // Resolve Inter + Playfair once at startup for smoother first scroll.
   await GoogleFonts.pendingFonts([

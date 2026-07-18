@@ -186,7 +186,7 @@ class _UserProfileScreenState extends State<UserProfileScreen>
                         posts: _posts,
                         onOpen: (p) => Navigator.push(
                           context,
-                          MaterialPageRoute(
+                          MaterialPageRoute<void>(
                             builder: (_) =>
                                 PostDetailScreen(postId: p.id, initialPost: p),
                           ),
@@ -199,7 +199,7 @@ class _UserProfileScreenState extends State<UserProfileScreen>
                           final profile = _profile;
                           Navigator.push(
                             context,
-                            MaterialPageRoute(
+                            MaterialPageRoute<void>(
                               builder: (_) => BookDetailScreen(
                                 reviewId: r.id,
                                 initialReview: r,

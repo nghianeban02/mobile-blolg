@@ -1,18 +1,20 @@
 import 'dart:async';
+import 'dart:io';
 import 'dart:math';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:photo_view/photo_view.dart';
-
+import 'package:image_picker/image_picker.dart';
 import 'package:mobile/core/constants/app_colors.dart';
 import 'package:mobile/core/services/chat_realtime_service.dart';
 import 'package:mobile/data/messaging/chat_models.dart';
 import 'package:mobile/data/messaging/messaging_api.dart';
+import 'package:mobile/features/messages/call/call_controller.dart';
 import 'package:mobile/features/messages/chat_stickers.dart';
 import 'package:mobile/features/messages/widgets/chat_avatar.dart';
+import 'package:photo_view/photo_view.dart';
 
 /// Khung chat — UX như bản web: optimistic send, sticker, reply, reaction,
 /// sửa/thu hồi tin, typing indicator, ngăn cách ngày, đánh dấu đã đọc.
@@ -72,6 +74,28 @@ class _ChatScreenState extends State<ChatScreen> {
 
   void _onRealtimeState() {
     if (mounted) setState(() {});
+  }
+
+  Future<void> _startCall(String mode) async {
+    final name = widget.conversation.displayName(_me);
+    try {
+      await CallController.instance.startCall(
+        conversation: widget.conversation,
+        name: name,
+        mode: mode,
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            e is MessagingApiException
+                ? e.message
+                : 'Không thể bắt đầu cuộc gọi.',
+          ),
+        ),
+      );
+    }
   }
 
   // ─── Data ───
@@ -139,7 +163,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
   void _upsert(ChatMessage incoming, {String? replaceClientId}) {
     setState(() {
-      var next = List<ChatMessage>.of(_messages);
+      final next = List<ChatMessage>.of(_messages);
       if (replaceClientId != null) {
         next.removeWhere(
             (item) => item.pending && item.clientId == replaceClientId);
@@ -190,8 +214,18 @@ class _ChatScreenState extends State<ChatScreen> {
         // Tin của mình do POST trả về xử lý — bỏ qua echo khi đang gửi.
         if (mine && _pendingClientIds.isNotEmpty) return;
         final type = payload['type'] as String? ?? 'TEXT';
-        if (!(type == 'TEXT' || type == 'STICKER') ||
-            payload['encrypted'] == true) {
+        final encrypted = payload['encrypted'] == true;
+        ChatAttachment? attachment;
+        if (payload['attachment'] is Map<String, dynamic>) {
+          attachment = ChatAttachment.fromJson(
+              payload['attachment'] as Map<String, dynamic>);
+        }
+        // TEXT/STICKER dựng ngay; IMAGE/FILE dùng metadata attachment từ outbox.
+        final canInline = !encrypted &&
+            (type == 'TEXT' ||
+                type == 'STICKER' ||
+                ((type == 'IMAGE' || type == 'FILE') && attachment != null));
+        if (!canInline) {
           unawaited(_load());
           return;
         }
@@ -205,6 +239,7 @@ class _ChatScreenState extends State<ChatScreen> {
           type: type,
           content: payload['content'] as String?,
           encrypted: false,
+          attachment: attachment,
           createdAt: DateTime.tryParse(payload['createdAt'] as String? ?? '')
                   ?.toLocal() ??
               DateTime.now(),
@@ -259,7 +294,13 @@ class _ChatScreenState extends State<ChatScreen> {
     });
   }
 
-  Future<void> _deliver({required String type, required String content}) async {
+  Future<void> _deliver({
+    required String type,
+    String? content,
+    String? attachmentId,
+    ChatAttachment? attachment,
+    String? localPreviewPath,
+  }) async {
     final clientId = _uuidV4();
     final reply = _replyTo;
     final optimistic = ChatMessage(
@@ -280,9 +321,11 @@ class _ChatScreenState extends State<ChatScreen> {
               type: reply.type,
               revoked: reply.revoked,
             ),
+      attachment: attachment,
       createdAt: DateTime.now(),
       pending: true,
       clientId: clientId,
+      localPreviewPath: localPreviewPath,
     );
     _pendingClientIds.add(clientId);
     _upsert(optimistic);
@@ -295,6 +338,7 @@ class _ChatScreenState extends State<ChatScreen> {
         type: type,
         content: content,
         replyToId: reply?.id,
+        attachmentId: attachmentId,
       );
       _upsert(
         ChatMessage(
@@ -307,7 +351,9 @@ class _ChatScreenState extends State<ChatScreen> {
           content: sent.content ?? content,
           encrypted: false,
           replyTo: optimistic.replyTo,
+          attachment: sent.attachment ?? attachment,
           createdAt: sent.createdAt,
+          localPreviewPath: localPreviewPath,
         ),
         replaceClientId: clientId,
       );
@@ -315,7 +361,11 @@ class _ChatScreenState extends State<ChatScreen> {
     } catch (e) {
       setState(() =>
           _messages = _messages.where((item) => item.id != clientId).toList());
-      if (type == 'TEXT' && _input.text.trim().isEmpty) _input.text = content;
+      if (type == 'TEXT' &&
+          content != null &&
+          _input.text.trim().isEmpty) {
+        _input.text = content;
+      }
       _showError(e);
     } finally {
       _pendingClientIds.remove(clientId);
@@ -341,6 +391,130 @@ class _ChatScreenState extends State<ChatScreen> {
     _realtime.send(
         {'type': 'typing.stop', 'conversationId': widget.conversation.id});
     await _deliver(type: 'TEXT', content: content);
+  }
+
+  Future<void> _pickAndSendImages() async {
+    if (_editing != null) return;
+    final picker = ImagePicker();
+    try {
+      final picked = await picker.pickMultiImage(
+        maxWidth: 2048,
+        maxHeight: 2048,
+        imageQuality: 85,
+      );
+      if (picked.isEmpty || !mounted) return;
+      final caption = _input.text.trim();
+      if (caption.isNotEmpty) _input.clear();
+      _realtime.send(
+          {'type': 'typing.stop', 'conversationId': widget.conversation.id});
+      // Caption chỉ gắn ảnh đầu; tối đa 6 ảnh mỗi lần (đồng bộ web).
+      const maxBatch = 6;
+      final batch = picked.take(maxBatch).toList();
+      if (picked.length > maxBatch && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Chỉ gửi tối đa 6 ảnh mỗi lần.')),
+        );
+      }
+      for (var i = 0; i < batch.length; i++) {
+        await _sendPickedImage(
+          batch[i],
+          caption: i == 0 && caption.isNotEmpty ? caption : null,
+        );
+      }
+    } on PlatformException catch (e) {
+      _showError(e.message ?? 'Không thể chọn ảnh.');
+    } catch (e) {
+      _showError(e);
+    }
+  }
+
+  Future<void> _sendPickedImage(XFile picked, {String? caption}) async {
+    final path = picked.path;
+    final name = picked.name.isNotEmpty
+        ? picked.name
+        : (path.split(Platform.pathSeparator).last);
+    final mime = picked.mimeType ?? 'image/jpeg';
+    final clientId = _uuidV4();
+    final reply = _replyTo;
+    final optimisticAttachment = ChatAttachment(
+      id: clientId,
+      name: name,
+      mimeType: mime,
+      sizeBytes: await File(path).length().catchError((_) => 0),
+    );
+    final optimistic = ChatMessage(
+      id: clientId,
+      sequence: _maxSequence + 0.5,
+      conversationId: widget.conversation.id,
+      senderId: _me ?? '',
+      senderUsername: '',
+      type: 'IMAGE',
+      content: caption,
+      encrypted: false,
+      replyTo: reply == null
+          ? null
+          : ChatReplyPreview(
+              id: reply.id,
+              senderId: reply.senderId,
+              content: reply.content,
+              type: reply.type,
+              revoked: reply.revoked,
+            ),
+      attachment: optimisticAttachment,
+      createdAt: DateTime.now(),
+      pending: true,
+      clientId: clientId,
+      localPreviewPath: path,
+    );
+    _pendingClientIds.add(clientId);
+    _upsert(optimistic);
+    setState(() => _replyTo = null);
+    _jumpToBottom();
+    try {
+      final attachmentId = await MessagingApi.uploadAttachment(
+        widget.conversation.id,
+        File(path),
+        mimeType: mime,
+      );
+      final sent = await MessagingApi.sendMessage(
+        widget.conversation.id,
+        clientId: clientId,
+        type: 'IMAGE',
+        content: caption,
+        replyToId: reply?.id,
+        attachmentId: attachmentId,
+      );
+      _upsert(
+        ChatMessage(
+          id: sent.id,
+          sequence: sent.sequence,
+          conversationId: widget.conversation.id,
+          senderId: _me ?? '',
+          senderUsername: sent.senderUsername,
+          type: 'IMAGE',
+          content: sent.content ?? caption,
+          encrypted: false,
+          replyTo: optimistic.replyTo,
+          attachment: sent.attachment ??
+              ChatAttachment(
+                id: attachmentId,
+                name: name,
+                mimeType: mime,
+                sizeBytes: optimisticAttachment.sizeBytes,
+              ),
+          createdAt: sent.createdAt,
+          localPreviewPath: path,
+        ),
+        replaceClientId: clientId,
+      );
+      _jumpToBottom();
+    } catch (e) {
+      setState(() =>
+          _messages = _messages.where((item) => item.id != clientId).toList());
+      _showError(e);
+    } finally {
+      _pendingClientIds.remove(clientId);
+    }
   }
 
   Future<void> _saveEdit(String content) async {
@@ -373,7 +547,19 @@ class _ChatScreenState extends State<ChatScreen> {
     try {
       await MessagingApi.revoke(message.id);
       _patch(message.id,
-          (item) => item.copyWith(clearContent: true, revokedAt: DateTime.now()));
+          (item) => item.copyWith(clearContent: true, revokedAt: DateTime.now(), reactions: const []));
+    } catch (e) {
+      _showError(e);
+    }
+  }
+
+  Future<void> _hide(ChatMessage message) async {
+    try {
+      await MessagingApi.hideMessage(message.id);
+      if (!mounted) return;
+      setState(() {
+        _messages.removeWhere((item) => item.id == message.id);
+      });
     } catch (e) {
       _showError(e);
     }
@@ -411,8 +597,9 @@ class _ChatScreenState extends State<ChatScreen> {
   // ─── Actions sheet ───
 
   void _openMessageActions(ChatMessage message) {
-    if (message.revoked || message.pending) return;
+    if (message.pending) return;
     final mine = message.senderId == _me;
+    final canReact = !message.revoked;
     showModalBottomSheet<void>(
       context: context,
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -423,39 +610,41 @@ class _ChatScreenState extends State<ChatScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 10),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  for (final emoji in kQuickReactions)
-                    InkWell(
-                      borderRadius: BorderRadius.circular(999),
-                      onTap: () {
-                        Navigator.of(sheetContext).pop();
-                        unawaited(_toggleReaction(message, emoji));
-                      },
-                      child: Padding(
-                        padding: const EdgeInsets.all(6),
-                        child: Text(emoji, style: const TextStyle(fontSize: 26)),
+            if (canReact)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 10),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    for (final emoji in kQuickReactions)
+                      InkWell(
+                        borderRadius: BorderRadius.circular(999),
+                        onTap: () {
+                          Navigator.of(sheetContext).pop();
+                          unawaited(_toggleReaction(message, emoji));
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.all(6),
+                          child: Text(emoji, style: const TextStyle(fontSize: 26)),
+                        ),
                       ),
-                    ),
-                ],
+                  ],
+                ),
               ),
-            ),
-            const Divider(height: 1),
-            ListTile(
-              leading: const Icon(Icons.reply_outlined),
-              title: const Text('Trả lời'),
-              onTap: () {
-                Navigator.of(sheetContext).pop();
-                setState(() {
-                  _editing = null;
-                  _replyTo = message;
-                });
-              },
-            ),
-            if (message.content != null && !message.encrypted)
+            if (canReact) const Divider(height: 1),
+            if (canReact)
+              ListTile(
+                leading: const Icon(Icons.reply_outlined),
+                title: const Text('Trả lời'),
+                onTap: () {
+                  Navigator.of(sheetContext).pop();
+                  setState(() {
+                    _editing = null;
+                    _replyTo = message;
+                  });
+                },
+              ),
+            if (canReact && message.content != null && !message.encrypted)
               ListTile(
                 leading: const Icon(Icons.copy_outlined),
                 title: const Text('Sao chép'),
@@ -465,7 +654,7 @@ class _ChatScreenState extends State<ChatScreen> {
                       Clipboard.setData(ClipboardData(text: message.content!)));
                 },
               ),
-            if (mine && message.type == 'TEXT' && !message.encrypted)
+            if (canReact && mine && message.type == 'TEXT' && !message.encrypted)
               ListTile(
                 leading: const Icon(Icons.edit_outlined),
                 title: const Text('Chỉnh sửa'),
@@ -478,7 +667,7 @@ class _ChatScreenState extends State<ChatScreen> {
                   });
                 },
               ),
-            if (mine)
+            if (canReact && mine)
               ListTile(
                 leading: const Icon(Icons.undo_outlined, color: AppColors.error),
                 title:
@@ -488,6 +677,15 @@ class _ChatScreenState extends State<ChatScreen> {
                   unawaited(_revoke(message));
                 },
               ),
+            ListTile(
+              leading: const Icon(Icons.delete_outline, color: AppColors.error),
+              title:
+                  const Text('Xóa', style: TextStyle(color: AppColors.error)),
+              onTap: () {
+                Navigator.of(sheetContext).pop();
+                unawaited(_hide(message));
+              },
+            ),
           ],
         ),
       ),
@@ -543,6 +741,18 @@ class _ChatScreenState extends State<ChatScreen> {
             ),
           ],
         ),
+        actions: [
+          IconButton(
+            tooltip: 'Gọi thoại',
+            onPressed: () => _startCall('AUDIO'),
+            icon: const Icon(Icons.call_outlined),
+          ),
+          IconButton(
+            tooltip: 'Gọi video',
+            onPressed: () => _startCall('VIDEO'),
+            icon: const Icon(Icons.videocam_outlined),
+          ),
+        ],
       ),
       body: Column(
         children: [
@@ -607,6 +817,7 @@ class _ChatScreenState extends State<ChatScreen> {
             stickersOpen: _stickersOpen,
             onChanged: (_) => _notifyTyping(),
             onSend: () => unawaited(_send()),
+            onPickImage: () => unawaited(_pickAndSendImages()),
             onToggleStickers: () =>
                 setState(() => _stickersOpen = !_stickersOpen),
             onCancelReply: () => setState(() => _replyTo = null),
@@ -694,7 +905,9 @@ class _MessageBubble extends StatelessWidget {
     } else if (message.encrypted && message.content == null) {
       body = Text('🔒 Tin nhắn được mã hoá',
           style: GoogleFonts.inter(fontSize: 13, fontStyle: FontStyle.italic));
-    } else if (message.attachment != null) {
+    } else if (message.attachment != null ||
+        message.localPreviewPath != null ||
+        message.type == 'IMAGE') {
       body = _AttachmentBody(message: message, mine: mine);
     } else {
       body = Text(message.content ?? '',
@@ -834,17 +1047,36 @@ class _AttachmentBody extends StatefulWidget {
 class _AttachmentBodyState extends State<_AttachmentBody> {
   String? _url;
 
-  ChatAttachment get _attachment => widget.message.attachment!;
+  ChatAttachment? get _attachment => widget.message.attachment;
+  String? get _localPath => widget.message.localPreviewPath;
 
   @override
   void initState() {
     super.initState();
-    if (_attachment.isImage) {
-      unawaited(
-          MessagingApi.attachmentDownloadUrl(_attachment.id).then((url) {
-        if (mounted && url.isNotEmpty) setState(() => _url = url);
-      }).catchError((Object _) {}));
+    _resolveUrl();
+  }
+
+  @override
+  void didUpdateWidget(covariant _AttachmentBody oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final oldId = oldWidget.message.attachment?.id;
+    final newId = widget.message.attachment?.id;
+    if (oldId != newId && !widget.message.pending) {
+      _resolveUrl();
     }
+  }
+
+  void _resolveUrl() {
+    final attachment = _attachment;
+    if (attachment == null || !attachment.isImage || widget.message.pending) {
+      return;
+    }
+    // id tạm (clientId) chưa có trên server — không gọi download.
+    if (attachment.id == widget.message.clientId) return;
+    unawaited(
+        MessagingApi.attachmentDownloadUrl(attachment.id).then((url) {
+      if (mounted && url.isNotEmpty) setState(() => _url = url);
+    }).catchError((Object _) {}));
   }
 
   @override
@@ -852,11 +1084,18 @@ class _AttachmentBodyState extends State<_AttachmentBody> {
     final theme = Theme.of(context);
     final textColor =
         widget.mine ? Colors.white : theme.colorScheme.onSurface;
+    final name = _attachment?.name ?? 'Ảnh';
+    final localFile =
+        _localPath != null && File(_localPath!).existsSync() ? File(_localPath!) : null;
+    final ImageProvider? provider = localFile != null
+        ? FileImage(localFile)
+        : (_url != null ? NetworkImage(_url!) : null);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        if (_url != null)
+        if (provider != null)
           GestureDetector(
             onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(
               builder: (_) => Scaffold(
@@ -864,37 +1103,92 @@ class _AttachmentBodyState extends State<_AttachmentBody> {
                 appBar: AppBar(
                     backgroundColor: Colors.black,
                     foregroundColor: Colors.white,
-                    title: Text(_attachment.name,
-                        style: const TextStyle(fontSize: 14))),
-                body: PhotoView(imageProvider: NetworkImage(_url!)),
+                    title: Text(name, style: const TextStyle(fontSize: 14))),
+                body: PhotoView(imageProvider: provider),
               ),
             )),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(12),
-              child: CachedNetworkImage(
-                imageUrl: _url!,
-                width: 220,
-                height: 180,
-                fit: BoxFit.cover,
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  localFile != null
+                      ? Image.file(
+                          localFile,
+                          width: 220,
+                          height: 180,
+                          fit: BoxFit.cover,
+                        )
+                      : CachedNetworkImage(
+                          imageUrl: _url!,
+                          width: 220,
+                          height: 180,
+                          fit: BoxFit.cover,
+                        ),
+                  if (widget.message.pending)
+                    Container(
+                      width: 220,
+                      height: 180,
+                      color: Colors.black38,
+                      child: const Center(
+                        child: SizedBox(
+                          width: 28,
+                          height: 28,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2.5,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
               ),
             ),
+          )
+        else
+          Container(
+            width: 220,
+            height: 120,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: widget.mine
+                  ? Colors.white12
+                  : theme.colorScheme.onSurface.withValues(alpha: 0.06),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: widget.message.pending
+                ? const SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : Icon(Icons.broken_image_outlined,
+                    color: textColor.withValues(alpha: 0.5)),
           ),
-        Padding(
-          padding: const EdgeInsets.only(top: 4),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.attach_file, size: 14, color: textColor),
-              const SizedBox(width: 4),
-              Flexible(
-                child: Text(_attachment.name,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.inter(fontSize: 11, color: textColor)),
-              ),
-            ],
+        if (widget.message.content != null &&
+            widget.message.content!.trim().isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.only(top: 6),
+            child: Text(widget.message.content!,
+                style: GoogleFonts.inter(fontSize: 13, color: textColor)),
           ),
-        ),
+        if (_attachment != null && !_attachment!.isImage)
+          Padding(
+            padding: const EdgeInsets.only(top: 4),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.attach_file, size: 14, color: textColor),
+                const SizedBox(width: 4),
+                Flexible(
+                  child: Text(_attachment!.name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.inter(fontSize: 11, color: textColor)),
+                ),
+              ],
+            ),
+          ),
       ],
     );
   }
@@ -907,6 +1201,7 @@ class _Composer extends StatelessWidget {
   final bool stickersOpen;
   final ValueChanged<String> onChanged;
   final VoidCallback onSend;
+  final VoidCallback onPickImage;
   final VoidCallback onToggleStickers;
   final VoidCallback onCancelReply;
   final VoidCallback onCancelEdit;
@@ -919,6 +1214,7 @@ class _Composer extends StatelessWidget {
     required this.stickersOpen,
     required this.onChanged,
     required this.onSend,
+    required this.onPickImage,
     required this.onToggleStickers,
     required this.onCancelReply,
     required this.onCancelEdit,
@@ -955,6 +1251,7 @@ class _Composer extends StatelessWidget {
               children: [
                 IconButton(
                   onPressed: onToggleStickers,
+                  tooltip: 'Sticker',
                   icon: Icon(
                     Icons.emoji_emotions_outlined,
                     color: stickersOpen
@@ -962,6 +1259,15 @@ class _Composer extends StatelessWidget {
                         : theme.colorScheme.onSurface.withValues(alpha: 0.6),
                   ),
                 ),
+                if (editing == null)
+                  IconButton(
+                    onPressed: onPickImage,
+                    tooltip: 'Gửi ảnh',
+                    icon: Icon(
+                      Icons.image_outlined,
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                    ),
+                  ),
                 Expanded(
                   child: TextField(
                     controller: controller,

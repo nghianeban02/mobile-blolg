@@ -28,7 +28,7 @@ class AdminToolsSection extends StatelessWidget {
           onActionTap: () {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (_) => const AdminPostsScreen()),
+              MaterialPageRoute<void>(builder: (_) => const AdminPostsScreen()),
             );
           },
         ),
@@ -40,7 +40,7 @@ class AdminToolsSection extends StatelessWidget {
           onActionTap: () {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (_) => const AdminCatalogScreen()),
+              MaterialPageRoute<void>(builder: (_) => const AdminCatalogScreen()),
             );
           },
         ),
@@ -52,7 +52,7 @@ class AdminToolsSection extends StatelessWidget {
           onActionTap: () {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (_) => const AdminUsersScreen()),
+              MaterialPageRoute<void>(builder: (_) => const AdminUsersScreen()),
             );
           },
         ),

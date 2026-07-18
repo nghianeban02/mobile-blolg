@@ -53,4 +53,24 @@ class BeBlogNotificationsRepository {
     );
     return BeBlogResponseParser.delete(response);
   }
+
+  /// Mirrors [PushPreferenceController] — tùy chọn push theo loại.
+  Future<BeBlogRepoResult<PushPreferencesDto>> pushPreferences() async {
+    final response = await BeBlogHttp.get(
+      ApiConstants.notificationsPreferences,
+      auth: true,
+    );
+    return BeBlogResponseParser.one(response, PushPreferencesDto.fromJson);
+  }
+
+  Future<BeBlogRepoResult<PushPreferencesDto>> updatePushPreferences(
+    PushPreferencesDto preferences,
+  ) async {
+    final response = await BeBlogHttp.putJson(
+      ApiConstants.notificationsPreferences,
+      body: preferences.toJson(),
+      auth: true,
+    );
+    return BeBlogResponseParser.one(response, PushPreferencesDto.fromJson);
+  }
 }

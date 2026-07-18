@@ -68,7 +68,7 @@ class _ReviewTile extends StatelessWidget {
       padding: const EdgeInsets.all(20),
       onTap: () {
         Navigator.of(context).push(
-          MaterialPageRoute(
+          MaterialPageRoute<void>(
             builder: (_) =>
                 BookDetailScreen(reviewId: review.id, initialReview: review),
           ),

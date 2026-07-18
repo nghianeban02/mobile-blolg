@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:mobile/core/cache/session_cache.dart';
 import 'package:mobile/core/constants/app_colors.dart';
 import 'package:mobile/core/widgets/editorial_confirm_dialog.dart';
+import 'package:mobile/core/widgets/editorial_ui.dart';
 import 'package:mobile/data/auth/auth_repository.dart';
 import 'package:mobile/data/models/dtos.dart';
 import 'package:mobile/data/repositories/comments_repository.dart';
@@ -10,7 +11,6 @@ import 'package:mobile/data/repositories/post_comments_repository.dart';
 import 'package:mobile/data/repositories/users_repository.dart';
 import 'package:mobile/features/posts/widgets/post_section_label.dart';
 import 'package:mobile/features/social/models/discussion_target.dart';
-import 'package:mobile/core/widgets/editorial_ui.dart';
 import 'package:mobile/features/social/widgets/comment_composer_bar.dart';
 import 'package:mobile/features/social/widgets/comment_tile.dart';
 

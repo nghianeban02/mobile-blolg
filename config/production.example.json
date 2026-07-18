@@ -1,5 +1,6 @@
 {
+  "APP_ENV": "production",
   "API_BASE_URL": "https://be-blog-production.up.railway.app",
-  "MESSAGING_ENABLED": true,
-  "MESSAGING_API_URL": "https://messaging-production.up.railway.app"
+  "MESSAGING_BASE_URL": "https://messages-blog-production.up.railway.app",
+  "MESSAGING_ENABLED": true
 }

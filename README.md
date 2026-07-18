@@ -1,126 +1,115 @@
 # Nook Mobile
 
-Ứng dụng Flutter dành cho Nook, dùng chung API với `web-blog` và `be-blog`.
+Ứng dụng Flutter (iOS + Android) cho Nook — dùng chung nghiệp vụ và API với `web-blog`, `be-blog` và `messaging-service`.
 
-## Tính năng
+## Kiến trúc
 
-- Auth: đăng nhập, tài khoản khách, đăng ký, xác minh email, gửi lại email, quên/đặt lại mật khẩu và khôi phục JWT khi mở app.
-- Feed: post/review, ảnh gallery, like/reaction, bình luận luồng, profile, bạn bè và thông báo.
-- Editorial: tạo/sửa/xóa post, tạo/sửa/xóa review, moderation admin.
-- Library: catalog sách, thêm/sửa sách, cover, tác giả, thể loại và reading list.
-- Search: tìm kiếm server-side theo post/review/book, đếm theo bộ lọc; fallback local khi API search không dùng được.
-- Saved & streak: bookmark đồng bộ web và streak hoạt động 7 ngày.
-- Notes: CRUD, search, màu, pin, folder, label, archive, trash, restore, duplicate và xóa vĩnh viễn.
-- Calendar: task theo ngày, hoàn thành, Pomodoro, số phiên và tổng thời gian tập trung.
-- Messaging: direct/group chat, realtime qua WebSocket (ticket + heartbeat + auto-reconnect, polling chỉ là dự phòng khi mất kết nối), typing indicator, presence online, unread/read receipt, search, quick reactions (❤️ 👍 😂 😮 😢 🙏), revoke và upload/xem ảnh riêng tư qua presigned URL.
-- Admin: quản lý user, post moderation và catalog.
-- Push: FCM token được đăng ký/gỡ với `be-blog` khi Firebase native đã được cấu hình.
+Clean Architecture feature-first với **Bloc**, **Dio**, **GoRouter**, **flutter_secure_storage**. Chi tiết: [ARCHITECTURE.md](ARCHITECTURE.md). Ánh xạ màn hình ↔ API: [API_MAPPING.md](API_MAPPING.md).
 
 ## Yêu cầu
 
-- Flutter `3.38.7`, Dart `3.10.7`.
-- iOS `15.0+` (yêu cầu của Firebase Apple SDK 12.15).
-- `be-blog` ở port `8080` khi chạy local.
-- `messaging-service` ở port `8081` khi bật chat local.
+- Flutter ổn định (SDK ^3.10), Dart 3
+- iOS 15.0+
+- `be-blog` (port 8080) và tùy chọn `messaging-service` (port 8081) khi chạy local
 
-## Chạy nhanh
+## Cấu hình môi trường
 
-Production API là mặc định:
+Sao chép ví dụ rồi chỉnh URL/IP:
+
+```bash
+cp config/dev.example.json config/dev.json
+cp config/production.example.json config/production.json
+```
+
+| Key | Ý nghĩa |
+|---|---|
+| `APP_ENV` | `development` / `production` — ảnh hưởng `AppConfig.appLabel` |
+| `API_BASE_URL` | Ghi đè URL be-blog |
+| `USE_LOCAL_API` | Local: Android emulator `10.0.2.2`, iOS simulator loopback, thiết bị thật dùng `DEV_LAN_HOST` |
+| `MESSAGING_BASE_URL` | Ghi đè URL messaging-service |
+| `USE_LOCAL_MESSAGING` | Tương tự cho chat |
+| `MESSAGING_ENABLED` | Bật/tắt chat |
+| `DEV_LAN_HOST` | IP LAN máy dev (iPhone thật) |
+
+## Chạy
 
 ```bash
 flutter pub get
-flutter run
+
+# Production (mặc định Railway)
+flutter run --dart-define-from-file=config/production.json
+
+# Dev local
+flutter run --dart-define-from-file=config/dev.json
 ```
 
-Android emulator/iOS simulator với backend local:
-
-```bash
-flutter run --dart-define-from-file=config/dev.example.json
-```
-
-iPhone thật cần URL LAN cụ thể:
+Thiết bị thật:
 
 ```bash
 flutter run \
   --dart-define=API_BASE_URL=http://192.168.1.3:8080 \
-  --dart-define=MESSAGING_API_URL=http://192.168.1.3:8081
+  --dart-define=MESSAGING_BASE_URL=http://192.168.1.3:8081 \
+  --dart-define=APP_ENV=development
 ```
 
-Các define hỗ trợ:
+## Kiểm thử
 
-| Define | Mặc định | Ý nghĩa |
-|---|---|---|
-| `API_BASE_URL` | Railway `be-blog` | Ghi đè URL API chính |
-| `USE_LOCAL_API` | `false` | Tự dùng `10.0.2.2` Android, `127.0.0.1` iOS simulator |
-| `MESSAGING_ENABLED` | `true` | Bật/tắt toàn bộ chat |
-| `MESSAGING_API_URL` | Railway messaging | Ghi đè URL dịch vụ chat |
+```bash
+flutter analyze
+flutter test
+```
+
+## Build
+
+```bash
+# Android APK
+flutter build apk --release --dart-define-from-file=config/production.json
+
+# Android App Bundle (Play Store)
+flutter build appbundle --release --dart-define-from-file=config/production.json
+
+# iOS (cần signing trên Xcode)
+flutter build ios --release --dart-define-from-file=config/production.json --no-codesign
+```
+
+Bundle ID: `com.nguyenhuunghia.mobileblog`. Tên hiển thị theo `APP_ENV` (`Nook` / `Nook Dev` trong app title).
+
+## Auth & phiên
+
+- JWT đơn, hạn ~24h, **không có refresh token**.
+- Token lưu trong `flutter_secure_storage` (có migrate một lần từ SharedPreferences `auth_token`).
+- HTTP 401 có auth → `SessionEvents` → `AuthBloc` đăng xuất → GoRouter về `/login`.
 
 ## Firebase push
 
-App vẫn build khi thiếu Firebase và tự tắt push an toàn. Để bật push:
+App build được khi thiếu Firebase và tự tắt push. Để bật:
 
-1. Android: đặt `google-services.json` vào `android/app/`.
-2. iOS: đặt `GoogleService-Info.plist` vào `ios/Runner/` và thêm file vào Runner target trong Xcode.
-3. Bật Push Notifications và Background Modes → Remote notifications cho App ID `com.nguyenhuunghia.mobileblog`.
-4. Cấu hình APNs key trong Firebase Console.
+1. Android: `android/app/google-services.json`
+2. iOS: `ios/Runner/GoogleService-Info.plist` + Push Notifications / Background Modes
+3. APNs key trong Firebase Console
 
-Android 13+ đã khai báo `POST_NOTIFICATIONS`; iOS đã có background mode và `aps-environment` theo build configuration.
+**Chưa kiểm chứng end-to-end** trong repo này (file Firebase chưa có).
 
-## Deep link đặt lại mật khẩu
-
-App nhận:
+## Deep link
 
 - `https://nooknh.com/reset-password?token=...`
-- `nook://reset-password?token=...`
+- `https://nooknh.com/posts/:id`, `/reviews/:id`, `/users/:id`
+- `nook://reset-password`, `nook://posts/...`, …
 
-Để Universal/App Link được xác minh hoàn toàn, domain cần phục vụ:
+## Quyền đã khai báo
 
-- `https://nooknh.com/.well-known/apple-app-site-association`
-- `https://nooknh.com/.well-known/assetlinks.json`
+- Android: `INTERNET`, `CAMERA`, `READ_MEDIA_IMAGES`, `POST_NOTIFICATIONS`
+- iOS: Camera, Photo Library (+ add), background remote notifications
 
-Khi domain chưa cấu hình hai file này, người dùng vẫn có thể dán token từ email vào màn “Đặt lại mật khẩu”.
+## Tính năng
 
-## Release signing
+Hoàn thành (nghiệp vụ + nền tảng mới): auth, feed (Bloc + phân trang), posts (tạo có progress upload), social likes/comments/bookmarks (Bloc), search (Bloc debounce), notifications badge toàn cục, messages (stack hợp nhất + ConversationsBloc + Dio + WebRTC gọi thoại/video), library/reading list, notes, calendar + Pomodoro floating toàn app, friends, profile, admin, settings theme, dark/light.
 
-Android:
+Chưa / hạn chế:
 
-```bash
-cp android/key.properties.example android/key.properties
-# Điền upload keystore thật; key.properties và *.jks đã được gitignore.
-flutter build appbundle --release --dart-define-from-file=config/production.example.json
-```
-
-Nếu chưa có `key.properties`, release build local dùng debug key chỉ để smoke test và không được dùng để phát hành.
-
-iOS:
-
-```bash
-cd ios && pod install && cd ..
-flutter build ios --release --dart-define-from-file=config/production.example.json
-```
-
-Chọn đúng Team/provisioning profile trong `ios/Runner.xcworkspace`. Xem thêm `ios/IOS_DEVICE_SETUP.md`.
-
-## Kiểm tra chất lượng
-
-```bash
-dart format --output=none --set-exit-if-changed lib test
-flutter analyze
-flutter test --coverage
-flutter build apk --debug
-flutter build ios --simulator --debug
-flutter build appbundle --release --dart-define-from-file=config/production.example.json
-flutter build ios --release --no-codesign --dart-define-from-file=config/production.example.json
-```
-
-CI tương ứng nằm tại `.github/workflows/mobile-ci.yml`.
-
-## Cấu trúc
-
-```text
-lib/
-├── app/                 # MaterialApp, startup/session restore, routes
-├── core/                # HTTP, cache, config, theme, shared widgets/services
-├── data/                # DTO + repositories cho be-blog/messaging-service
-└── features/            # auth, feed, library, notes, calendar, messaging, ...
-```
+- Freezed/json_serializable: giữ DTO viết tay (đã có test) để tránh nổ bán kính thay đổi
+- Onboarding: web không có → bỏ qua
+- Một số màn (chat thread chi tiết, admin, notes/calendar) vẫn setState nội bộ; đã có Bloc cho auth/feed/create-post/conversations/notifications/search/settings/social
+- i18n runtime (web có vi/en/ja/de) — UI mobile hiện cố định tiếng Việt
+- Push FCM: chưa kiểm chứng thiếu Firebase config
+- iOS IPA: cần signing thủ công trên máy Mac có certificate

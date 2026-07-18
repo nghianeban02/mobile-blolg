@@ -75,4 +75,34 @@ void main() {
     });
     expect(fromAggregate.conversationId, 'c7');
   });
+
+  test('ChatCall + ChatConfig parse ICE servers từ messaging-service', () {
+    final call = ChatCall.fromJson({
+      'id': 'call-1',
+      'conversationId': 'c1',
+      'initiatorId': 'u1',
+      'mode': 'VIDEO',
+      'status': 'RINGING',
+      'startedAt': '2026-07-18T06:00:00Z',
+    });
+    expect(call.mode, 'VIDEO');
+    expect(call.status, 'RINGING');
+
+    final config = ChatConfig.fromJson({
+      'turnAvailable': true,
+      'iceServers': [
+        {
+          'urls': ['stun:stun.l.google.com:19302'],
+        },
+        {
+          'urls': 'turn:example.com:3478',
+          'username': 'nook',
+          'credential': 'secret',
+        },
+      ],
+    });
+    expect(config.turnAvailable, isTrue);
+    expect(config.iceServers, hasLength(2));
+    expect(config.iceServers.last.toWebRtcMap()['username'], 'nook');
+  });
 }

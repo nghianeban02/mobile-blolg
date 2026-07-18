@@ -5,12 +5,12 @@ import 'package:mobile/core/navigation/open_user_profile.dart';
 import 'package:mobile/core/network/be_blog_http.dart';
 import 'package:mobile/core/widgets/async_loading_view.dart';
 import 'package:mobile/core/widgets/detail_app_bar.dart';
+import 'package:mobile/core/widgets/editorial_form_field.dart';
 import 'package:mobile/data/models/dtos.dart';
 import 'package:mobile/data/repositories/friends_repository.dart';
 import 'package:mobile/data/repositories/users_repository.dart';
 import 'package:mobile/features/friends/widgets/friend_user_tile.dart';
 import 'package:mobile/features/friends/widgets/incoming_request_tile.dart';
-import 'package:mobile/core/widgets/editorial_form_field.dart';
 import 'package:mobile/features/posts/widgets/post_section_label.dart';
 
 /// Kết bạn: danh sách bạn, lời mời đến/đi, tìm user (`/api/friends`, `/api/users/search`).

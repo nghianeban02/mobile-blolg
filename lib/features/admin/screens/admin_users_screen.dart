@@ -137,7 +137,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                             onTap: () {
                               Navigator.push(
                                 context,
-                                MaterialPageRoute(
+                                MaterialPageRoute<void>(
                                   builder: (_) => UserProfileScreen(
                                     userId: u.id,
                                     initialDisplayName: display,

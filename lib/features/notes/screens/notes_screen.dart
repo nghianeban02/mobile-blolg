@@ -89,7 +89,7 @@ class _NotesScreenState extends State<NotesScreen> {
             NoteEditorScreen(noteId: note?.id, initialFolderId: _folderId),
       ),
     );
-    if (changed == true) _load();
+    if (changed == true) unawaited(_load());
   }
 
   Future<void> _runAction(
@@ -103,7 +103,7 @@ class _NotesScreenState extends State<NotesScreen> {
         context,
       ).showSnackBar(SnackBar(content: Text(success)));
     }
-    _load();
+    unawaited(_load());
   }
 
   Future<void> _deleteNote(NoteDto note, {bool permanent = false}) async {
@@ -147,7 +147,7 @@ class _NotesScreenState extends State<NotesScreen> {
         labels: _labels,
       ),
     );
-    _load();
+    unawaited(_load());
   }
 
   @override

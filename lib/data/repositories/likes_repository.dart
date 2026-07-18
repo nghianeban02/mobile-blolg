@@ -1,4 +1,3 @@
-import 'package:http/http.dart' as http;
 import 'package:mobile/core/constants/api_constants.dart';
 import 'package:mobile/core/network/be_blog_http.dart';
 import 'package:mobile/core/network/be_blog_response_parser.dart';
@@ -72,7 +71,7 @@ class BeBlogLikesRepository {
   }
 
   Future<BeBlogRepoResult<LikeStatusDto>> _statusRequest(
-    Future<http.Response> Function() request,
+    Future<ApiResponse> Function() request,
   ) async {
     final response = await request();
     if (!BeBlogResponseParser.isSuccess(response.statusCode)) {

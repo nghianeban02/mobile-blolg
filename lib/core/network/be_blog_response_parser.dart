@@ -1,5 +1,3 @@
-import 'package:http/http.dart' as http;
-
 import 'package:mobile/core/network/be_blog_http.dart';
 
 /// Shared JSON response parsing for be-blog repositories.
@@ -10,7 +8,7 @@ class BeBlogResponseParser {
       statusCode >= 200 && statusCode < 300;
 
   static BeBlogRepoResult<List<T>> list<T>(
-    http.Response response,
+    ApiResponse response,
     T Function(Map<String, dynamic>) fromJson,
   ) {
     final statusCode = response.statusCode;
@@ -31,7 +29,7 @@ class BeBlogResponseParser {
   }
 
   static BeBlogRepoResult<T> one<T>(
-    http.Response response,
+    ApiResponse response,
     T Function(Map<String, dynamic>) fromJson, {
     bool notFoundOn404 = true,
   }) {
@@ -55,7 +53,7 @@ class BeBlogResponseParser {
     }
   }
 
-  static BeBlogRepoResult<void> delete(http.Response response) {
+  static BeBlogRepoResult<void> delete(ApiResponse response) {
     final statusCode = response.statusCode;
     if (statusCode == 204 || statusCode == 200) {
       return BeBlogRepoResult.okEmpty(statusCode);

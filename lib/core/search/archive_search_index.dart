@@ -50,7 +50,7 @@ class ArchiveSearchIndex {
 
     final feedItems = feedResult.data ?? const [];
     var posts = postsFromFeedItems(feedItems);
-    var reviews = reviewsFromFeedItems(feedItems);
+    final reviews = reviewsFromFeedItems(feedItems);
 
     if (!feedResult.success || (posts.isEmpty && reviews.isEmpty)) {
       final networkPosts = await _postsRepo.getNetwork(

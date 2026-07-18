@@ -111,6 +111,9 @@ class ChatMessage {
   final bool pending;
   final String? clientId;
 
+  /// Đường dẫn ảnh local khi đang upload (chỉ phía client).
+  final String? localPreviewPath;
+
   const ChatMessage({
     required this.id,
     required this.sequence,
@@ -128,6 +131,7 @@ class ChatMessage {
     this.revokedAt,
     this.pending = false,
     this.clientId,
+    this.localPreviewPath,
   });
 
   bool get revoked => revokedAt != null;
@@ -135,11 +139,14 @@ class ChatMessage {
   ChatMessage copyWith({
     double? sequence,
     String? content,
+    ChatAttachment? attachment,
     List<MessageReaction>? reactions,
     DateTime? editedAt,
     DateTime? revokedAt,
     bool? pending,
+    String? localPreviewPath,
     bool clearContent = false,
+    bool clearLocalPreview = false,
   }) =>
       ChatMessage(
         id: id,
@@ -151,13 +158,15 @@ class ChatMessage {
         content: clearContent ? null : (content ?? this.content),
         encrypted: encrypted,
         replyTo: replyTo,
-        attachment: attachment,
+        attachment: attachment ?? this.attachment,
         reactions: reactions ?? this.reactions,
         createdAt: createdAt,
         editedAt: editedAt ?? this.editedAt,
         revokedAt: revokedAt ?? this.revokedAt,
         pending: pending ?? this.pending,
         clientId: clientId,
+        localPreviewPath:
+            clearLocalPreview ? null : (localPreviewPath ?? this.localPreviewPath),
       );
 
   factory ChatMessage.fromJson(Map<String, dynamic> json) => ChatMessage(
@@ -298,6 +307,85 @@ class ChatFriend {
         id: _string(json['id']) ?? '',
         username: _string(json['username']) ?? '',
         avatarUrl: _string(json['avatarUrl']),
+      );
+}
+
+class ChatCall {
+  final String id;
+  final String conversationId;
+  final String initiatorId;
+  final String mode; // AUDIO | VIDEO
+  final String status;
+  final DateTime? startedAt;
+
+  const ChatCall({
+    required this.id,
+    required this.conversationId,
+    required this.initiatorId,
+    required this.mode,
+    required this.status,
+    this.startedAt,
+  });
+
+  factory ChatCall.fromJson(Map<String, dynamic> json) => ChatCall(
+        id: _string(json['id']) ?? '',
+        conversationId: _string(json['conversationId']) ?? '',
+        initiatorId: _string(json['initiatorId']) ?? '',
+        mode: _string(json['mode']) == 'VIDEO' ? 'VIDEO' : 'AUDIO',
+        status: _string(json['status']) ?? 'RINGING',
+        startedAt:
+            DateTime.tryParse(_string(json['startedAt']) ?? '')?.toLocal(),
+      );
+}
+
+class ChatIceServer {
+  final List<String> urls;
+  final String? username;
+  final String? credential;
+
+  const ChatIceServer({
+    required this.urls,
+    this.username,
+    this.credential,
+  });
+
+  factory ChatIceServer.fromJson(Map<String, dynamic> json) {
+    final raw = json['urls'];
+    final urls = raw is List
+        ? raw.map((e) => '$e').where((e) => e.isNotEmpty).toList()
+        : raw is String
+            ? [raw]
+            : <String>[];
+    return ChatIceServer(
+      urls: urls,
+      username: _string(json['username']),
+      credential: _string(json['credential']),
+    );
+  }
+
+  Map<String, dynamic> toWebRtcMap() => {
+        'urls': urls.length == 1 ? urls.first : urls,
+        if (username != null) 'username': username,
+        if (credential != null) 'credential': credential,
+      };
+}
+
+class ChatConfig {
+  final bool turnAvailable;
+  final List<ChatIceServer> iceServers;
+
+  const ChatConfig({
+    required this.turnAvailable,
+    required this.iceServers,
+  });
+
+  factory ChatConfig.fromJson(Map<String, dynamic> json) => ChatConfig(
+        turnAvailable: json['turnAvailable'] == true,
+        iceServers: (json['iceServers'] as List?)
+                ?.whereType<Map<String, dynamic>>()
+                .map(ChatIceServer.fromJson)
+                .toList() ??
+            const [],
       );
 }
 

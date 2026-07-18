@@ -157,7 +157,7 @@ class _MyReadingListScreenState extends State<MyReadingListScreen> {
                                 ? () {
                                     Navigator.push(
                                       context,
-                                      MaterialPageRoute(
+                                      MaterialPageRoute<void>(
                                         builder: (_) =>
                                             LibraryBookDetailScreen(
                                               bookId: book.id,

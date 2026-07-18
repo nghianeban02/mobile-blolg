@@ -1,7 +1,5 @@
 import 'dart:io';
 
-import 'package:http/http.dart' as http;
-
 import 'package:mobile/core/cache/api_list_cache.dart';
 import 'package:mobile/core/constants/api_constants.dart';
 import 'package:mobile/core/network/be_blog_http.dart';
@@ -69,34 +67,21 @@ class BeBlogPostsRepository {
     required String content,
     File? titleImageFile,
     List<File> galleryImageFiles = const [],
+    void Function(double progress)? onUploadProgress,
   }) async {
-    final uri = BeBlogHttp.uri(ApiConstants.posts);
-    final request = http.MultipartRequest('POST', uri);
-    request.headers.addAll(await BeBlogHttp.multipartHeaders(auth: true));
-    request.fields['title'] = title;
-    request.fields['content'] = content;
-
-    if (titleImageFile != null) {
-      request.files.add(
-        await http.MultipartFile.fromPath('titleImage', titleImageFile.path),
-      );
-    }
-
-    for (final file in galleryImageFiles) {
-      request.files.add(await http.MultipartFile.fromPath('images', file.path));
-    }
-
     try {
-      final streamed = await request.send().timeout(
-        ApiConstants.connectTimeout,
+      final response = await BeBlogHttp.multipart(
+        'POST',
+        ApiConstants.posts,
+        fields: {'title': title, 'content': content},
+        files: {
+          if (titleImageFile != null) 'titleImage': [titleImageFile],
+          if (galleryImageFiles.isNotEmpty) 'images': galleryImageFiles,
+        },
+        onSendProgress: onUploadProgress,
       );
-      final response = await http.Response.fromStream(streamed);
       final result = BeBlogResponseParser.one(response, PostDto.fromJson);
-      if (result.success) {
-        ApiListCache.invalidatePosts();
-        ApiListCache.invalidateFeed();
-        ApiListCache.invalidate(ApiListCache.myPostsKey);
-      }
+      if (result.success) _invalidatePostCaches();
       return result;
     } catch (e) {
       return BeBlogRepoResult.fail(0, e.toString());
@@ -114,29 +99,23 @@ class BeBlogPostsRepository {
     File? titleImageFile,
     List<File> galleryImageFiles = const [],
     bool replaceGallery = false,
+    void Function(double progress)? onUploadProgress,
   }) async {
-    final uri = BeBlogHttp.uri('${ApiConstants.posts}/$id');
-    final request = http.MultipartRequest('PUT', uri);
-    request.headers.addAll(await BeBlogHttp.multipartHeaders(auth: true));
-
-    if (title != null) request.fields['title'] = title;
-    if (content != null) request.fields['content'] = content;
-    request.fields['replaceGallery'] = replaceGallery.toString();
-
-    if (titleImageFile != null) {
-      request.files.add(
-        await http.MultipartFile.fromPath('titleImage', titleImageFile.path),
-      );
-    }
-    for (final file in galleryImageFiles) {
-      request.files.add(await http.MultipartFile.fromPath('images', file.path));
-    }
-
     try {
-      final streamed = await request.send().timeout(
-        ApiConstants.connectTimeout,
+      final response = await BeBlogHttp.multipart(
+        'PUT',
+        '${ApiConstants.posts}/$id',
+        fields: {
+          'title': ?title,
+          'content': ?content,
+          'replaceGallery': replaceGallery.toString(),
+        },
+        files: {
+          if (titleImageFile != null) 'titleImage': [titleImageFile],
+          if (galleryImageFiles.isNotEmpty) 'images': galleryImageFiles,
+        },
+        onSendProgress: onUploadProgress,
       );
-      final response = await http.Response.fromStream(streamed);
       final result = BeBlogResponseParser.one(response, PostDto.fromJson);
       if (result.success) _invalidatePostCaches();
       return result;
@@ -153,17 +132,12 @@ class BeBlogPostsRepository {
     if (imageFiles.isEmpty) {
       return BeBlogRepoResult.fail(0, 'Không có ảnh nào để thêm.');
     }
-    final uri = BeBlogHttp.uri('${ApiConstants.posts}/$id/gallery');
-    final request = http.MultipartRequest('POST', uri);
-    request.headers.addAll(await BeBlogHttp.multipartHeaders(auth: true));
-    for (final file in imageFiles) {
-      request.files.add(await http.MultipartFile.fromPath('images', file.path));
-    }
     try {
-      final streamed = await request.send().timeout(
-        ApiConstants.connectTimeout,
+      final response = await BeBlogHttp.multipart(
+        'POST',
+        '${ApiConstants.posts}/$id/gallery',
+        files: {'images': imageFiles},
       );
-      final response = await http.Response.fromStream(streamed);
       final result = BeBlogResponseParser.one(response, PostDto.fromJson);
       if (result.success) _invalidatePostCaches();
       return result;

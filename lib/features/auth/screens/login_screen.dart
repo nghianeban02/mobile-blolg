@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:mobile/app/routes.dart';
 import 'package:mobile/core/constants/app_colors.dart';
-import 'package:mobile/data/auth/auth_repository.dart';
-import 'package:mobile/data/auth/login_request.dart';
+import 'package:mobile/core/router/app_router.dart';
+import 'package:mobile/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:mobile/features/auth/widgets/auth_form_field.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -18,7 +19,6 @@ class _LoginScreenState extends State<LoginScreen>
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  final _authRepository = AuthRepository();
 
   bool _isLoading = false;
   bool _obscurePassword = true;
@@ -54,27 +54,26 @@ class _LoginScreenState extends State<LoginScreen>
     super.dispose();
   }
 
-  Future<void> _handleLogin() async {
+  void _handleLogin() {
     if (!_formKey.currentState!.validate()) return;
-
-    setState(() {
-      _isLoading = true;
-      _errorMessage = null;
-    });
-
-    final request = LoginRequest(
-      email: _emailController.text.trim(),
-      password: _passwordController.text,
+    context.read<AuthBloc>().add(
+      AuthLoginRequested(
+        email: _emailController.text.trim(),
+        password: _passwordController.text,
+      ),
     );
+  }
 
-    final response = await _authRepository.login(request);
+  void _handleGuestLogin() {
+    context.read<AuthBloc>().add(const AuthGuestRequested());
+  }
 
-    if (!mounted) return;
-
-    setState(() => _isLoading = false);
-
-    if (response.success) {
-      Navigator.of(context).pushReplacementNamed(AppRoutes.home);
+  void _onAuthChanged(BuildContext context, AuthState state) {
+    setState(() {
+      _isLoading = state.submitting;
+      _errorMessage = state.loginError;
+    });
+    if (state.isAuthenticated) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Đăng nhập thành công!'),
@@ -82,30 +81,19 @@ class _LoginScreenState extends State<LoginScreen>
           behavior: SnackBarBehavior.floating,
         ),
       );
-    } else {
-      setState(() {
-        _errorMessage = response.message ?? 'Đăng nhập thất bại';
-      });
-    }
-  }
-
-  Future<void> _handleGuestLogin() async {
-    setState(() {
-      _isLoading = true;
-      _errorMessage = null;
-    });
-    final response = await _authRepository.loginAsGuest();
-    if (!mounted) return;
-    setState(() => _isLoading = false);
-    if (response.success) {
-      Navigator.of(context).pushReplacementNamed(AppRoutes.home);
-    } else {
-      setState(() => _errorMessage = response.message);
+      // Điều hướng về /home do router redirect đảm nhiệm.
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    return BlocListener<AuthBloc, AuthState>(
+      listener: _onAuthChanged,
+      child: _buildScaffold(context),
+    );
+  }
+
+  Widget _buildScaffold(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.homeBackground,
       body: SafeArea(
@@ -262,7 +250,7 @@ class _LoginScreenState extends State<LoginScreen>
       onToggleVisibility: () =>
           setState(() => _obscurePassword = !_obscurePassword),
       trailingLabel: GestureDetector(
-        onTap: () => Navigator.pushNamed(context, AppRoutes.forgotPassword),
+        onTap: () => context.push(AppRoutes.forgotPassword),
         child: Text(
           'FORGOT?',
           style: GoogleFonts.inter(
@@ -291,7 +279,7 @@ class _LoginScreenState extends State<LoginScreen>
     return OutlinedButton(
       onPressed: _isLoading
           ? null
-          : () => Navigator.pushNamed(context, AppRoutes.register),
+          : () => context.push(AppRoutes.register),
       style: OutlinedButton.styleFrom(
         foregroundColor: AppColors.primaryBrown,
         side: BorderSide(color: AppColors.primaryBrown.withValues(alpha: 0.5)),
@@ -361,7 +349,7 @@ class _LoginScreenState extends State<LoginScreen>
           ),
         ),
         GestureDetector(
-          onTap: () => Navigator.pushNamed(context, AppRoutes.register),
+          onTap: () => context.push(AppRoutes.register),
           child: Text(
             'Sign up',
             style: GoogleFonts.inter(

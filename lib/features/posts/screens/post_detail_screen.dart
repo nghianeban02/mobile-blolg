@@ -1,9 +1,10 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:mobile/core/cache/session_cache.dart';
 import 'package:mobile/core/constants/api_constants.dart';
 import 'package:mobile/core/constants/app_colors.dart';
-import 'package:mobile/core/cache/session_cache.dart';
 import 'package:mobile/core/widgets/async_loading_view.dart';
 import 'package:mobile/core/widgets/editorial_confirm_dialog.dart';
 import 'package:mobile/data/auth/auth_repository.dart';
@@ -17,10 +18,10 @@ import 'package:mobile/features/posts/screens/post_image_viewer_screen.dart';
 import 'package:mobile/features/posts/utils/post_image_urls.dart';
 import 'package:mobile/features/posts/widgets/post_detail_body.dart';
 import 'package:mobile/features/posts/widgets/post_network_image.dart';
+import 'package:mobile/features/saved/widgets/bookmark_button.dart';
 import 'package:mobile/features/social/models/discussion_target.dart';
 import 'package:mobile/features/social/widgets/discussion_comments_section.dart';
 import 'package:mobile/features/social/widgets/engagement_like_bar.dart';
-import 'package:mobile/features/saved/widgets/bookmark_button.dart';
 
 /// Single post from `GET /api/posts/{id}` — editorial layout aligned with home.
 class PostDetailScreen extends StatefulWidget {
@@ -127,7 +128,7 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
       setState(() => _post = updated);
     } else {
       // Có thể đã đổi gallery nhưng hủy ở bước cuối — tải lại cho chắc.
-      _loadPost();
+      unawaited(_loadPost());
     }
   }
 

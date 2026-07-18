@@ -91,7 +91,7 @@ class NoteDto {
       viewCount: (json['viewCount'] as num?)?.toInt() ?? 0,
       labels: labelData is List
           ? labelData
-                .whereType<Map>()
+                .whereType<Map<dynamic, dynamic>>()
                 .map(
                   (e) =>
                       NoteLabelInfoDto.fromJson(Map<String, dynamic>.from(e)),

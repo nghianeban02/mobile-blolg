@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mobile/core/constants/app_colors.dart';
-import 'package:mobile/core/widgets/editorial_ui.dart';
 import 'package:mobile/core/widgets/editorial_surface_card.dart';
+import 'package:mobile/core/widgets/editorial_ui.dart';
 
 /// Ô nhập bình luận — filled rounded field trong surface card.
 class CommentComposerBar extends StatelessWidget {

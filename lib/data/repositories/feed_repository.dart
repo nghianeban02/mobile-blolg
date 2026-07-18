@@ -11,17 +11,26 @@ class BeBlogFeedRepository {
     int size = 100,
     bool forceRefresh = false,
   }) async {
-    return ApiListCache.getOrFetch(
-      key: ApiListCache.feedKey,
-      forceRefresh: forceRefresh,
-      fetch: () async {
-        final response = await BeBlogHttp.get(
-          ApiConstants.feed,
-          query: {'page': '$page', 'size': '$size'},
-        );
-        return BeBlogResponseParser.list(response, FeedItemDto.fromJson);
-      },
+    // Chỉ cache trang đầu — phân trang trang sau luôn gọi mạng.
+    if (page == 0) {
+      return ApiListCache.getOrFetch(
+        key: ApiListCache.feedKey,
+        forceRefresh: forceRefresh,
+        fetch: () => _fetch(page: page, size: size),
+      );
+    }
+    return _fetch(page: page, size: size);
+  }
+
+  Future<BeBlogRepoResult<List<FeedItemDto>>> _fetch({
+    required int page,
+    required int size,
+  }) async {
+    final response = await BeBlogHttp.get(
+      ApiConstants.feed,
+      query: {'page': '$page', 'size': '$size'},
     );
+    return BeBlogResponseParser.list(response, FeedItemDto.fromJson);
   }
 
   /// `GET /api/feed/users/{userId}` — timeline of a specific user.

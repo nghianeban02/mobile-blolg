@@ -1,9 +1,10 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:mobile/core/cache/session_cache.dart';
-import 'package:mobile/core/network/be_blog_http.dart';
 import 'package:mobile/core/constants/api_constants.dart';
 import 'package:mobile/core/constants/app_colors.dart';
+import 'package:mobile/core/network/be_blog_http.dart';
 import 'package:mobile/core/widgets/async_loading_view.dart';
 import 'package:mobile/core/widgets/editorial_confirm_dialog.dart';
 import 'package:mobile/data/auth/auth_repository.dart';
@@ -159,7 +160,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
     );
     if (updated != null && mounted) {
       setState(() => _review = updated);
-      _load();
+      unawaited(_load());
     }
   }
 

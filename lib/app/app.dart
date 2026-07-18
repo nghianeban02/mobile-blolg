@@ -1,16 +1,18 @@
 import 'package:flutter/material.dart';
-import 'package:mobile/app/routes.dart';
-import 'package:mobile/core/navigation/main_shell.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
+import 'package:mobile/core/config/app_config.dart';
+import 'package:mobile/core/pomodoro/pomodoro_floating_timer.dart';
 import 'package:mobile/core/preferences/display_preferences.dart';
+import 'package:mobile/core/router/app_router.dart';
+import 'package:mobile/core/services/push_notifications_service.dart';
 import 'package:mobile/core/theme/app_theme.dart';
-import 'package:mobile/features/auth/screens/login_screen.dart';
-import 'package:mobile/features/auth/screens/register_screen.dart';
-import 'package:mobile/features/auth/screens/forgot_password_screen.dart';
-import 'package:mobile/features/auth/screens/reset_password_screen.dart';
-import 'package:mobile/features/auth/screens/startup_screen.dart';
-import 'package:mobile/features/developer/screens/api_demo_screen.dart';
+import 'package:mobile/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:mobile/features/messages/call/call_controller.dart';
+import 'package:mobile/features/messages/call/call_overlay.dart';
+import 'package:mobile/features/notifications/presentation/bloc/notifications_bloc.dart';
 
-/// Root [MaterialApp]: theme and named routes.
+/// Root app: [AuthBloc] + [NotificationsBloc] toàn cục + GoRouter + theme.
 class MobileApp extends StatefulWidget {
   const MobileApp({super.key});
 
@@ -20,17 +22,46 @@ class MobileApp extends StatefulWidget {
 
 class _MobileAppState extends State<MobileApp> {
   final _display = DisplayPreferences.instance;
+  late final AuthBloc _authBloc;
+  late final NotificationsBloc _notificationsBloc;
+  late final GoRouter _router;
 
   @override
   void initState() {
     super.initState();
+    _authBloc = AuthBloc()..add(const AuthAppStarted());
+    _notificationsBloc = NotificationsBloc()..startPolling();
+    _router = createAppRouter(_authBloc);
     _display.addListener(_refresh);
     _display.load();
+    // Deep link từ notification cuộc gọi (Nhận / tap khi app tắt).
+    WidgetsBinding.instance.addPostFrameCallback((_) => _consumePushLaunchLink());
+  }
+
+  void _consumePushLaunchLink() {
+    final link = PushNotificationsService.pendingLaunchLink;
+    if (link == null || link.isEmpty) return;
+    PushNotificationsService.pendingLaunchLink = null;
+    try {
+      final uri = Uri.parse(link.startsWith('http') ? link : 'https://nooknh.com$link');
+      if (uri.path.startsWith('/messages') || uri.path == AppRoutes.messages) {
+        final conversation = uri.queryParameters['conversation'];
+        final target = conversation == null || conversation.isEmpty
+            ? AppRoutes.messages
+            : '${AppRoutes.messages}?conversation=$conversation';
+        _router.go(target);
+      }
+    } catch (_) {
+      // ignore malformed push link
+    }
   }
 
   @override
   void dispose() {
     _display.removeListener(_refresh);
+    _router.dispose();
+    _notificationsBloc.close();
+    _authBloc.close();
     super.dispose();
   }
 
@@ -40,46 +71,49 @@ class _MobileAppState extends State<MobileApp> {
 
   @override
   Widget build(BuildContext context) {
-    final platformRoute =
-        WidgetsBinding.instance.platformDispatcher.defaultRouteName;
-    return MaterialApp(
-      title: 'Nook',
-      debugShowCheckedModeBanner: false,
-      theme: AppTheme.buildLightTheme(),
-      darkTheme: AppTheme.buildDarkTheme(),
-      themeMode: _display.themeMode,
-      builder: (context, child) {
-        final media = MediaQuery.of(context);
-        return MediaQuery(
-          data: media.copyWith(
-            textScaler: TextScaler.linear(_display.textScale),
-          ),
-          child: child ?? const SizedBox.shrink(),
-        );
-      },
-      initialRoute: platformRoute == '/' ? AppRoutes.startup : platformRoute,
-      routes: {
-        AppRoutes.startup: (context) => const StartupScreen(),
-        AppRoutes.login: (context) => const LoginScreen(),
-        AppRoutes.register: (context) => const RegisterScreen(),
-        AppRoutes.forgotPassword: (context) => const ForgotPasswordScreen(),
-        AppRoutes.resetPassword: (context) => const ResetPasswordScreen(),
-        AppRoutes.home: (context) => const MainShell(),
-        AppRoutes.apiDemo: (context) => const ApiDemoScreen(),
-      },
-      onGenerateRoute: (settings) {
-        final uri = Uri.tryParse(settings.name ?? '');
-        if (uri?.path == AppRoutes.resetPassword ||
-            uri?.host == 'reset-password') {
-          return MaterialPageRoute<void>(
-            settings: settings,
-            builder: (_) => ResetPasswordScreen(
-              initialToken: uri?.queryParameters['token'],
+    // Poll nhẹ khi có pending link từ notification (app vừa mở từ nền).
+    final pending = PushNotificationsService.pendingLaunchLink;
+    if (pending != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _consumePushLaunchLink());
+    }
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider.value(value: _authBloc),
+        BlocProvider.value(value: _notificationsBloc),
+      ],
+      child: MaterialApp.router(
+        title: AppConfig.appLabel,
+        debugShowCheckedModeBanner: false,
+        theme: AppTheme.buildLightTheme(),
+        darkTheme: AppTheme.buildDarkTheme(),
+        themeMode: _display.themeMode,
+        routerConfig: _router,
+        builder: (context, child) {
+          final media = MediaQuery.of(context);
+          return MediaQuery(
+            data: media.copyWith(
+              textScaler: TextScaler.linear(_display.textScale),
+            ),
+            child: BlocListener<AuthBloc, AuthState>(
+              listenWhen: (prev, next) =>
+                  prev.profile?.id != next.profile?.id ||
+                  prev.status != next.status,
+              listener: (context, state) {
+                final userId = state.isAuthenticated ? state.profile?.id : null;
+                CallController.instance.bind(userId);
+              },
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  child ?? const SizedBox.shrink(),
+                  const PomodoroFloatingTimer(),
+                  const CallOverlay(),
+                ],
+              ),
             ),
           );
-        }
-        return null;
-      },
+        },
+      ),
     );
   }
 }

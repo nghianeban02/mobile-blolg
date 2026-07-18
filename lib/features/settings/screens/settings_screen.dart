@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:mobile/core/widgets/main_app_bar.dart';
 import 'package:mobile/data/models/dtos.dart';
 import 'package:mobile/data/repositories/users_repository.dart';
-import 'package:mobile/features/settings/screens/edit_profile_screen.dart';
 import 'package:mobile/features/admin/widgets/admin_tools_section.dart';
 import 'package:mobile/features/profile/screens/user_profile_screen.dart';
+import 'package:mobile/features/settings/screens/edit_profile_screen.dart';
 import 'package:mobile/features/settings/widgets/settings_components.dart';
 
 /// Settings tab: profile from `GET /api/users/me`, edit via `PUT /api/users/me`.
@@ -44,7 +44,7 @@ class SettingsScreenState extends State<SettingsScreen> {
     if (profile == null) return;
     Navigator.push(
       context,
-      MaterialPageRoute(
+      MaterialPageRoute<void>(
         builder: (_) => UserProfileScreen(
           userId: profile.id,
           initialDisplayName: profile.title?.trim().isNotEmpty == true

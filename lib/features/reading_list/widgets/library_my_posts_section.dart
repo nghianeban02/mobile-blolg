@@ -37,7 +37,7 @@ class LibraryMyPostsSection extends StatelessWidget {
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(
+                    MaterialPageRoute<void>(
                       builder: (_) =>
                           PostDetailScreen(postId: post.id, initialPost: post),
                     ),

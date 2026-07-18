@@ -55,7 +55,7 @@ class RelatedReviewsSection extends StatelessWidget {
                   onTap: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(
+                      MaterialPageRoute<void>(
                         builder: (_) => BookDetailScreen(
                           reviewId: review.id,
                           initialReview: review,

@@ -12,13 +12,13 @@ import 'package:mobile/data/repositories/posts_repository.dart';
 import 'package:mobile/data/repositories/reviews_repository.dart';
 import 'package:mobile/data/repositories/users_repository.dart';
 import 'package:mobile/features/posts/widgets/post_section_label.dart';
+import 'package:mobile/features/reading_list/screens/library_book_detail_screen.dart';
 import 'package:mobile/features/reading_list/widgets/currently_reading_card.dart';
 import 'package:mobile/features/reading_list/widgets/editors_choice_banner.dart';
 import 'package:mobile/features/reading_list/widgets/library_my_posts_section.dart';
 import 'package:mobile/features/reading_list/widgets/reading_header.dart';
 import 'package:mobile/features/reading_list/widgets/reading_list_item.dart';
 import 'package:mobile/features/reading_list/widgets/reading_streak_box.dart';
-import 'package:mobile/features/reading_list/screens/library_book_detail_screen.dart';
 import 'package:mobile/features/review/screens/book_detail_screen.dart';
 
 /// Library tab: `GET /api/books/me` + `GET /api/users/me/posts` + user reviews.
@@ -118,7 +118,7 @@ class ReadingListScreenState extends State<ReadingListScreen> {
 
   void _openBook(BookDto book, {int colorIndex = 0}) {
     Navigator.of(context).push(
-      MaterialPageRoute(
+      MaterialPageRoute<void>(
         builder: (_) => LibraryBookDetailScreen(
           bookId: book.id,
           initialBook: book,
@@ -130,7 +130,7 @@ class ReadingListScreenState extends State<ReadingListScreen> {
 
   void _openReview(ReviewDto review) {
     Navigator.of(context).push(
-      MaterialPageRoute(
+      MaterialPageRoute<void>(
         builder: (_) =>
             BookDetailScreen(reviewId: review.id, initialReview: review),
       ),

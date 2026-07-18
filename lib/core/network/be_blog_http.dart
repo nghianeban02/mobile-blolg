@@ -1,20 +1,19 @@
 import 'dart:convert';
+import 'dart:io';
 
-import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
-
+import 'package:dio/dio.dart';
 import 'package:mobile/core/constants/api_constants.dart';
 import 'package:mobile/core/images/image_auth_headers.dart';
+import 'package:mobile/core/network/api_client.dart';
 
-/// Shared JWT storage key — matches [AuthRepository].
-const String kAuthTokenPrefsKey = 'auth_token';
+export 'package:mobile/core/network/api_client.dart' show ApiResponse;
 
-/// HTTP helpers for the Spring **be-blog** API (`application/json`, optional Bearer token).
+/// Façade cho be-blog API — mọi request đi qua [ApiClient] (Dio) với
+/// interceptor gắn Bearer, map lỗi mạng và phát tín hiệu 401.
 class BeBlogHttp {
   BeBlogHttp._();
 
-  static final Future<SharedPreferences> _prefs =
-      SharedPreferences.getInstance();
+  static ApiClient get _client => ApiClient.instance;
 
   /// Bearer headers for `/api/images/**` (required by [SecurityConfig]).
   static Future<Map<String, String>> imageAuthHeaders() =>
@@ -22,41 +21,13 @@ class BeBlogHttp {
 
   static void invalidateImageAuthHeaders() => ImageAuthHeaders.invalidate();
 
-  static Future<void> _applyBearerAuth(
-    Map<String, String> headers, {
-    required bool auth,
-  }) async {
-    if (!auth) return;
-    final prefs = await _prefs;
-    final token = prefs.getString(kAuthTokenPrefsKey);
-    if (token != null && token.isNotEmpty) {
-      headers['Authorization'] = 'Bearer $token';
-    }
-  }
-
-  static Future<Map<String, String>> jsonHeaders({bool auth = true}) async {
-    final headers = <String, String>{
-      'Accept': 'application/json',
-      'Content-Type': 'application/json',
-    };
-    await _applyBearerAuth(headers, auth: auth);
-    return headers;
-  }
-
-  /// Multipart POST must not set Content-Type (boundary is added by [http]).
-  static Future<Map<String, String>> multipartHeaders({
-    bool auth = true,
-  }) async {
-    final headers = <String, String>{'Accept': 'application/json'};
-    await _applyBearerAuth(headers, auth: auth);
-    return headers;
-  }
-
   static Uri uri(String path, [Map<String, String>? query]) {
     final base = Uri.parse('${ApiConstants.baseUrl}$path');
     if (query == null || query.isEmpty) return base;
     return base.replace(queryParameters: query);
   }
+
+  static String _url(String path) => '${ApiConstants.baseUrl}$path';
 
   static dynamic decodeBody(String body) {
     if (body.isEmpty) return null;
@@ -66,12 +37,16 @@ class BeBlogHttp {
   /// Raw JSON array, or Spring Data `Page` (`{ "content": [ ... ] }`).
   static List<Map<String, dynamic>> decodeJsonList(dynamic decoded) {
     if (decoded is List) {
-      return decoded.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+      return decoded
+          .map((e) => Map<String, dynamic>.from(e as Map))
+          .toList();
     }
     if (decoded is Map) {
       final content = decoded['content'];
       if (content is List) {
-        return content.map((e) => Map<String, dynamic>.from(e as Map)).toList();
+        return content
+            .map((e) => Map<String, dynamic>.from(e as Map))
+            .toList();
       }
     }
     throw FormatException(
@@ -96,87 +71,106 @@ class BeBlogHttp {
     return null;
   }
 
-  static Future<http.Response> get(
+  static Future<ApiResponse> get(
     String path, {
     bool auth = true,
     Map<String, String>? query,
-  }) async {
-    final headers = await jsonHeaders(auth: auth);
-    return http
-        .get(uri(path, query), headers: headers)
-        .timeout(ApiConstants.receiveTimeout);
-  }
+  }) => _client.request('GET', _url(path), auth: auth, query: query);
 
-  static Future<http.Response> postJson(
+  static Future<ApiResponse> postJson(
     String path, {
     bool auth = true,
     Object? body,
     Map<String, String>? query,
-  }) async {
-    final headers = await jsonHeaders(auth: auth);
-    return http
-        .post(
-          uri(path, query),
-          headers: headers,
-          body: body == null ? null : jsonEncode(body),
-        )
-        .timeout(ApiConstants.receiveTimeout);
-  }
+  }) => _client.request(
+    'POST',
+    _url(path),
+    auth: auth,
+    query: query,
+    jsonBody: body,
+  );
 
   /// POST without JSON body (e.g. Spring endpoints with no `@RequestBody`).
-  static Future<http.Response> postEmpty(
+  static Future<ApiResponse> postEmpty(
     String path, {
     bool auth = true,
     Map<String, String>? query,
-  }) async {
-    final headers = await jsonHeaders(auth: auth);
-    headers.remove('Content-Type');
-    return http
-        .post(uri(path, query), headers: headers)
-        .timeout(ApiConstants.receiveTimeout);
-  }
+  }) => _client.request('POST', _url(path), auth: auth, query: query);
 
-  static Future<http.Response> patchJson(
+  static Future<ApiResponse> patchJson(
     String path, {
     bool auth = true,
     Object? body,
     Map<String, String>? query,
-  }) async {
-    final headers = await jsonHeaders(auth: auth);
-    return http
-        .patch(
-          uri(path, query),
-          headers: headers,
-          body: body == null ? null : jsonEncode(body),
-        )
-        .timeout(ApiConstants.receiveTimeout);
-  }
+  }) => _client.request(
+    'PATCH',
+    _url(path),
+    auth: auth,
+    query: query,
+    jsonBody: body,
+  );
 
-  static Future<http.Response> putJson(
+  static Future<ApiResponse> putJson(
     String path, {
     bool auth = true,
     Object? body,
     Map<String, String>? query,
-  }) async {
-    final headers = await jsonHeaders(auth: auth);
-    return http
-        .put(
-          uri(path, query),
-          headers: headers,
-          body: body == null ? null : jsonEncode(body),
-        )
-        .timeout(ApiConstants.receiveTimeout);
-  }
+  }) => _client.request(
+    'PUT',
+    _url(path),
+    auth: auth,
+    query: query,
+    jsonBody: body,
+  );
 
-  static Future<http.Response> delete(
+  static Future<ApiResponse> delete(
     String path, {
     bool auth = true,
     Map<String, String>? query,
+  }) => _client.request('DELETE', _url(path), auth: auth, query: query);
+
+  /// Multipart POST/PUT với tiến trình upload ([onSendProgress] 0.0 → 1.0).
+  ///
+  /// [files]: field name → danh sách file (be-blog nhận `titleImage`,
+  /// `coverImage`, `images`, `image` tùy endpoint).
+  static Future<ApiResponse> multipart(
+    String method,
+    String path, {
+    Map<String, String> fields = const {},
+    Map<String, List<File>> files = const {},
+    void Function(double progress)? onSendProgress,
   }) async {
-    final headers = await jsonHeaders(auth: auth);
-    return http
-        .delete(uri(path, query), headers: headers)
-        .timeout(ApiConstants.receiveTimeout);
+    final formData = FormData();
+    fields.forEach((key, value) {
+      formData.fields.add(MapEntry(key, value));
+    });
+    for (final entry in files.entries) {
+      for (final file in entry.value) {
+        formData.files.add(
+          MapEntry(
+            entry.key,
+            await MultipartFile.fromFile(
+              file.path,
+              filename: file.uri.pathSegments.isNotEmpty
+                  ? file.uri.pathSegments.last
+                  : 'upload',
+            ),
+          ),
+        );
+      }
+    }
+    return ApiClient.instance.request(
+      method,
+      _url(path),
+      formData: formData,
+      onSendProgress: onSendProgress == null
+          ? null
+          : (sent, total) {
+              if (total > 0) onSendProgress(sent / total);
+            },
+      // Upload ảnh lớn cần thời gian gửi dài hơn timeout mặc định.
+      sendTimeout: const Duration(minutes: 3),
+    );
   }
 }
 

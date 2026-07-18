@@ -8,7 +8,7 @@ Future<void> openUserProfile(
 }) {
   return Navigator.push(
     context,
-    MaterialPageRoute(
+    MaterialPageRoute<void>(
       builder: (_) =>
           UserProfileScreen(userId: userId, initialDisplayName: displayName),
     ),

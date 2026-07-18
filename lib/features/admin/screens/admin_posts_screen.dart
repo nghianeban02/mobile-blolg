@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mobile/core/constants/app_colors.dart';
@@ -151,11 +152,11 @@ class _AdminPostsScreenState extends State<AdminPostsScreen> {
   Future<void> _openPost(PostDto post) async {
     await Navigator.push(
       context,
-      MaterialPageRoute(
+      MaterialPageRoute<void>(
         builder: (_) => PostDetailScreen(postId: post.id, initialPost: post),
       ),
     );
-    if (mounted) _load();
+    if (mounted) unawaited(_load());
   }
 
   @override

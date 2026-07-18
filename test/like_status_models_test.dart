@@ -1,5 +1,4 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mobile/core/services/messaging_realtime_service.dart';
 import 'package:mobile/data/models/dtos.dart';
 
 void main() {
@@ -41,26 +40,6 @@ void main() {
       for (final type in kReactionTypes) {
         expect(kReactionEmoji[type], isNotNull);
       }
-    });
-  });
-
-  group('MessagingRealtimeEvent', () {
-    test('parse sự kiện message.created', () {
-      final event = MessagingRealtimeEvent.fromJson({
-        'id': 'evt-1',
-        'type': 'message.created',
-        'payload': {'conversationId': 'c1', 'senderId': 'u2'},
-      });
-      expect(event.id, 'evt-1');
-      expect(event.type, 'message.created');
-      expect(event.payload['conversationId'], 'c1');
-    });
-
-    test('payload thiếu vẫn không lỗi', () {
-      final event = MessagingRealtimeEvent.fromJson({'type': 'ping'});
-      expect(event.type, 'ping');
-      expect(event.payload, isEmpty);
-      expect(event.id, isNull);
     });
   });
 }

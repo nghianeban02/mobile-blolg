@@ -11,9 +11,9 @@ import 'package:mobile/data/repositories/books_repository.dart';
 import 'package:mobile/data/repositories/reviews_repository.dart';
 import 'package:mobile/data/repositories/users_repository.dart';
 import 'package:mobile/features/reading_list/screens/edit_book_screen.dart';
+import 'package:mobile/features/reading_list/widgets/book_detail/book_detail_catalog_section.dart';
 import 'package:mobile/features/reading_list/widgets/book_detail/book_detail_cover_hero.dart';
 import 'package:mobile/features/reading_list/widgets/book_detail/book_detail_info.dart';
-import 'package:mobile/features/reading_list/widgets/book_detail/book_detail_catalog_section.dart';
 import 'package:mobile/features/reading_list/widgets/book_detail/book_detail_reading_list_bar.dart';
 import 'package:mobile/features/reading_list/widgets/book_detail/book_detail_reviews_section.dart';
 import 'package:mobile/features/review/screens/book_detail_screen.dart';
@@ -75,9 +75,9 @@ class _LibraryBookDetailScreenState extends State<LibraryBookDetailScreen> {
   Future<void> _openEditBook() async {
     final book = _book;
     if (book == null) return;
-    final result = await Navigator.push(
+    final result = await Navigator.push<Object?>(
       context,
-      MaterialPageRoute(builder: (_) => EditBookScreen(book: book)),
+      MaterialPageRoute<Object?>(builder: (_) => EditBookScreen(book: book)),
     );
     if (!mounted) return;
     if (result == 'deleted') {
@@ -121,7 +121,7 @@ class _LibraryBookDetailScreenState extends State<LibraryBookDetailScreen> {
   void _openPrimaryReview() {
     if (_reviews.isEmpty) return;
     Navigator.of(context).push(
-      MaterialPageRoute(
+      MaterialPageRoute<void>(
         builder: (_) => BookDetailScreen(
           reviewId: _reviews.first.id,
           initialReview: _reviews.first,

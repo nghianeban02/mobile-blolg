@@ -96,7 +96,7 @@ class _SearchHitTile extends StatelessWidget {
         if (post == null) return;
         Navigator.push(
           context,
-          MaterialPageRoute(
+          MaterialPageRoute<void>(
             builder: (_) =>
                 PostDetailScreen(postId: post.id, initialPost: post),
           ),
@@ -106,7 +106,7 @@ class _SearchHitTile extends StatelessWidget {
         if (review == null) return;
         Navigator.push(
           context,
-          MaterialPageRoute(
+          MaterialPageRoute<void>(
             builder: (_) =>
                 BookDetailScreen(reviewId: review.id, initialReview: review),
           ),
@@ -116,7 +116,7 @@ class _SearchHitTile extends StatelessWidget {
         if (book == null) return;
         Navigator.push(
           context,
-          MaterialPageRoute(
+          MaterialPageRoute<void>(
             builder: (_) =>
                 LibraryBookDetailScreen(bookId: book.id, initialBook: book),
           ),

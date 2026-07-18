@@ -173,7 +173,7 @@ class ReviewOfTheDay extends StatelessWidget {
                     ? () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(
+                          MaterialPageRoute<void>(
                             builder: (context) => BookDetailScreen(
                               reviewId: review!.id,
                               initialReview: review,

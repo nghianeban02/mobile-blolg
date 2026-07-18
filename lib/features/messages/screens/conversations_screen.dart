@@ -1,99 +1,53 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
-
 import 'package:mobile/core/constants/app_colors.dart';
 import 'package:mobile/core/services/chat_realtime_service.dart';
 import 'package:mobile/data/messaging/chat_models.dart';
 import 'package:mobile/data/messaging/messaging_api.dart';
-import 'package:mobile/data/repositories/users_repository.dart';
+import 'package:mobile/features/messages/presentation/bloc/conversations_bloc.dart';
 import 'package:mobile/features/messages/screens/chat_screen.dart';
 import 'package:mobile/features/messages/widgets/chat_avatar.dart';
 
-/// Danh sách hội thoại — UX như trang `/messages` bản web:
-/// tìm kiếm, badge chưa đọc, chấm online, tạo chat 1-1/nhóm, realtime.
-class ConversationsScreen extends StatefulWidget {
+/// Danh sách hội thoại — UX như trang `/messages` bản web.
+class ConversationsScreen extends StatelessWidget {
   const ConversationsScreen({super.key});
 
   @override
-  State<ConversationsScreen> createState() => _ConversationsScreenState();
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (_) => ConversationsBloc()..add(const ConversationsStarted()),
+      child: const _ConversationsView(),
+    );
+  }
 }
 
-class _ConversationsScreenState extends State<ConversationsScreen> {
-  final _realtime = ChatRealtimeService.instance;
-  StreamSubscription<ChatRealtimeEvent>? _subscription;
+class _ConversationsView extends StatelessWidget {
+  const _ConversationsView();
 
-  bool _loading = true;
-  String? _error;
-  String _query = '';
-  String? _currentUserId;
-  List<ChatConversation> _conversations = const [];
-
-  @override
-  void initState() {
-    super.initState();
-    unawaited(_realtime.start());
-    _realtime.addListener(_onRealtimeState);
-    _subscription = _realtime.events.listen(_onEvent);
-    unawaited(_load());
-    unawaited(BeBlogUsersRepository().me().then((result) {
-      if (mounted && result.success) {
-        setState(() => _currentUserId = result.data?.id);
-      }
-    }));
-  }
-
-  @override
-  void dispose() {
-    _realtime.removeListener(_onRealtimeState);
-    unawaited(_subscription?.cancel());
-    super.dispose();
-  }
-
-  void _onRealtimeState() {
-    if (mounted) setState(() {});
-  }
-
-  Future<void> _load() async {
-    try {
-      final items = await MessagingApi.conversations();
-      if (!mounted) return;
-      setState(() {
-        _conversations = items;
-        _loading = false;
-        _error = null;
-      });
-    } catch (e) {
-      if (!mounted) return;
-      setState(() {
-        _loading = false;
-        _error = e.toString();
-      });
-    }
-  }
-
-  void _onEvent(ChatRealtimeEvent event) {
-    // Danh sách nhẹ nên đồng bộ bằng cách tải lại (đã debounce phía service).
-    if (event.type == 'message.created' ||
-        event.type == 'message.revoked' ||
-        event.type == 'conversation.read' ||
-        event.type.startsWith('conversation.')) {
-      unawaited(_load());
-    }
-  }
-
-  Future<void> _openChat(ChatConversation conversation) async {
-    await Navigator.of(context).push(MaterialPageRoute(
-      builder: (_) => ChatScreen(
-        conversation: conversation,
-        currentUserId: _currentUserId,
+  Future<void> _openChat(
+    BuildContext context,
+    ChatConversation conversation,
+    String? currentUserId,
+  ) async {
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => ChatScreen(
+          conversation: conversation,
+          currentUserId: currentUserId,
+        ),
       ),
-    ));
-    if (mounted) unawaited(_load());
+    );
+    if (context.mounted) {
+      context.read<ConversationsBloc>().add(
+        const ConversationsRefreshRequested(),
+      );
+    }
   }
 
-  Future<void> _openNewChat() async {
+  Future<void> _openNewChat(BuildContext context) async {
     final created = await showModalBottomSheet<String>(
       context: context,
       isScrollControlled: true,
@@ -103,95 +57,131 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
       ),
       builder: (_) => const _NewChatSheet(),
     );
-    if (created == null || !mounted) return;
-    await _load();
-    final conversation =
-        _conversations.where((item) => item.id == created).firstOrNull;
-    if (conversation != null) await _openChat(conversation);
-  }
-
-  List<ChatConversation> get _filtered {
-    final query = _query.trim().toLowerCase();
-    if (query.isEmpty) return _conversations;
-    return _conversations
-        .where((item) =>
-            item.displayName(_currentUserId).toLowerCase().contains(query))
-        .toList();
+    if (created == null || !context.mounted) return;
+    final bloc = context.read<ConversationsBloc>();
+    bloc.add(const ConversationsRefreshRequested());
+    await bloc.stream.firstWhere(
+      (s) => s.status == ConversationsStatus.success,
+    );
+    if (!context.mounted) return;
+    final conversation = bloc.state.conversations
+        .where((item) => item.id == created)
+        .firstOrNull;
+    if (conversation != null) {
+      await _openChat(context, conversation, bloc.state.currentUserId);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Tin nhắn',
-            style: GoogleFonts.playfairDisplay(
-                fontSize: 22, fontWeight: FontWeight.w600)),
-        centerTitle: false,
-      ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: AppColors.primaryBrown,
-        shape: const CircleBorder(),
-        onPressed: _openNewChat,
-        child: const Icon(Icons.edit_outlined, color: Colors.white),
-      ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    onChanged: (value) => setState(() => _query = value),
-                    decoration: InputDecoration(
-                      hintText: 'Tìm cuộc trò chuyện',
-                      prefixIcon: const Icon(Icons.search, size: 20),
-                      isDense: true,
-                      filled: true,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(14),
-                        borderSide: BorderSide.none,
+    final realtime = ChatRealtimeService.instance;
+    return BlocBuilder<ConversationsBloc, ConversationsState>(
+      builder: (context, state) {
+        final filtered = state.filtered;
+        final loading = state.status == ConversationsStatus.loading &&
+            state.conversations.isEmpty;
+        return Scaffold(
+          appBar: AppBar(
+            title: Text(
+              'Tin nhắn',
+              style: GoogleFonts.playfairDisplay(
+                fontSize: 22,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            centerTitle: false,
+          ),
+          floatingActionButton: FloatingActionButton(
+            backgroundColor: AppColors.primaryBrown,
+            shape: const CircleBorder(),
+            onPressed: () => _openNewChat(context),
+            child: const Icon(Icons.edit_outlined, color: Colors.white),
+          ),
+          body: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        onChanged: (value) => context
+                            .read<ConversationsBloc>()
+                            .add(ConversationsQueryChanged(value)),
+                        decoration: InputDecoration(
+                          hintText: 'Tìm cuộc trò chuyện',
+                          prefixIcon: const Icon(Icons.search, size: 20),
+                          isDense: true,
+                          filled: true,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
                       ),
                     ),
-                  ),
+                    const SizedBox(width: 10),
+                    _ConnectionDot(connected: state.connected),
+                  ],
                 ),
-                const SizedBox(width: 10),
-                _ConnectionDot(connected: _realtime.connected),
-              ],
-            ),
+              ),
+              Expanded(
+                child: loading
+                    ? const Center(child: CircularProgressIndicator())
+                    : state.status == ConversationsStatus.failure
+                    ? _ErrorView(
+                        message: state.errorMessage ?? 'Lỗi tải tin nhắn',
+                        onRetry: () => context.read<ConversationsBloc>().add(
+                          const ConversationsRefreshRequested(),
+                        ),
+                      )
+                    : filtered.isEmpty
+                    ? _EmptyView(onNewChat: () => _openNewChat(context))
+                    : RefreshIndicator(
+                        onRefresh: () async {
+                          context.read<ConversationsBloc>().add(
+                            const ConversationsRefreshRequested(),
+                          );
+                          await context
+                              .read<ConversationsBloc>()
+                              .stream
+                              .firstWhere(
+                                (s) =>
+                                    s.status == ConversationsStatus.success ||
+                                    s.status == ConversationsStatus.failure,
+                              );
+                        },
+                        child: ListView.builder(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          itemCount: filtered.length,
+                          itemBuilder: (context, index) {
+                            final conversation = filtered[index];
+                            return _ConversationTile(
+                              conversation: conversation,
+                              currentUserId: state.currentUserId,
+                              online: !conversation.isGroup &&
+                                  realtime.isOnline(
+                                    conversation
+                                            .otherMember(state.currentUserId)
+                                            ?.userId ??
+                                        '',
+                                  ),
+                              onTap: () => _openChat(
+                                context,
+                                conversation,
+                                state.currentUserId,
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+              ),
+            ],
           ),
-          Expanded(
-            child: _loading
-                ? const Center(child: CircularProgressIndicator())
-                : _error != null
-                    ? _ErrorView(message: _error!, onRetry: _load)
-                    : _filtered.isEmpty
-                        ? _EmptyView(onNewChat: _openNewChat)
-                        : RefreshIndicator(
-                            onRefresh: _load,
-                            child: ListView.builder(
-                              physics: const AlwaysScrollableScrollPhysics(),
-                              itemCount: _filtered.length,
-                              itemBuilder: (context, index) {
-                                final conversation = _filtered[index];
-                                return _ConversationTile(
-                                  conversation: conversation,
-                                  currentUserId: _currentUserId,
-                                  online: !conversation.isGroup &&
-                                      _realtime.isOnline(conversation
-                                              .otherMember(_currentUserId)
-                                              ?.userId ??
-                                          ''),
-                                  onTap: () => _openChat(conversation),
-                                );
-                              },
-                            ),
-                          ),
-          ),
-        ],
-      ),
-      backgroundColor: theme.scaffoldBackgroundColor,
+          backgroundColor: theme.scaffoldBackgroundColor,
+        );
+      },
     );
   }
 }
@@ -203,16 +193,16 @@ class _ConnectionDot extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Tooltip(
-        message: connected ? 'Đang hoạt động' : 'Đang kết nối…',
-        child: Container(
-          width: 10,
-          height: 10,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: connected ? AppColors.success : Colors.grey,
-          ),
-        ),
-      );
+    message: connected ? 'Đang hoạt động' : 'Đang kết nối…',
+    child: Container(
+      width: 10,
+      height: 10,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: connected ? AppColors.success : Colors.grey,
+      ),
+    ),
+  );
 }
 
 class _ConversationTile extends StatelessWidget {
@@ -295,8 +285,9 @@ class _ConversationTile extends StatelessWidget {
                         _time,
                         style: GoogleFonts.inter(
                           fontSize: 11,
-                          color: theme.colorScheme.onSurface
-                              .withValues(alpha: 0.5),
+                          color: theme.colorScheme.onSurface.withValues(
+                            alpha: 0.5,
+                          ),
                         ),
                       ),
                     ],
@@ -311,12 +302,14 @@ class _ConversationTile extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                           style: GoogleFonts.inter(
                             fontSize: 13,
-                            fontWeight:
-                                unread ? FontWeight.w600 : FontWeight.w400,
+                            fontWeight: unread
+                                ? FontWeight.w600
+                                : FontWeight.w400,
                             color: unread
                                 ? theme.colorScheme.onSurface
-                                : theme.colorScheme.onSurface
-                                    .withValues(alpha: 0.55),
+                                : theme.colorScheme.onSurface.withValues(
+                                    alpha: 0.55,
+                                  ),
                           ),
                         ),
                       ),
@@ -324,7 +317,9 @@ class _ConversationTile extends StatelessWidget {
                         const SizedBox(width: 8),
                         Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 7, vertical: 2),
+                            horizontal: 7,
+                            vertical: 2,
+                          ),
                           decoration: BoxDecoration(
                             color: AppColors.primaryBrown,
                             borderRadius: BorderRadius.circular(999),
@@ -360,49 +355,50 @@ class _EmptyView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.chat_bubble_outline,
-                size: 44, color: AppColors.primaryBrown.withValues(alpha: 0.7)),
-            const SizedBox(height: 12),
-            const Text('Bạn chưa có cuộc trò chuyện nào.'),
-            TextButton(
-              onPressed: onNewChat,
-              child: const Text('Nhắn tin cho một người bạn',
-                  style: TextStyle(color: AppColors.primaryBrown)),
-            ),
-          ],
+    child: Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Icon(
+          Icons.chat_bubble_outline,
+          size: 44,
+          color: AppColors.primaryBrown.withValues(alpha: 0.7),
         ),
-      );
+        const SizedBox(height: 12),
+        const Text('Bạn chưa có cuộc trò chuyện nào.'),
+        TextButton(
+          onPressed: onNewChat,
+          child: const Text(
+            'Nhắn tin cho một người bạn',
+            style: TextStyle(color: AppColors.primaryBrown),
+          ),
+        ),
+      ],
+    ),
+  );
 }
 
 class _ErrorView extends StatelessWidget {
   final String message;
-  final Future<void> Function() onRetry;
+  final VoidCallback onRetry;
 
   const _ErrorView({required this.message, required this.onRetry});
 
   @override
   Widget build(BuildContext context) => Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(message, textAlign: TextAlign.center),
-              const SizedBox(height: 12),
-              OutlinedButton(
-                onPressed: () => onRetry(),
-                child: const Text('Thử lại'),
-              ),
-            ],
-          ),
-        ),
-      );
+    child: Padding(
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(message, textAlign: TextAlign.center),
+          const SizedBox(height: 12),
+          OutlinedButton(onPressed: onRetry, child: const Text('Thử lại')),
+        ],
+      ),
+    ),
+  );
 }
 
-/// Bottom sheet tạo chat mới — 1-1 hoặc nhóm, chọn từ danh sách bạn bè.
 class _NewChatSheet extends StatefulWidget {
   const _NewChatSheet();
 
@@ -421,16 +417,20 @@ class _NewChatSheetState extends State<_NewChatSheet> {
   @override
   void initState() {
     super.initState();
-    unawaited(MessagingApi.friends().then((friends) {
-      if (mounted) {
-        setState(() {
-          _friends = friends;
-          _loading = false;
-        });
-      }
-    }).catchError((Object _) {
-      if (mounted) setState(() => _loading = false);
-    }));
+    unawaited(
+      MessagingApi.friends()
+          .then((friends) {
+            if (mounted) {
+              setState(() {
+                _friends = friends;
+                _loading = false;
+              });
+            }
+          })
+          .catchError((Object _) {
+            if (mounted) setState(() => _loading = false);
+          }),
+    );
   }
 
   Future<void> _submit() async {
@@ -444,8 +444,9 @@ class _NewChatSheetState extends State<_NewChatSheet> {
     } catch (e) {
       if (mounted) {
         setState(() => _submitting = false);
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(e.toString())));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.toString())));
       }
     }
   }
@@ -464,9 +465,13 @@ class _NewChatSheetState extends State<_NewChatSheet> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text('Cuộc trò chuyện mới',
-              style: GoogleFonts.playfairDisplay(
-                  fontSize: 20, fontWeight: FontWeight.w600)),
+          Text(
+            'Cuộc trò chuyện mới',
+            style: GoogleFonts.playfairDisplay(
+              fontSize: 20,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
           const SizedBox(height: 12),
           SegmentedButton<bool>(
             segments: const [
@@ -488,7 +493,9 @@ class _NewChatSheetState extends State<_NewChatSheet> {
               onChanged: (value) => _title = value,
               maxLength: 160,
               decoration: const InputDecoration(
-                  labelText: 'Tên nhóm', counterText: ''),
+                labelText: 'Tên nhóm',
+                counterText: '',
+              ),
             ),
           ],
           const SizedBox(height: 8),
@@ -499,42 +506,45 @@ class _NewChatSheetState extends State<_NewChatSheet> {
                     child: Center(child: CircularProgressIndicator()),
                   )
                 : _friends.isEmpty
-                    ? const Padding(
-                        padding: EdgeInsets.all(24),
-                        child:
-                            Text('Hãy kết bạn trước khi bắt đầu trò chuyện.'),
-                      )
-                    : ListView.builder(
-                        shrinkWrap: true,
-                        itemCount: _friends.length,
-                        itemBuilder: (context, index) {
-                          final friend = _friends[index];
-                          final checked = _selected.contains(friend.id);
-                          return CheckboxListTile(
-                            value: checked,
-                            activeColor: AppColors.primaryBrown,
-                            title: Text(friend.username),
-                            secondary: ChatAvatar(
-                                name: friend.username,
-                                avatarUrl: friend.avatarUrl,
-                                size: 36),
-                            onChanged: (_) => setState(() {
-                              if (!_group) _selected.clear();
-                              checked
-                                  ? _selected.remove(friend.id)
-                                  : _selected.add(friend.id);
-                            }),
-                          );
-                        },
-                      ),
+                ? const Padding(
+                    padding: EdgeInsets.all(24),
+                    child: Text('Hãy kết bạn trước khi bắt đầu trò chuyện.'),
+                  )
+                : ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: _friends.length,
+                    itemBuilder: (context, index) {
+                      final friend = _friends[index];
+                      final checked = _selected.contains(friend.id);
+                      return CheckboxListTile(
+                        value: checked,
+                        activeColor: AppColors.primaryBrown,
+                        title: Text(friend.username),
+                        secondary: ChatAvatar(
+                          name: friend.username,
+                          avatarUrl: friend.avatarUrl,
+                          size: 36,
+                        ),
+                        onChanged: (_) => setState(() {
+                          if (!_group) _selected.clear();
+                          checked
+                              ? _selected.remove(friend.id)
+                              : _selected.add(friend.id);
+                        }),
+                      );
+                    },
+                  ),
           ),
           const SizedBox(height: 8),
           FilledButton(
-            style:
-                FilledButton.styleFrom(backgroundColor: AppColors.primaryBrown),
+            style: FilledButton.styleFrom(
+              backgroundColor: AppColors.primaryBrown,
+            ),
             onPressed: _submitting || _selected.isEmpty ? null : _submit,
-            child: Text(_submitting ? 'Đang tạo…' : 'Tạo cuộc trò chuyện',
-                style: TextStyle(color: theme.colorScheme.onPrimary)),
+            child: Text(
+              _submitting ? 'Đang tạo…' : 'Tạo cuộc trò chuyện',
+              style: TextStyle(color: theme.colorScheme.onPrimary),
+            ),
           ),
         ],
       ),

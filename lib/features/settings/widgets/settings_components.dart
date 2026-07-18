@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:mobile/app/routes.dart';
 import 'package:mobile/core/constants/app_colors.dart';
 import 'package:mobile/core/preferences/display_preferences.dart';
+import 'package:mobile/core/router/app_router.dart';
 import 'package:mobile/core/widgets/editorial_surface_card.dart';
 import 'package:mobile/core/widgets/editorial_ui.dart';
-import 'package:mobile/data/auth/auth_repository.dart';
 import 'package:mobile/data/models/dtos.dart';
-import 'package:mobile/features/friends/screens/friends_screen.dart';
+import 'package:mobile/data/repositories/notifications_repository.dart';
+import 'package:mobile/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:mobile/features/calendar/screens/calendar_screen.dart';
-import 'package:mobile/features/messaging/screens/messages_screen.dart';
+import 'package:mobile/features/friends/screens/friends_screen.dart';
+import 'package:mobile/features/messages/screens/conversations_screen.dart';
 import 'package:mobile/features/notes/screens/notes_screen.dart';
 import 'package:mobile/features/reading_list/screens/create_book_screen.dart';
 import 'package:mobile/features/saved/screens/saved_screen.dart';
@@ -17,7 +20,6 @@ import 'package:mobile/features/settings/screens/change_password_screen.dart';
 import 'package:mobile/features/settings/widgets/settings_checkbox_tile.dart';
 import 'package:mobile/features/settings/widgets/settings_item_row.dart';
 import 'package:mobile/features/settings/widgets/settings_section_title.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 // ----------------------------------------------------------------------
 // HEADER
@@ -207,7 +209,7 @@ class FriendsSection extends StatelessWidget {
           actionText: 'Open',
           onActionTap: () => Navigator.push(
             context,
-            MaterialPageRoute(builder: (_) => const FriendsScreen()),
+            MaterialPageRoute<void>(builder: (_) => const FriendsScreen()),
           ),
         ),
       ],
@@ -233,7 +235,7 @@ class PersonalToolsSection extends StatelessWidget {
         actionText: 'Open',
         onActionTap: () => Navigator.push(
           context,
-          MaterialPageRoute(builder: (_) => const MessagesScreen()),
+          MaterialPageRoute<void>(builder: (_) => const ConversationsScreen()),
         ),
       ),
       const SizedBox(height: 20),
@@ -243,7 +245,7 @@ class PersonalToolsSection extends StatelessWidget {
         actionText: 'Open',
         onActionTap: () => Navigator.push(
           context,
-          MaterialPageRoute(builder: (_) => const NotesScreen()),
+          MaterialPageRoute<void>(builder: (_) => const NotesScreen()),
         ),
       ),
       const SizedBox(height: 20),
@@ -253,7 +255,7 @@ class PersonalToolsSection extends StatelessWidget {
         actionText: 'Open',
         onActionTap: () => Navigator.push(
           context,
-          MaterialPageRoute(builder: (_) => const CalendarScreen()),
+          MaterialPageRoute<void>(builder: (_) => const CalendarScreen()),
         ),
       ),
       const SizedBox(height: 20),
@@ -263,7 +265,7 @@ class PersonalToolsSection extends StatelessWidget {
         actionText: 'Open',
         onActionTap: () => Navigator.push(
           context,
-          MaterialPageRoute(builder: (_) => const SavedScreen()),
+          MaterialPageRoute<void>(builder: (_) => const SavedScreen()),
         ),
       ),
       const SizedBox(height: 20),
@@ -273,7 +275,7 @@ class PersonalToolsSection extends StatelessWidget {
         actionText: 'Create',
         onActionTap: () => Navigator.push(
           context,
-          MaterialPageRoute(builder: (_) => const CreateBookScreen()),
+          MaterialPageRoute<void>(builder: (_) => const CreateBookScreen()),
         ),
       ),
     ],
@@ -307,7 +309,7 @@ class AccountSecuritySection extends StatelessWidget {
           actionText: 'Update',
           onActionTap: () => Navigator.push(
             context,
-            MaterialPageRoute(builder: (_) => const ChangePasswordScreen()),
+            MaterialPageRoute<void>(builder: (_) => const ChangePasswordScreen()),
           ),
         ),
       ],
@@ -332,7 +334,7 @@ class DeveloperBeBlogSection extends StatelessWidget {
           title: 'be-blog REST samples',
           subtitle: 'Posts, books, reviews, catalog, JWT demos',
           actionText: 'Open',
-          onActionTap: () => Navigator.pushNamed(context, AppRoutes.apiDemo),
+          onActionTap: () => context.push(AppRoutes.apiDemo),
         ),
       ],
     );
@@ -447,6 +449,8 @@ class _ReadingExperienceSectionState extends State<ReadingExperienceSection> {
 // ----------------------------------------------------------------------
 // NOTIFICATIONS
 // ----------------------------------------------------------------------
+/// Tùy chọn push theo loại — `GET/PUT /api/notifications/preferences`.
+/// Áp dụng cho mọi thiết bị của tài khoản; server thực thi khi gửi FCM.
 class NotificationsSection extends StatefulWidget {
   const NotificationsSection({super.key});
 
@@ -455,11 +459,11 @@ class NotificationsSection extends StatefulWidget {
 }
 
 class _NotificationsSectionState extends State<NotificationsSection> {
-  static const _digestKey = 'notification_weekly_digest';
-  static const _alertsKey = 'notification_immediate_alerts';
+  final _notificationsRepo = BeBlogNotificationsRepository();
 
-  bool _isWeeklyDigestChecked = true;
-  bool _isImmediateAlertsChecked = false;
+  PushPreferencesDto? _preferences;
+  bool _loading = true;
+  bool _loadFailed = false;
 
   @override
   void initState() {
@@ -468,32 +472,42 @@ class _NotificationsSectionState extends State<NotificationsSection> {
   }
 
   Future<void> _load() async {
-    final preferences = await SharedPreferences.getInstance();
+    setState(() {
+      _loading = true;
+      _loadFailed = false;
+    });
+    final result = await _notificationsRepo.pushPreferences();
     if (!mounted) return;
     setState(() {
-      _isWeeklyDigestChecked = preferences.getBool(_digestKey) ?? true;
-      _isImmediateAlertsChecked = preferences.getBool(_alertsKey) ?? false;
+      _loading = false;
+      _preferences = result.data;
+      _loadFailed = result.data == null;
     });
   }
 
-  Future<void> _setDigest(bool value) async {
-    setState(() => _isWeeklyDigestChecked = value);
-    final preferences = await SharedPreferences.getInstance();
-    await preferences.setBool(_digestKey, value);
-  }
-
-  Future<void> _setAlerts(bool value) async {
-    setState(() => _isImmediateAlertsChecked = value);
-    final preferences = await SharedPreferences.getInstance();
-    await preferences.setBool(_alertsKey, value);
+  Future<void> _apply(PushPreferencesDto next) async {
+    final previous = _preferences ?? PushPreferencesDto.defaults;
+    setState(() => _preferences = next);
+    final result = await _notificationsRepo.updatePushPreferences(next);
+    if (!mounted) return;
+    if (result.data == null) {
+      // Hoàn tác khi lưu thất bại để UI luôn khớp server.
+      setState(() => _preferences = previous);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Không lưu được tùy chọn thông báo. Thử lại.')),
+      );
+    } else {
+      setState(() => _preferences = result.data);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final preferences = _preferences ?? PushPreferencesDto.defaults;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const SettingsSectionTitle(text: 'NOTIFICATIONS'),
+        const SettingsSectionTitle(text: 'PUSH NOTIFICATIONS'),
         const SizedBox(height: 24),
         Container(
           padding: const EdgeInsets.all(24),
@@ -501,25 +515,77 @@ class _NotificationsSectionState extends State<NotificationsSection> {
             color: AppColors.hoverWash,
             borderRadius: BorderRadius.circular(AppRadius.lg),
           ),
-          child: Column(
-            children: [
-              SettingsCheckboxTile(
-                title: 'Weekly Digest',
-                subtitle:
-                    'A curated collection of the week\'s most\nprofound essays, delivered every Sunday\nmorning.',
-                isChecked: _isWeeklyDigestChecked,
-                onChanged: _setDigest,
-              ),
-              const SizedBox(height: 32),
-              SettingsCheckboxTile(
-                title: 'Immediate Publication Alerts',
-                subtitle:
-                    'Real-time alerts when your followed critics\npublish new reviews.',
-                isChecked: _isImmediateAlertsChecked,
-                onChanged: _setAlerts,
-              ),
-            ],
-          ),
+          child: _loading
+              ? const Center(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(vertical: 12),
+                    child: SizedBox(
+                      width: 22,
+                      height: 22,
+                      child: CircularProgressIndicator(strokeWidth: 2.4),
+                    ),
+                  ),
+                )
+              : _loadFailed
+                  ? Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Không tải được tùy chọn thông báo.',
+                          style: GoogleFonts.inter(
+                            color: AppColors.homeTextDark.withValues(alpha: 0.7),
+                            fontSize: 13,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        TextButton(onPressed: _load, child: const Text('Thử lại')),
+                      ],
+                    )
+                  : Column(
+                      children: [
+                        SettingsCheckboxTile(
+                          title: 'Tin nhắn mới',
+                          subtitle: 'Tin nhắn chat khi bạn không mở app.',
+                          isChecked: preferences.messages,
+                          onChanged: (v) => _apply(preferences.copyWith(messages: v)),
+                        ),
+                        const SizedBox(height: 24),
+                        SettingsCheckboxTile(
+                          title: 'Cuộc gọi & cuộc gọi nhỡ',
+                          subtitle: 'Cuộc gọi đến và thông báo gọi nhỡ.',
+                          isChecked: preferences.calls,
+                          onChanged: (v) => _apply(preferences.copyWith(calls: v)),
+                        ),
+                        const SizedBox(height: 24),
+                        SettingsCheckboxTile(
+                          title: 'Lời mời kết bạn',
+                          subtitle: 'Lời mời mới và khi được chấp nhận.',
+                          isChecked: preferences.friends,
+                          onChanged: (v) => _apply(preferences.copyWith(friends: v)),
+                        ),
+                        const SizedBox(height: 24),
+                        SettingsCheckboxTile(
+                          title: 'Bình luận & trả lời',
+                          subtitle: 'Bình luận trên bài viết/review của bạn.',
+                          isChecked: preferences.comments,
+                          onChanged: (v) => _apply(preferences.copyWith(comments: v)),
+                        ),
+                        const SizedBox(height: 24),
+                        SettingsCheckboxTile(
+                          title: 'Lượt thích',
+                          subtitle: 'Khi có người thích nội dung của bạn.',
+                          isChecked: preferences.likes,
+                          onChanged: (v) => _apply(preferences.copyWith(likes: v)),
+                        ),
+                        const SizedBox(height: 24),
+                        SettingsCheckboxTile(
+                          title: 'Cập nhật hệ thống',
+                          subtitle: 'Duyệt bài và thông báo quản trị.',
+                          isChecked: preferences.system,
+                          onChanged: (v) => _apply(preferences.copyWith(system: v)),
+                        ),
+                      ],
+                    ),
         ),
       ],
     );
@@ -571,14 +637,9 @@ class SettingsFooter extends StatelessWidget {
           label: 'Log Out Account',
           destructive: true,
           expanded: true,
-          onPressed: () async {
-            final repository = AuthRepository();
-            await repository.logout();
-            if (context.mounted) {
-              Navigator.of(
-                context,
-              ).pushNamedAndRemoveUntil(AppRoutes.login, (route) => false);
-            }
+          onPressed: () {
+            // Router tự chuyển về /login khi AuthBloc sang unauthenticated.
+            context.read<AuthBloc>().add(const AuthLogoutRequested());
           },
         ),
       ],

@@ -1,23 +1,22 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:shared_preferences/shared_preferences.dart';
-
+import 'package:mobile/core/auth/token_store.dart';
 import 'package:mobile/core/cache/api_list_cache.dart';
 import 'package:mobile/core/cache/session_cache.dart';
 import 'package:mobile/core/constants/api_constants.dart';
+import 'package:mobile/core/network/api_client.dart';
 import 'package:mobile/core/network/be_blog_http.dart';
-import 'package:mobile/core/services/push_notifications_service.dart';
 import 'package:mobile/core/network/be_blog_response_parser.dart';
+import 'package:mobile/core/services/push_notifications_service.dart';
 import 'package:mobile/data/auth/login_request.dart';
 import 'package:mobile/data/auth/login_response.dart';
 import 'package:mobile/data/auth/register_request.dart';
 
 /// Handles authentication-related logic, interacting with the backend API
-/// to perform login and managing the local session token using [SharedPreferences].
+/// to perform login and managing the local session token via [TokenStore]
+/// (flutter_secure_storage).
 class AuthRepository {
-  static final Future<SharedPreferences> _prefsFuture =
-      SharedPreferences.getInstance();
 
   /// Performs a login attempt by hitting the backend API.
   /// Returns a [LoginResponse] which dictates if the action was successful or not.
@@ -223,23 +222,17 @@ class AuthRepository {
     }
   }
 
-  Future<void> _saveToken(String token) async {
-    final prefs = await _prefsFuture;
-    await prefs.setString(kAuthTokenPrefsKey, token);
-  }
+  Future<void> _saveToken(String token) =>
+      TokenStore.instance.write(token);
 
   /// Retrieves the saved JWT auth token, if any.
-  Future<String?> getToken() async {
-    final prefs = await _prefsFuture;
-    return prefs.getString(kAuthTokenPrefsKey);
-  }
+  Future<String?> getToken() => TokenStore.instance.read();
 
   /// Clears the saved JWT token to actively log the user out.
   Future<void> logout() async {
     // Gỡ FCM token khi JWT còn hiệu lực để thiết bị ngừng nhận thông báo.
     await PushNotificationsService.instance.unregister();
-    final prefs = await _prefsFuture;
-    await prefs.remove(kAuthTokenPrefsKey);
+    await TokenStore.instance.clear();
     ApiListCache.clear();
     SessionCache.clear();
     BeBlogHttp.invalidateImageAuthHeaders();
@@ -247,8 +240,7 @@ class AuthRepository {
 
   /// Drops an expired/invalid local token without making an authenticated call.
   Future<void> clearLocalSession() async {
-    final prefs = await _prefsFuture;
-    await prefs.remove(kAuthTokenPrefsKey);
+    await TokenStore.instance.clear();
     ApiListCache.clear();
     SessionCache.clear();
     BeBlogHttp.invalidateImageAuthHeaders();
@@ -262,6 +254,10 @@ class AuthRepository {
   }
 
   String _parseError(Exception e) {
+    if (e is NetworkException) {
+      return 'Không kết nối được API (${ApiConstants.baseUrl}). '
+          'Kiểm tra mạng trên thiết bị hoặc thử lại sau.';
+    }
     final message = e.toString();
     if (message.contains('SocketException') ||
         message.contains('TimeoutException')) {

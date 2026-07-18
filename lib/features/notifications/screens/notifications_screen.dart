@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mobile/core/constants/app_colors.dart';
 import 'package:mobile/core/navigation/open_user_profile.dart';
 import 'package:mobile/core/widgets/async_loading_view.dart';
 import 'package:mobile/core/widgets/detail_app_bar.dart';
 import 'package:mobile/data/models/dtos.dart';
-import 'package:mobile/data/repositories/notifications_repository.dart';
 import 'package:mobile/features/friends/screens/friends_screen.dart';
+import 'package:mobile/features/notifications/presentation/bloc/notifications_bloc.dart';
 import 'package:mobile/features/notifications/widgets/notification_tile.dart';
 import 'package:mobile/features/posts/screens/post_detail_screen.dart';
 import 'package:mobile/features/posts/widgets/post_section_label.dart';
@@ -21,78 +22,16 @@ class NotificationsScreen extends StatefulWidget {
 }
 
 class _NotificationsScreenState extends State<NotificationsScreen> {
-  final _repo = BeBlogNotificationsRepository();
-
-  bool _loading = true;
-  bool _markingAll = false;
-  String? _error;
-  List<NotificationDto> _items = const [];
-
   @override
   void initState() {
     super.initState();
-    _load();
-  }
-
-  Future<void> _load() async {
-    setState(() {
-      _loading = true;
-      _error = null;
-    });
-    final result = await _repo.list();
-    if (!mounted) return;
-    setState(() {
-      _loading = false;
-      if (result.success) {
-        _items = result.data ?? const [];
-        _error = null;
-      } else {
-        final code = result.statusCode;
-        final hint = code == 401
-            ? 'Phiên đăng nhập hết hạn hoặc backend chưa có API thông báo — hãy đăng nhập lại và khởi động lại be-blog.'
-            : code == 404
-            ? 'API thông báo chưa có trên server. Khởi động lại be-blog bản mới nhất.'
-            : result.message;
-        _error = hint ?? 'Không tải được thông báo (HTTP $code).';
-      }
-    });
-  }
-
-  Future<void> _markAllRead() async {
-    setState(() => _markingAll = true);
-    final result = await _repo.markAllRead();
-    if (!mounted) return;
-    setState(() => _markingAll = false);
-    if (result.success) {
-      await _load();
-    }
+    context.read<NotificationsBloc>().add(const NotificationsListRequested());
   }
 
   Future<void> _onTap(NotificationDto n) async {
+    final bloc = context.read<NotificationsBloc>();
     if (!n.read) {
-      await _repo.markRead(n.id);
-      if (mounted) {
-        setState(() {
-          _items = _items
-              .map(
-                (item) => item.id == n.id
-                    ? NotificationDto(
-                        id: item.id,
-                        type: item.type,
-                        actor: item.actor,
-                        reviewId: item.reviewId,
-                        postId: item.postId,
-                        commentId: item.commentId,
-                        friendshipId: item.friendshipId,
-                        message: item.message,
-                        read: true,
-                        createdAt: item.createdAt,
-                      )
-                    : item,
-              )
-              .toList();
-        });
-      }
+      bloc.add(NotificationsMarkReadRequested(n.id));
     }
     if (!mounted) return;
     await _openTarget(n);
@@ -107,7 +46,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         if (reviewId == null || reviewId.isEmpty) return;
         await Navigator.push(
           context,
-          MaterialPageRoute(
+          MaterialPageRoute<void>(
             builder: (_) => BookDetailScreen(
               reviewId: reviewId,
               authorId: n.actor?.id,
@@ -122,12 +61,16 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         if (postId == null || postId.isEmpty) return;
         await Navigator.push(
           context,
-          MaterialPageRoute(builder: (_) => PostDetailScreen(postId: postId)),
+          MaterialPageRoute<void>(
+            builder: (_) => PostDetailScreen(postId: postId),
+          ),
         );
       case NotificationType.friendRequest:
         await Navigator.push(
           context,
-          MaterialPageRoute(builder: (_) => const FriendsScreen(initialTab: 1)),
+          MaterialPageRoute<void>(
+            builder: (_) => const FriendsScreen(initialTab: 1),
+          ),
         );
       case NotificationType.friendRequestAccepted:
         final actor = n.actor;
@@ -140,7 +83,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         } else {
           await Navigator.push(
             context,
-            MaterialPageRoute(builder: (_) => const FriendsScreen()),
+            MaterialPageRoute<void>(builder: (_) => const FriendsScreen()),
           );
         }
       case NotificationType.unknown:
@@ -148,114 +91,131 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     }
   }
 
-  int get _unreadCount => _items.where((n) => !n.read).length;
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.homeBackground,
       body: SafeArea(
         bottom: false,
-        child: RefreshIndicator(
-          color: AppColors.primaryBrown,
-          onRefresh: _load,
-          child: CustomScrollView(
-            physics: const AlwaysScrollableScrollPhysics(
-              parent: BouncingScrollPhysics(),
-            ),
-            slivers: [
-              const DetailSliverAppBar(title: 'THÔNG BÁO'),
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(24, 8, 24, 0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const PostSectionLabel(text: 'HOẠT ĐỘNG'),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Like, bình luận và lời mời kết bạn từ vòng đọc của bạn.',
-                        style: GoogleFonts.inter(
-                          color: AppColors.homeTextLight,
-                          fontSize: 12,
-                          height: 1.45,
-                        ),
-                      ),
-                      if (_unreadCount > 0) ...[
-                        const SizedBox(height: 16),
-                        Align(
-                          alignment: Alignment.centerRight,
-                          child: TextButton(
-                            onPressed: _markingAll ? null : _markAllRead,
-                            child: Text(
-                              _markingAll
-                                  ? 'Đang cập nhật…'
-                                  : 'Đánh dấu tất cả đã đọc',
-                              style: GoogleFonts.inter(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w600,
-                                color: AppColors.primaryBrown,
-                              ),
+        child: BlocBuilder<NotificationsBloc, NotificationsState>(
+          builder: (context, state) {
+            final unreadCount = state.items.where((n) => !n.read).length;
+            return RefreshIndicator(
+              color: AppColors.primaryBrown,
+              onRefresh: () async {
+                context.read<NotificationsBloc>().add(
+                  const NotificationsListRequested(),
+                );
+                await context.read<NotificationsBloc>().stream.firstWhere(
+                  (s) =>
+                      s.status == NotificationsStatus.success ||
+                      s.status == NotificationsStatus.failure,
+                );
+              },
+              child: CustomScrollView(
+                physics: const AlwaysScrollableScrollPhysics(
+                  parent: BouncingScrollPhysics(),
+                ),
+                slivers: [
+                  const DetailSliverAppBar(title: 'THÔNG BÁO'),
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(24, 8, 24, 0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const PostSectionLabel(text: 'HOẠT ĐỘNG'),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Like, bình luận và lời mời kết bạn từ vòng đọc của bạn.',
+                            style: GoogleFonts.inter(
+                              color: AppColors.homeTextLight,
+                              fontSize: 12,
+                              height: 1.45,
                             ),
                           ),
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-              ),
-              if (_loading)
-                const SliverFillRemaining(
-                  hasScrollBody: false,
-                  child: Center(
-                    child: CircularProgressIndicator(
-                      color: AppColors.primaryBrown,
-                    ),
-                  ),
-                )
-              else if (_error != null)
-                SliverFillRemaining(
-                  hasScrollBody: false,
-                  child: AsyncLoadingView(
-                    isLoading: false,
-                    errorMessage: _error,
-                    onRetry: _load,
-                  ),
-                )
-              else if (_items.isEmpty)
-                SliverFillRemaining(
-                  hasScrollBody: false,
-                  child: Padding(
-                    padding: const EdgeInsets.all(24),
-                    child: Text(
-                      'Chưa có thông báo nào.',
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.inter(
-                        color: AppColors.homeTextLight,
-                        fontSize: 13,
-                        fontStyle: FontStyle.italic,
+                          if (unreadCount > 0) ...[
+                            const SizedBox(height: 16),
+                            Align(
+                              alignment: Alignment.centerRight,
+                              child: TextButton(
+                                onPressed: () => context
+                                    .read<NotificationsBloc>()
+                                    .add(
+                                      const NotificationsMarkAllReadRequested(),
+                                    ),
+                                child: Text(
+                                  'Đánh dấu tất cả đã đọc',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                    color: AppColors.primaryBrown,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
                       ),
                     ),
                   ),
-                )
-              else
-                SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(24, 16, 24, 48),
-                  sliver: SliverList(
-                    delegate: SliverChildBuilderDelegate((context, index) {
-                      final n = _items[index];
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 12),
-                        child: NotificationTile(
-                          notification: n,
-                          onTap: () => _onTap(n),
+                  if (state.status == NotificationsStatus.loading &&
+                      state.items.isEmpty)
+                    const SliverFillRemaining(
+                      hasScrollBody: false,
+                      child: Center(
+                        child: CircularProgressIndicator(
+                          color: AppColors.primaryBrown,
                         ),
-                      );
-                    }, childCount: _items.length),
-                  ),
-                ),
-            ],
-          ),
+                      ),
+                    )
+                  else if (state.status == NotificationsStatus.failure)
+                    SliverFillRemaining(
+                      hasScrollBody: false,
+                      child: AsyncLoadingView(
+                        isLoading: false,
+                        errorMessage: state.errorMessage,
+                        onRetry: () => context.read<NotificationsBloc>().add(
+                          const NotificationsListRequested(),
+                        ),
+                      ),
+                    )
+                  else if (state.items.isEmpty)
+                    SliverFillRemaining(
+                      hasScrollBody: false,
+                      child: Padding(
+                        padding: const EdgeInsets.all(24),
+                        child: Text(
+                          'Chưa có thông báo nào.',
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.inter(
+                            color: AppColors.homeTextLight,
+                            fontSize: 13,
+                            fontStyle: FontStyle.italic,
+                          ),
+                        ),
+                      ),
+                    )
+                  else
+                    SliverPadding(
+                      padding: const EdgeInsets.fromLTRB(24, 16, 24, 48),
+                      sliver: SliverList(
+                        delegate: SliverChildBuilderDelegate((context, index) {
+                          final n = state.items[index];
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 12),
+                            child: NotificationTile(
+                              notification: n,
+                              onTap: () => _onTap(n),
+                            ),
+                          );
+                        }, childCount: state.items.length),
+                      ),
+                    ),
+                ],
+              ),
+            );
+          },
         ),
       ),
     );

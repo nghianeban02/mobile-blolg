@@ -66,9 +66,11 @@ class BeBlogSearchRepository {
       final json = BeBlogHttp.decodeJsonObject(
         BeBlogHttp.decodeBody(response.body),
       );
-      final rawItems = json['items'] is List ? json['items'] as List : const [];
+      final rawItems = json['items'] is List
+          ? json['items'] as List
+          : const <dynamic>[];
       final hits = <ArchiveSearchHit>[];
-      for (final raw in rawItems.whereType<Map>()) {
+      for (final raw in rawItems.whereType<Map<dynamic, dynamic>>()) {
         final item = Map<String, dynamic>.from(raw);
         switch (item['type']?.toString().toUpperCase()) {
           case 'POST':

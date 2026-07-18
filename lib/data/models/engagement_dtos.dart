@@ -73,7 +73,7 @@ class StreakSnapshotDto {
       activeToday: json['activeToday'] as bool? ?? false,
       last7Days: days is List
           ? days
-                .whereType<Map>()
+                .whereType<Map<dynamic, dynamic>>()
                 .map((e) => StreakDayDto.fromJson(Map<String, dynamic>.from(e)))
                 .toList()
           : const [],

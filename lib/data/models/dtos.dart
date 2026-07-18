@@ -908,6 +908,67 @@ class NotificationDto {
   }
 }
 
+
+/// `GET/PUT /api/notifications/preferences` — bật/tắt push theo từng loại,
+/// áp dụng cho mọi thiết bị của tài khoản (thực thi ở server khi gửi FCM).
+class PushPreferencesDto {
+  final bool messages;
+  final bool calls;
+  final bool friends;
+  final bool comments;
+  final bool likes;
+  final bool system;
+
+  const PushPreferencesDto({
+    this.messages = true,
+    this.calls = true,
+    this.friends = true,
+    this.comments = true,
+    this.likes = true,
+    this.system = true,
+  });
+
+  static const PushPreferencesDto defaults = PushPreferencesDto();
+
+  factory PushPreferencesDto.fromJson(Map<String, dynamic> json) {
+    return PushPreferencesDto(
+      messages: json['messages'] as bool? ?? true,
+      calls: json['calls'] as bool? ?? true,
+      friends: json['friends'] as bool? ?? true,
+      comments: json['comments'] as bool? ?? true,
+      likes: json['likes'] as bool? ?? true,
+      system: json['system'] as bool? ?? true,
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+        'messages': messages,
+        'calls': calls,
+        'friends': friends,
+        'comments': comments,
+        'likes': likes,
+        'system': system,
+      };
+
+  PushPreferencesDto copyWith({
+    bool? messages,
+    bool? calls,
+    bool? friends,
+    bool? comments,
+    bool? likes,
+    bool? system,
+  }) {
+    return PushPreferencesDto(
+      messages: messages ?? this.messages,
+      calls: calls ?? this.calls,
+      friends: friends ?? this.friends,
+      comments: comments ?? this.comments,
+      likes: likes ?? this.likes,
+      system: system ?? this.system,
+    );
+  }
+}
+
 DateTime? _parseDateTime(dynamic v) {
   if (v == null) return null;
   if (v is String && v.isNotEmpty) {

@@ -88,6 +88,8 @@ class ChatRealtimeService extends ChangeNotifier {
         if (_running) _scheduleReconnect();
         return;
       }
+      // Đóng qua _socket trong stop()/_handleClosed — lint không nhìn thấy.
+      // ignore: close_sinks
       final socket = await WebSocket.connect(
         '${MessagingApi.wsBaseUrl}/ws?ticket=$ticket',
       ).timeout(const Duration(seconds: 12));
@@ -170,6 +172,6 @@ class ChatRealtimeService extends ChangeNotifier {
     final delayMs = min(30000, 750 * pow(2, _attempt).toInt()) +
         Random().nextInt(500);
     _attempt += 1;
-    _reconnect = Timer(Duration(milliseconds: delayMs), () => _connect());
+    _reconnect = Timer(Duration(milliseconds: delayMs), _connect);
   }
 }

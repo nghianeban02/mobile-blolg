@@ -142,7 +142,8 @@ class _AdminCatalogScreenState extends State<AdminCatalogScreen>
     String? initialBio,
     String extraLabel = '',
     bool bioField = false,
-    required Future<dynamic> Function(String name, String? extra) onSave,
+    required Future<BeBlogRepoResult<T>> Function(String name, String? extra)
+    onSave,
   }) {
     final nameCtrl = TextEditingController(text: initialName);
     final extraCtrl = TextEditingController(
@@ -355,14 +356,14 @@ class _AdminCatalogScreenState extends State<AdminCatalogScreen>
                         _CatalogList<TagDto>(
                           items: _tags,
                           label: (t) => t.name,
-                          onAdd: () => _openTagEditor(),
+                          onAdd: _openTagEditor,
                           onEdit: (t) => _openTagEditor(existing: t),
                           onDelete: _deleteTag,
                         ),
                         _CatalogList<GenreDto>(
                           items: _genres,
                           label: (g) => g.name,
-                          onAdd: () => _openGenreEditor(),
+                          onAdd: _openGenreEditor,
                           onEdit: (g) => _openGenreEditor(existing: g),
                           onDelete: _deleteGenre,
                         ),
@@ -370,7 +371,7 @@ class _AdminCatalogScreenState extends State<AdminCatalogScreen>
                           items: _authors,
                           label: (a) => a.name,
                           subtitle: (a) => a.bio,
-                          onAdd: () => _openAuthorEditor(),
+                          onAdd: _openAuthorEditor,
                           onEdit: (a) => _openAuthorEditor(existing: a),
                           onDelete: _deleteAuthor,
                         ),

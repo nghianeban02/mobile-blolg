@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mobile/core/constants/api_constants.dart';
 import 'package:mobile/core/constants/app_colors.dart';
-import 'package:mobile/core/widgets/app_cached_image.dart';
 import 'package:mobile/core/utils/text_excerpt.dart';
+import 'package:mobile/core/widgets/app_cached_image.dart';
 import 'package:mobile/data/models/dtos.dart';
 import 'package:mobile/features/posts/screens/post_detail_screen.dart';
 import 'package:mobile/features/search/screens/search_screen.dart';
@@ -58,7 +58,7 @@ class RecentArchives extends StatelessWidget {
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (_) => const SearchScreen()),
+                    MaterialPageRoute<void>(builder: (_) => const SearchScreen()),
                   );
                 },
                 child: Padding(

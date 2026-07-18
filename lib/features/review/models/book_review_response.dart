@@ -7,7 +7,7 @@ class BookReviewResponse {
   factory BookReviewResponse.fromJson(Map<String, dynamic> json) {
     return BookReviewResponse(
       success: json['success'] as bool? ?? true,
-      message: json['message'] ?? json['error'],
+      message: (json['message'] ?? json['error']) as String?,
     );
   }
 }
