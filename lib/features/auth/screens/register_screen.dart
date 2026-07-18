@@ -198,9 +198,12 @@ class _RegisterScreenState extends State<RegisterScreen>
                               keyboardType: TextInputType.emailAddress,
                               validator: (v) {
                                 final t = v?.trim() ?? '';
-                                if (t.isEmpty) return 'Vui lòng nhập email';
-                                if (!t.contains('@'))
+                                if (t.isEmpty) {
+                                  return 'Vui lòng nhập email';
+                                }
+                                if (!t.contains('@')) {
                                   return 'Email không hợp lệ';
+                                }
                                 return null;
                               },
                             ),

@@ -102,12 +102,8 @@ class CallOverlay extends StatelessWidget {
                             cameraOff: calls.cameraOff,
                             onToggleMute: calls.toggleMute,
                             onToggleCamera: calls.toggleCamera,
-                            onFlipCamera: () {
-                              calls.flipCamera();
-                            },
-                            onEnd: () {
-                              calls.endCall();
-                            },
+                            onFlipCamera: calls.flipCamera,
+                            onEnd: calls.endCall,
                           ),
                   ),
                 ],
