@@ -81,16 +81,13 @@ void main() {
       'login failure keeps unauthenticated with error',
       build: () {
         when(() => auth.login(any())).thenAnswer(
-          (_) async => const LoginResponse(
-            success: false,
-            message: 'Sai mật khẩu',
-          ),
+          (_) async =>
+              const LoginResponse(success: false, message: 'Sai mật khẩu'),
         );
         return buildBloc();
       },
-      act: (bloc) => bloc.add(
-        const AuthLoginRequested(email: 'a@b.c', password: 'bad'),
-      ),
+      act: (bloc) =>
+          bloc.add(const AuthLoginRequested(email: 'a@b.c', password: 'bad')),
       expect: () => [
         isA<AuthState>().having((s) => s.submitting, 'submitting', true),
         isA<AuthState>()

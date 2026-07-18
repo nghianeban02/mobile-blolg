@@ -24,10 +24,7 @@ class SearchHeader extends StatelessWidget {
         const SizedBox(height: 16),
         TextField(
           controller: controller,
-          style: GoogleFonts.inter(
-            color: AppColors.homeTextDark,
-            fontSize: 16,
-          ),
+          style: GoogleFonts.inter(color: AppColors.homeTextDark, fontSize: 16),
           decoration: InputDecoration(
             hintText: 'Tìm trong kho lưu trữ…',
             hintStyle: GoogleFonts.inter(

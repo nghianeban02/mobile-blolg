@@ -34,7 +34,8 @@ class SiteBrand extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ink = color ??
+    final ink =
+        color ??
         (Theme.of(context).brightness == Brightness.dark
             ? AppColors.darkForeground
             : AppColors.homeTextDark);
@@ -44,63 +45,63 @@ class SiteBrand extends StatelessWidget {
 
     final nameStyle = switch (variant) {
       SiteBrandVariant.sidebar => GoogleFonts.playfairDisplay(
-          fontSize: 24,
-          fontWeight: FontWeight.w600,
-          fontStyle: FontStyle.italic,
-          height: 1.15,
-          color: ink,
-        ),
+        fontSize: 24,
+        fontWeight: FontWeight.w600,
+        fontStyle: FontStyle.italic,
+        height: 1.15,
+        color: ink,
+      ),
       SiteBrandVariant.header => GoogleFonts.playfairDisplay(
-          fontSize: 20,
-          fontWeight: FontWeight.w600,
-          fontStyle: FontStyle.italic,
-          height: 1.0,
-          color: ink,
-        ),
+        fontSize: 20,
+        fontWeight: FontWeight.w600,
+        fontStyle: FontStyle.italic,
+        height: 1.0,
+        color: ink,
+      ),
       SiteBrandVariant.hero => GoogleFonts.playfairDisplay(
-          fontSize: 40,
-          fontWeight: FontWeight.w600,
-          fontStyle: FontStyle.italic,
-          height: 1.15,
-          color: ink,
-        ),
+        fontSize: 40,
+        fontWeight: FontWeight.w600,
+        fontStyle: FontStyle.italic,
+        height: 1.15,
+        color: ink,
+      ),
       SiteBrandVariant.mobile => GoogleFonts.playfairDisplay(
-          fontSize: 18,
-          fontWeight: FontWeight.w600,
-          fontStyle: FontStyle.italic,
-          height: 1.0,
-          color: ink,
-        ),
+        fontSize: 18,
+        fontWeight: FontWeight.w600,
+        fontStyle: FontStyle.italic,
+        height: 1.0,
+        color: ink,
+      ),
     };
 
     final sloganStyle = switch (variant) {
       SiteBrandVariant.sidebar => GoogleFonts.inter(
-          fontSize: 10,
-          fontWeight: FontWeight.w500,
-          height: 1.3,
-          letterSpacing: 0.2,
-          color: accent.withValues(alpha: 0.85),
-        ),
+        fontSize: 10,
+        fontWeight: FontWeight.w500,
+        height: 1.3,
+        letterSpacing: 0.2,
+        color: accent.withValues(alpha: 0.85),
+      ),
       SiteBrandVariant.header => GoogleFonts.inter(
-          fontSize: 9,
-          fontWeight: FontWeight.w500,
-          height: 1.3,
-          letterSpacing: 0.3,
-          color: accent.withValues(alpha: 0.8),
-        ),
+        fontSize: 9,
+        fontWeight: FontWeight.w500,
+        height: 1.3,
+        letterSpacing: 0.3,
+        color: accent.withValues(alpha: 0.8),
+      ),
       SiteBrandVariant.hero => GoogleFonts.inter(
-          fontSize: 12,
-          fontWeight: FontWeight.w600,
-          letterSpacing: 1.4,
-          color: accent,
-        ),
+        fontSize: 12,
+        fontWeight: FontWeight.w600,
+        letterSpacing: 1.4,
+        color: accent,
+      ),
       SiteBrandVariant.mobile => GoogleFonts.inter(
-          fontSize: 9,
-          fontWeight: FontWeight.w500,
-          height: 1.2,
-          letterSpacing: 0.4,
-          color: accent.withValues(alpha: 0.8),
-        ),
+        fontSize: 9,
+        fontWeight: FontWeight.w500,
+        height: 1.2,
+        letterSpacing: 0.4,
+        color: accent.withValues(alpha: 0.8),
+      ),
     };
 
     final text = Column(
@@ -209,10 +210,7 @@ class EditorialPageHeader extends StatelessWidget {
               ],
             ),
           ),
-          if (action != null) ...[
-            const SizedBox(width: 12),
-            action!,
-          ],
+          if (action != null) ...[const SizedBox(width: 12), action!],
         ],
       ),
     );

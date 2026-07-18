@@ -23,11 +23,11 @@ class ChatMember {
   });
 
   factory ChatMember.fromJson(Map<String, dynamic> json) => ChatMember(
-        userId: _string(json['userId']) ?? '',
-        username: _string(json['username']) ?? '',
-        avatarUrl: _string(json['avatarUrl']),
-        role: _string(json['role']) ?? 'MEMBER',
-      );
+    userId: _string(json['userId']) ?? '',
+    username: _string(json['username']) ?? '',
+    avatarUrl: _string(json['avatarUrl']),
+    role: _string(json['role']) ?? 'MEMBER',
+  );
 }
 
 class MessageReaction {
@@ -59,11 +59,11 @@ class ChatAttachment {
   bool get isImage => mimeType.startsWith('image/');
 
   factory ChatAttachment.fromJson(Map<String, dynamic> json) => ChatAttachment(
-        id: _string(json['id']) ?? '',
-        name: _string(json['name']) ?? '',
-        mimeType: _string(json['mimeType']) ?? 'application/octet-stream',
-        sizeBytes: _int(json['sizeBytes']),
-      );
+    id: _string(json['id']) ?? '',
+    name: _string(json['name']) ?? '',
+    mimeType: _string(json['mimeType']) ?? 'application/octet-stream',
+    sizeBytes: _int(json['sizeBytes']),
+  );
 }
 
 class ChatReplyPreview {
@@ -147,56 +147,56 @@ class ChatMessage {
     String? localPreviewPath,
     bool clearContent = false,
     bool clearLocalPreview = false,
-  }) =>
-      ChatMessage(
-        id: id,
-        sequence: sequence ?? this.sequence,
-        conversationId: conversationId,
-        senderId: senderId,
-        senderUsername: senderUsername,
-        type: type,
-        content: clearContent ? null : (content ?? this.content),
-        encrypted: encrypted,
-        replyTo: replyTo,
-        attachment: attachment ?? this.attachment,
-        reactions: reactions ?? this.reactions,
-        createdAt: createdAt,
-        editedAt: editedAt ?? this.editedAt,
-        revokedAt: revokedAt ?? this.revokedAt,
-        pending: pending ?? this.pending,
-        clientId: clientId,
-        localPreviewPath:
-            clearLocalPreview ? null : (localPreviewPath ?? this.localPreviewPath),
-      );
+  }) => ChatMessage(
+    id: id,
+    sequence: sequence ?? this.sequence,
+    conversationId: conversationId,
+    senderId: senderId,
+    senderUsername: senderUsername,
+    type: type,
+    content: clearContent ? null : (content ?? this.content),
+    encrypted: encrypted,
+    replyTo: replyTo,
+    attachment: attachment ?? this.attachment,
+    reactions: reactions ?? this.reactions,
+    createdAt: createdAt,
+    editedAt: editedAt ?? this.editedAt,
+    revokedAt: revokedAt ?? this.revokedAt,
+    pending: pending ?? this.pending,
+    clientId: clientId,
+    localPreviewPath: clearLocalPreview
+        ? null
+        : (localPreviewPath ?? this.localPreviewPath),
+  );
 
   factory ChatMessage.fromJson(Map<String, dynamic> json) => ChatMessage(
-        id: _string(json['id']) ?? '',
-        sequence: (json['sequence'] as num?)?.toDouble() ?? 0,
-        conversationId: _string(json['conversationId']) ?? '',
-        senderId: _string(json['senderId']) ?? '',
-        senderUsername: _string(json['senderUsername']) ?? '',
-        type: _string(json['type']) ?? 'TEXT',
-        content: _string(json['content']),
-        encrypted: json['encrypted'] == true,
-        replyTo: json['replyTo'] is Map<String, dynamic>
-            ? ChatReplyPreview.fromJson(json['replyTo'] as Map<String, dynamic>)
-            : null,
-        attachment: json['attachment'] is Map<String, dynamic>
-            ? ChatAttachment.fromJson(json['attachment'] as Map<String, dynamic>)
-            : null,
-        reactions: (json['reactions'] as List?)
-                ?.whereType<Map<String, dynamic>>()
-                .map(MessageReaction.fromJson)
-                .toList() ??
-            const [],
-        createdAt:
-            DateTime.tryParse(_string(json['createdAt']) ?? '')?.toLocal() ??
-                DateTime.now(),
-        editedAt: DateTime.tryParse(_string(json['editedAt']) ?? '')?.toLocal(),
-        revokedAt:
-            DateTime.tryParse(_string(json['revokedAt']) ?? '')?.toLocal(),
-        clientId: _string(json['clientId']),
-      );
+    id: _string(json['id']) ?? '',
+    sequence: (json['sequence'] as num?)?.toDouble() ?? 0,
+    conversationId: _string(json['conversationId']) ?? '',
+    senderId: _string(json['senderId']) ?? '',
+    senderUsername: _string(json['senderUsername']) ?? '',
+    type: _string(json['type']) ?? 'TEXT',
+    content: _string(json['content']),
+    encrypted: json['encrypted'] == true,
+    replyTo: json['replyTo'] is Map<String, dynamic>
+        ? ChatReplyPreview.fromJson(json['replyTo'] as Map<String, dynamic>)
+        : null,
+    attachment: json['attachment'] is Map<String, dynamic>
+        ? ChatAttachment.fromJson(json['attachment'] as Map<String, dynamic>)
+        : null,
+    reactions:
+        (json['reactions'] as List?)
+            ?.whereType<Map<String, dynamic>>()
+            .map(MessageReaction.fromJson)
+            .toList() ??
+        const [],
+    createdAt:
+        DateTime.tryParse(_string(json['createdAt']) ?? '')?.toLocal() ??
+        DateTime.now(),
+    editedAt: DateTime.tryParse(_string(json['editedAt']) ?? '')?.toLocal(),
+    revokedAt: DateTime.tryParse(_string(json['revokedAt']) ?? '')?.toLocal(),
+    clientId: _string(json['clientId']),
+  );
 }
 
 class ChatLastMessage {
@@ -264,36 +264,36 @@ class ChatConversation {
     ChatLastMessage? lastMessage,
     DateTime? lastMessageAt,
     int? unreadCount,
-  }) =>
-      ChatConversation(
-        id: id,
-        type: type,
-        title: title,
-        members: members,
-        lastMessage: lastMessage ?? this.lastMessage,
-        lastMessageAt: lastMessageAt ?? this.lastMessageAt,
-        unreadCount: unreadCount ?? this.unreadCount,
-      );
+  }) => ChatConversation(
+    id: id,
+    type: type,
+    title: title,
+    members: members,
+    lastMessage: lastMessage ?? this.lastMessage,
+    lastMessageAt: lastMessageAt ?? this.lastMessageAt,
+    unreadCount: unreadCount ?? this.unreadCount,
+  );
 
-  factory ChatConversation.fromJson(Map<String, dynamic> json) =>
-      ChatConversation(
-        id: _string(json['id']) ?? '',
-        type: _string(json['type']) ?? 'DIRECT',
-        title: _string(json['title']),
-        members: (json['members'] as List?)
-                ?.whereType<Map<String, dynamic>>()
-                .map(ChatMember.fromJson)
-                .toList() ??
-            const [],
-        lastMessage: json['lastMessage'] is Map<String, dynamic>
-            ? ChatLastMessage.fromJson(
-                json['lastMessage'] as Map<String, dynamic>)
-            : null,
-        lastMessageAt:
-            DateTime.tryParse(_string(json['lastMessageAt']) ?? '')?.toLocal() ??
-                DateTime.now(),
-        unreadCount: _int(json['unreadCount']),
-      );
+  factory ChatConversation.fromJson(
+    Map<String, dynamic> json,
+  ) => ChatConversation(
+    id: _string(json['id']) ?? '',
+    type: _string(json['type']) ?? 'DIRECT',
+    title: _string(json['title']),
+    members:
+        (json['members'] as List?)
+            ?.whereType<Map<String, dynamic>>()
+            .map(ChatMember.fromJson)
+            .toList() ??
+        const [],
+    lastMessage: json['lastMessage'] is Map<String, dynamic>
+        ? ChatLastMessage.fromJson(json['lastMessage'] as Map<String, dynamic>)
+        : null,
+    lastMessageAt:
+        DateTime.tryParse(_string(json['lastMessageAt']) ?? '')?.toLocal() ??
+        DateTime.now(),
+    unreadCount: _int(json['unreadCount']),
+  );
 }
 
 class ChatFriend {
@@ -304,10 +304,10 @@ class ChatFriend {
   const ChatFriend({required this.id, required this.username, this.avatarUrl});
 
   factory ChatFriend.fromJson(Map<String, dynamic> json) => ChatFriend(
-        id: _string(json['id']) ?? '',
-        username: _string(json['username']) ?? '',
-        avatarUrl: _string(json['avatarUrl']),
-      );
+    id: _string(json['id']) ?? '',
+    username: _string(json['username']) ?? '',
+    avatarUrl: _string(json['avatarUrl']),
+  );
 }
 
 class ChatCall {
@@ -328,14 +328,13 @@ class ChatCall {
   });
 
   factory ChatCall.fromJson(Map<String, dynamic> json) => ChatCall(
-        id: _string(json['id']) ?? '',
-        conversationId: _string(json['conversationId']) ?? '',
-        initiatorId: _string(json['initiatorId']) ?? '',
-        mode: _string(json['mode']) == 'VIDEO' ? 'VIDEO' : 'AUDIO',
-        status: _string(json['status']) ?? 'RINGING',
-        startedAt:
-            DateTime.tryParse(_string(json['startedAt']) ?? '')?.toLocal(),
-      );
+    id: _string(json['id']) ?? '',
+    conversationId: _string(json['conversationId']) ?? '',
+    initiatorId: _string(json['initiatorId']) ?? '',
+    mode: _string(json['mode']) == 'VIDEO' ? 'VIDEO' : 'AUDIO',
+    status: _string(json['status']) ?? 'RINGING',
+    startedAt: DateTime.tryParse(_string(json['startedAt']) ?? '')?.toLocal(),
+  );
 }
 
 class ChatIceServer {
@@ -343,19 +342,15 @@ class ChatIceServer {
   final String? username;
   final String? credential;
 
-  const ChatIceServer({
-    required this.urls,
-    this.username,
-    this.credential,
-  });
+  const ChatIceServer({required this.urls, this.username, this.credential});
 
   factory ChatIceServer.fromJson(Map<String, dynamic> json) {
     final raw = json['urls'];
     final urls = raw is List
         ? raw.map((e) => '$e').where((e) => e.isNotEmpty).toList()
         : raw is String
-            ? [raw]
-            : <String>[];
+        ? [raw]
+        : <String>[];
     return ChatIceServer(
       urls: urls,
       username: _string(json['username']),
@@ -364,29 +359,27 @@ class ChatIceServer {
   }
 
   Map<String, dynamic> toWebRtcMap() => {
-        'urls': urls.length == 1 ? urls.first : urls,
-        if (username != null) 'username': username,
-        if (credential != null) 'credential': credential,
-      };
+    'urls': urls.length == 1 ? urls.first : urls,
+    if (username != null) 'username': username,
+    if (credential != null) 'credential': credential,
+  };
 }
 
 class ChatConfig {
   final bool turnAvailable;
   final List<ChatIceServer> iceServers;
 
-  const ChatConfig({
-    required this.turnAvailable,
-    required this.iceServers,
-  });
+  const ChatConfig({required this.turnAvailable, required this.iceServers});
 
   factory ChatConfig.fromJson(Map<String, dynamic> json) => ChatConfig(
-        turnAvailable: json['turnAvailable'] == true,
-        iceServers: (json['iceServers'] as List?)
-                ?.whereType<Map<String, dynamic>>()
-                .map(ChatIceServer.fromJson)
-                .toList() ??
-            const [],
-      );
+    turnAvailable: json['turnAvailable'] == true,
+    iceServers:
+        (json['iceServers'] as List?)
+            ?.whereType<Map<String, dynamic>>()
+            .map(ChatIceServer.fromJson)
+            .toList() ??
+        const [],
+  );
 }
 
 /// Sự kiện realtime từ WebSocket (`message.created`, `typing.start`…).

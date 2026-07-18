@@ -37,16 +37,12 @@ class BeBlogHttp {
   /// Raw JSON array, or Spring Data `Page` (`{ "content": [ ... ] }`).
   static List<Map<String, dynamic>> decodeJsonList(dynamic decoded) {
     if (decoded is List) {
-      return decoded
-          .map((e) => Map<String, dynamic>.from(e as Map))
-          .toList();
+      return decoded.map((e) => Map<String, dynamic>.from(e as Map)).toList();
     }
     if (decoded is Map) {
       final content = decoded['content'];
       if (content is List) {
-        return content
-            .map((e) => Map<String, dynamic>.from(e as Map))
-            .toList();
+        return content.map((e) => Map<String, dynamic>.from(e as Map)).toList();
       }
     }
     throw FormatException(

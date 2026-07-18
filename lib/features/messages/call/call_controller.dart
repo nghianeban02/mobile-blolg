@@ -39,17 +39,16 @@ class ActiveCall {
     DateTime? connectedAt,
     String? name,
     String? mode,
-  }) =>
-      ActiveCall(
-        id: id,
-        conversationId: conversationId,
-        name: name ?? this.name,
-        mode: mode ?? this.mode,
-        direction: direction,
-        status: status ?? this.status,
-        offer: offer ?? this.offer,
-        connectedAt: connectedAt ?? this.connectedAt,
-      );
+  }) => ActiveCall(
+    id: id,
+    conversationId: conversationId,
+    name: name ?? this.name,
+    mode: mode ?? this.mode,
+    direction: direction,
+    status: status ?? this.status,
+    offer: offer ?? this.offer,
+    connectedAt: connectedAt ?? this.connectedAt,
+  );
 }
 
 /// WebRTC call controller — mirror `web-blog/lib/messaging/chat-call-context.tsx`.
@@ -119,7 +118,8 @@ class CallController extends ChangeNotifier {
     try {
       final config = await MessagingApi.config();
       _iceServers = config.iceServers.map((s) => s.toWebRtcMap()).toList();
-      _turnAvailable = config.turnAvailable ||
+      _turnAvailable =
+          config.turnAvailable ||
           config.iceServers.any(
             (s) => s.urls.any((u) => u.toLowerCase().startsWith('turn')),
           );
@@ -190,18 +190,20 @@ class CallController extends ChangeNotifier {
       _armOutgoingTimeout(created.id);
 
       // Re-send enriched SDP after ICE gathering settles.
-      unawaited(_waitIceGathering(peer).then((_) async {
-        if (activeCall?.id != created.id || _peer != peer) return;
-        final local = await peer.getLocalDescription();
-        if (local == null) return;
-        await _sendSignal({
-          'type': 'call.offer',
-          'conversationId': conversation.id,
-          'callId': created.id,
-          'mode': mode,
-          'sdp': local.toMap(),
-        });
-      }));
+      unawaited(
+        _waitIceGathering(peer).then((_) async {
+          if (activeCall?.id != created.id || _peer != peer) return;
+          final local = await peer.getLocalDescription();
+          if (local == null) return;
+          await _sendSignal({
+            'type': 'call.offer',
+            'conversationId': conversation.id,
+            'callId': created.id,
+            'mode': mode,
+            'sdp': local.toMap(),
+          });
+        }),
+      );
     } catch (e) {
       if (createdId != null && activeCall?.id == createdId) {
         await endCall();
@@ -224,10 +226,12 @@ class CallController extends ChangeNotifier {
       notifyListeners();
 
       final peer = await _createPeer(call);
-      await peer.setRemoteDescription(RTCSessionDescription(
-        call.offer!['sdp'] as String?,
-        call.offer!['type'] as String?,
-      ));
+      await peer.setRemoteDescription(
+        RTCSessionDescription(
+          call.offer!['sdp'] as String?,
+          call.offer!['type'] as String?,
+        ),
+      );
       await _flushPendingIce(call.id);
       final answer = await peer.createAnswer();
       await peer.setLocalDescription(answer);
@@ -245,18 +249,20 @@ class CallController extends ChangeNotifier {
       });
       if (!sent) throw Exception('Realtime chưa sẵn sàng.');
 
-      unawaited(_waitIceGathering(peer).then((_) async {
-        if (activeCall?.id != call.id || _peer != peer) return;
-        final local = await peer.getLocalDescription();
-        if (local == null) return;
-        await _sendSignal({
-          'type': 'call.answer',
-          'conversationId': call.conversationId,
-          'callId': call.id,
-          'mode': call.mode,
-          'sdp': local.toMap(),
-        });
-      }));
+      unawaited(
+        _waitIceGathering(peer).then((_) async {
+          if (activeCall?.id != call.id || _peer != peer) return;
+          final local = await peer.getLocalDescription();
+          if (local == null) return;
+          await _sendSignal({
+            'type': 'call.answer',
+            'conversationId': call.conversationId,
+            'callId': call.id,
+            'mode': call.mode,
+            'sdp': local.toMap(),
+          });
+        }),
+      );
     } catch (e) {
       await endCall();
       lastError = e is MessagingApiException
@@ -330,11 +336,7 @@ class CallController extends ChangeNotifier {
     final stream = await navigator.mediaDevices.getUserMedia({
       'audio': true,
       'video': call.isVideo
-          ? {
-              'facingMode': 'user',
-              'width': 1280,
-              'height': 720,
-            }
+          ? {'facingMode': 'user', 'width': 1280, 'height': 720}
           : false,
     });
     _localStream = stream;
@@ -360,18 +362,20 @@ class CallController extends ChangeNotifier {
 
     peer.onIceCandidate = (candidate) {
       if (candidate.candidate == null || candidate.candidate!.isEmpty) return;
-      unawaited(_sendSignal({
-        'type': 'call.ice',
-        'conversationId': call.conversationId,
-        'callId': call.id,
-        'candidate': {
-          'candidate': candidate.candidate,
-          'sdpMid': candidate.sdpMid,
-          'sdpMLineIndex': candidate.sdpMLineIndex,
-        },
-      }).then((sent) {
-        if (!sent) _failSignaling(call);
-      }));
+      unawaited(
+        _sendSignal({
+          'type': 'call.ice',
+          'conversationId': call.conversationId,
+          'callId': call.id,
+          'candidate': {
+            'candidate': candidate.candidate,
+            'sdpMid': candidate.sdpMid,
+            'sdpMLineIndex': candidate.sdpMLineIndex,
+          },
+        }).then((sent) {
+          if (!sent) _failSignaling(call);
+        }),
+      );
     };
 
     peer.onConnectionState = (state) {
@@ -385,8 +389,7 @@ class CallController extends ChangeNotifier {
           );
           notifyListeners();
         }
-      } else if (state ==
-          RTCPeerConnectionState.RTCPeerConnectionStateFailed) {
+      } else if (state == RTCPeerConnectionState.RTCPeerConnectionStateFailed) {
         unawaited(_failConnection(call));
       } else if (state ==
           RTCPeerConnectionState.RTCPeerConnectionStateDisconnected) {
@@ -475,13 +478,16 @@ class CallController extends ChangeNotifier {
         return;
       }
       if (activeCall != null && activeCall!.id != callId) {
-        unawaited(_sendSignal({
-          'type': 'call.reject',
-          'conversationId': conversationId,
-          'callId': callId,
-        }));
         unawaited(
-            MessagingApi.rejectCall(callId).then((_) {}, onError: (_) {}));
+          _sendSignal({
+            'type': 'call.reject',
+            'conversationId': conversationId,
+            'callId': callId,
+          }),
+        );
+        unawaited(
+          MessagingApi.rejectCall(callId).then((_) {}, onError: (_) {}),
+        );
         return;
       }
       if (activeCall?.id == callId &&
@@ -511,11 +517,13 @@ class CallController extends ChangeNotifier {
     if (event.type == 'call.offer' && payload['sdp'] is Map) {
       final current = activeCall;
       if (current != null && current.id != callId) {
-        unawaited(_sendSignal({
-          'type': 'call.reject',
-          'conversationId': conversationId,
-          'callId': callId,
-        }));
+        unawaited(
+          _sendSignal({
+            'type': 'call.reject',
+            'conversationId': conversationId,
+            'callId': callId,
+          }),
+        );
         return;
       }
       if (current?.id == callId &&
@@ -575,7 +583,9 @@ class CallController extends ChangeNotifier {
       }
       return;
     }
-    if (event.type == 'call.ice' && payload['candidate'] is Map && callId.isNotEmpty) {
+    if (event.type == 'call.ice' &&
+        payload['candidate'] is Map &&
+        callId.isNotEmpty) {
       if (current != null && current.id != callId) return;
       final map = Map<String, dynamic>.from(payload['candidate'] as Map);
       final candidate = RTCIceCandidate(
@@ -593,10 +603,12 @@ class CallController extends ChangeNotifier {
         if (remote != null) return;
         try {
           final sdp = Map<String, dynamic>.from(payload['sdp'] as Map);
-          await _peer!.setRemoteDescription(RTCSessionDescription(
-            sdp['sdp'] as String?,
-            sdp['type'] as String?,
-          ));
+          await _peer!.setRemoteDescription(
+            RTCSessionDescription(
+              sdp['sdp'] as String?,
+              sdp['type'] as String?,
+            ),
+          );
           await _flushPendingIce(callId);
         } catch (e) {
           debugPrint('[call] apply answer failed: $e');
@@ -615,7 +627,10 @@ class CallController extends ChangeNotifier {
     }
   }
 
-  Future<void> _handleRemoteIce(String callId, RTCIceCandidate candidate) async {
+  Future<void> _handleRemoteIce(
+    String callId,
+    RTCIceCandidate candidate,
+  ) async {
     final peer = _peer;
     final remote = peer == null ? null : await peer.getRemoteDescription();
     if (peer != null && remote != null) {
@@ -645,22 +660,24 @@ class CallController extends ChangeNotifier {
     _offerRequestTimer?.cancel();
     void request() {
       final current = activeCall;
-      if (current == null ||
-          current.id != call.id ||
-          current.offer != null) {
+      if (current == null || current.id != call.id || current.offer != null) {
         _offerRequestTimer?.cancel();
         return;
       }
-      unawaited(_sendSignal({
-        'type': 'call.offer.request',
-        'conversationId': call.conversationId,
-        'callId': call.id,
-      }));
+      unawaited(
+        _sendSignal({
+          'type': 'call.offer.request',
+          'conversationId': call.conversationId,
+          'callId': call.id,
+        }),
+      );
     }
 
     request();
-    _offerRequestTimer =
-        Timer.periodic(const Duration(milliseconds: 1500), (_) => request());
+    _offerRequestTimer = Timer.periodic(
+      const Duration(milliseconds: 1500),
+      (_) => request(),
+    );
   }
 
   Future<void> _resendLocalOffer(ActiveCall call) async {

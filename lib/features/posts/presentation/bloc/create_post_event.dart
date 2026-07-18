@@ -21,5 +21,10 @@ final class CreatePostSubmitted extends CreatePostEvent {
   });
 
   @override
-  List<Object?> get props => [title, content, titleImageFile, galleryImageFiles];
+  List<Object?> get props => [
+    title,
+    content,
+    titleImageFile,
+    galleryImageFiles,
+  ];
 }

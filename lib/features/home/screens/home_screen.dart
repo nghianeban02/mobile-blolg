@@ -120,9 +120,7 @@ class HomeScreenState extends State<HomeScreen> {
                           if (state.status == FeedStatus.loadingMore)
                             const Padding(
                               padding: EdgeInsets.symmetric(vertical: 24),
-                              child: Center(
-                                child: CircularProgressIndicator(),
-                              ),
+                              child: Center(child: CircularProgressIndicator()),
                             ),
                           const SizedBox(height: 24),
                         ],

@@ -89,7 +89,8 @@ class CallOverlay extends StatelessWidget {
                     left: 24,
                     right: 24,
                     bottom: 36,
-                    child: call.status == CallUiStatus.ringing &&
+                    child:
+                        call.status == CallUiStatus.ringing &&
                             call.direction == CallDirection.incoming
                         ? _IncomingActions(
                             onReject: calls.rejectCall,
@@ -128,8 +129,7 @@ class CallOverlay extends StatelessWidget {
         return 'Đang kết nối…';
       case CallUiStatus.active:
         if (call.connectedAt == null) return 'Đang nói chuyện';
-        final seconds =
-            DateTime.now().difference(call.connectedAt!).inSeconds;
+        final seconds = DateTime.now().difference(call.connectedAt!).inSeconds;
         final m = (seconds ~/ 60).toString().padLeft(2, '0');
         final s = (seconds % 60).toString().padLeft(2, '0');
         return '$m:$s';
@@ -158,7 +158,9 @@ class _AudioBackdrop extends StatelessWidget {
             radius: 56,
             backgroundColor: AppColors.primaryBrown.withValues(alpha: 0.35),
             child: Text(
-              call.name.isNotEmpty ? call.name.characters.first.toUpperCase() : '?',
+              call.name.isNotEmpty
+                  ? call.name.characters.first.toUpperCase()
+                  : '?',
               style: GoogleFonts.playfairDisplay(
                 fontSize: 42,
                 color: Colors.white,
@@ -176,10 +178,7 @@ class _IncomingActions extends StatelessWidget {
   final Future<void> Function() onReject;
   final Future<void> Function() onAccept;
 
-  const _IncomingActions({
-    required this.onReject,
-    required this.onAccept,
-  });
+  const _IncomingActions({required this.onReject, required this.onAccept});
 
   @override
   Widget build(BuildContext context) {

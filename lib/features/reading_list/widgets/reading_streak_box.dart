@@ -52,66 +52,68 @@ class _ReadingStreakBoxState extends State<ReadingStreakBox> {
         shape: RoundedRectangleBorder(borderRadius: AppRadius.card),
         clipBehavior: Clip.antiAlias,
         child: InkWell(
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute<void>(builder: (_) => const MyReadingListScreen()),
-          );
-        },
-        child: Container(
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'READING STREAK',
-                style: GoogleFonts.inter(
-                  color: Colors.white70,
-                  fontSize: 8,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 1.5,
-                ),
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute<void>(
+                builder: (_) => const MyReadingListScreen(),
               ),
-              const SizedBox(height: 8),
-              Text(
-                label,
-                style: GoogleFonts.playfairDisplay(
-                  color: Colors.white,
-                  fontSize: 36,
-                  height: 1.1,
-                  fontWeight: FontWeight.w600,
+            );
+          },
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'READING STREAK',
+                  style: GoogleFonts.inter(
+                    color: Colors.white70,
+                    fontSize: 8,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1.5,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 8),
-              if (_days.isNotEmpty) ...[
-                Row(
-                  children: _days
-                      .map(
-                        (active) => Container(
-                          width: 12,
-                          height: 12,
-                          margin: const EdgeInsets.only(right: 8),
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: active ? Colors.white : Colors.white24,
+                const SizedBox(height: 8),
+                Text(
+                  label,
+                  style: GoogleFonts.playfairDisplay(
+                    color: Colors.white,
+                    fontSize: 36,
+                    height: 1.1,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                if (_days.isNotEmpty) ...[
+                  Row(
+                    children: _days
+                        .map(
+                          (active) => Container(
+                            width: 12,
+                            height: 12,
+                            margin: const EdgeInsets.only(right: 8),
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: active ? Colors.white : Colors.white24,
+                            ),
                           ),
-                        ),
-                      )
-                      .toList(),
+                        )
+                        .toList(),
+                  ),
+                  const SizedBox(height: 10),
+                ],
+                Text(
+                  'Kỷ lục: $_longest ngày · Chạm để mở danh sách đang đọc.',
+                  style: GoogleFonts.inter(
+                    color: Colors.white.withValues(alpha: 0.8),
+                    fontSize: 10,
+                  ),
                 ),
-                const SizedBox(height: 10),
               ],
-              Text(
-                'Kỷ lục: $_longest ngày · Chạm để mở danh sách đang đọc.',
-                style: GoogleFonts.inter(
-                  color: Colors.white.withValues(alpha: 0.8),
-                  fontSize: 10,
-                ),
-              ),
-            ],
+            ),
           ),
-        ),
         ),
       ),
     );

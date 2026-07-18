@@ -68,17 +68,17 @@ class ChatAvatar extends StatelessWidget {
   }
 
   Widget _fallback(String initial) => Container(
-        width: size,
-        height: size,
-        color: AppColors.primaryBrown.withValues(alpha: 0.85),
-        alignment: Alignment.center,
-        child: Text(
-          initial,
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.w600,
-            fontSize: size * 0.4,
-          ),
-        ),
-      );
+    width: size,
+    height: size,
+    color: AppColors.primaryBrown.withValues(alpha: 0.85),
+    alignment: Alignment.center,
+    child: Text(
+      initial,
+      style: TextStyle(
+        color: Colors.white,
+        fontWeight: FontWeight.w600,
+        fontSize: size * 0.4,
+      ),
+    ),
+  );
 }

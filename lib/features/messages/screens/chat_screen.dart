@@ -126,8 +126,9 @@ class _ChatScreenState extends State<ChatScreen> {
       });
       final newest = ascending.isEmpty ? null : ascending.last;
       if (newest != null) {
-        _maxSequence =
-            _maxSequence > newest.sequence.toInt() ? _maxSequence : newest.sequence.toInt();
+        _maxSequence = _maxSequence > newest.sequence.toInt()
+            ? _maxSequence
+            : newest.sequence.toInt();
       }
       if (!older) {
         _scheduleMarkRead();
@@ -147,9 +148,12 @@ class _ChatScreenState extends State<ChatScreen> {
     _markReadTimer?.cancel();
     _markReadTimer = Timer(const Duration(milliseconds: 400), () {
       if (_maxSequence <= 0) return;
-      unawaited(MessagingApi.markRead(widget.conversation.id, _maxSequence)
-          .then((_) => _realtime.refreshUnread())
-          .catchError((Object _) {}));
+      unawaited(
+        MessagingApi.markRead(
+          widget.conversation.id,
+          _maxSequence,
+        ).then((_) => _realtime.refreshUnread()).catchError((Object _) {}),
+      );
     });
   }
 
@@ -166,7 +170,8 @@ class _ChatScreenState extends State<ChatScreen> {
       final next = List<ChatMessage>.of(_messages);
       if (replaceClientId != null) {
         next.removeWhere(
-            (item) => item.pending && item.clientId == replaceClientId);
+          (item) => item.pending && item.clientId == replaceClientId,
+        );
       }
       final index = next.indexWhere((item) => item.id == incoming.id);
       if (index >= 0) {
@@ -200,8 +205,9 @@ class _ChatScreenState extends State<ChatScreen> {
       case 'typing.start':
         final userId = payload['userId'];
         if (userId is String && userId != _me) {
-          setState(() =>
-              _typingUsers[userId] = payload['username'] as String? ?? '');
+          setState(
+            () => _typingUsers[userId] = payload['username'] as String? ?? '',
+          );
         }
       case 'typing.stop':
         final userId = payload['userId'];
@@ -218,10 +224,12 @@ class _ChatScreenState extends State<ChatScreen> {
         ChatAttachment? attachment;
         if (payload['attachment'] is Map<String, dynamic>) {
           attachment = ChatAttachment.fromJson(
-              payload['attachment'] as Map<String, dynamic>);
+            payload['attachment'] as Map<String, dynamic>,
+          );
         }
         // TEXT/STICKER dựng ngay; IMAGE/FILE dùng metadata attachment từ outbox.
-        final canInline = !encrypted &&
+        final canInline =
+            !encrypted &&
             (type == 'TEXT' ||
                 type == 'STICKER' ||
                 ((type == 'IMAGE' || type == 'FILE') && attachment != null));
@@ -230,38 +238,44 @@ class _ChatScreenState extends State<ChatScreen> {
           return;
         }
         _typingUsers.remove(senderId);
-        _upsert(ChatMessage(
-          id: payload['messageId'] as String? ?? '',
-          sequence: (payload['sequence'] as num?)?.toDouble() ?? 0,
-          conversationId: widget.conversation.id,
-          senderId: senderId,
-          senderUsername: payload['senderUsername'] as String? ?? '',
-          type: type,
-          content: payload['content'] as String?,
-          encrypted: false,
-          attachment: attachment,
-          createdAt: DateTime.tryParse(payload['createdAt'] as String? ?? '')
-                  ?.toLocal() ??
-              DateTime.now(),
-        ));
+        _upsert(
+          ChatMessage(
+            id: payload['messageId'] as String? ?? '',
+            sequence: (payload['sequence'] as num?)?.toDouble() ?? 0,
+            conversationId: widget.conversation.id,
+            senderId: senderId,
+            senderUsername: payload['senderUsername'] as String? ?? '',
+            type: type,
+            content: payload['content'] as String?,
+            encrypted: false,
+            attachment: attachment,
+            createdAt:
+                DateTime.tryParse(
+                  payload['createdAt'] as String? ?? '',
+                )?.toLocal() ??
+                DateTime.now(),
+          ),
+        );
         _jumpToBottom();
         if (!mine) _scheduleMarkRead();
       case 'message.revoked':
         final messageId = payload['messageId'];
         if (messageId is String) {
           _patch(
-              messageId,
-              (message) => message.copyWith(
-                  clearContent: true, revokedAt: DateTime.now()));
+            messageId,
+            (message) =>
+                message.copyWith(clearContent: true, revokedAt: DateTime.now()),
+          );
         }
       case 'message.updated':
         final messageId = payload['messageId'];
         final content = payload['content'];
         if (messageId is String && content is String) {
           _patch(
-              messageId,
-              (message) =>
-                  message.copyWith(content: content, editedAt: DateTime.now()));
+            messageId,
+            (message) =>
+                message.copyWith(content: content, editedAt: DateTime.now()),
+          );
         }
       case 'message.reaction':
         final messageId = payload['messageId'];
@@ -270,8 +284,9 @@ class _ChatScreenState extends State<ChatScreen> {
         if (messageId is String && userId is String && emoji is String) {
           _patch(messageId, (message) {
             final others = message.reactions
-                .where((item) =>
-                    !(item.userId == userId && item.emoji == emoji))
+                .where(
+                  (item) => !(item.userId == userId && item.emoji == emoji),
+                )
                 .toList();
             if (payload['active'] == true) {
               others.add(MessageReaction(userId: userId, emoji: emoji));
@@ -285,12 +300,16 @@ class _ChatScreenState extends State<ChatScreen> {
   // ─── Gửi / sửa / thu hồi ───
 
   void _notifyTyping() {
-    _realtime.send(
-        {'type': 'typing.start', 'conversationId': widget.conversation.id});
+    _realtime.send({
+      'type': 'typing.start',
+      'conversationId': widget.conversation.id,
+    });
     _typingStopTimer?.cancel();
     _typingStopTimer = Timer(const Duration(milliseconds: 1800), () {
-      _realtime.send(
-          {'type': 'typing.stop', 'conversationId': widget.conversation.id});
+      _realtime.send({
+        'type': 'typing.stop',
+        'conversationId': widget.conversation.id,
+      });
     });
   }
 
@@ -359,11 +378,11 @@ class _ChatScreenState extends State<ChatScreen> {
       );
       _jumpToBottom();
     } catch (e) {
-      setState(() =>
-          _messages = _messages.where((item) => item.id != clientId).toList());
-      if (type == 'TEXT' &&
-          content != null &&
-          _input.text.trim().isEmpty) {
+      setState(
+        () =>
+            _messages = _messages.where((item) => item.id != clientId).toList(),
+      );
+      if (type == 'TEXT' && content != null && _input.text.trim().isEmpty) {
         _input.text = content;
       }
       _showError(e);
@@ -376,7 +395,9 @@ class _ChatScreenState extends State<ChatScreen> {
   static String _uuidV4() {
     final rng = Random.secure();
     String hex(int length) => List.generate(
-        length, (_) => '0123456789abcdef'[rng.nextInt(16)]).join();
+      length,
+      (_) => '0123456789abcdef'[rng.nextInt(16)],
+    ).join();
     return '${hex(8)}-${hex(4)}-4${hex(3)}-${'89ab'[rng.nextInt(4)]}${hex(3)}-${hex(12)}';
   }
 
@@ -388,8 +409,10 @@ class _ChatScreenState extends State<ChatScreen> {
       return;
     }
     _input.clear();
-    _realtime.send(
-        {'type': 'typing.stop', 'conversationId': widget.conversation.id});
+    _realtime.send({
+      'type': 'typing.stop',
+      'conversationId': widget.conversation.id,
+    });
     await _deliver(type: 'TEXT', content: content);
   }
 
@@ -405,8 +428,10 @@ class _ChatScreenState extends State<ChatScreen> {
       if (picked.isEmpty || !mounted) return;
       final caption = _input.text.trim();
       if (caption.isNotEmpty) _input.clear();
-      _realtime.send(
-          {'type': 'typing.stop', 'conversationId': widget.conversation.id});
+      _realtime.send({
+        'type': 'typing.stop',
+        'conversationId': widget.conversation.id,
+      });
       // Caption chỉ gắn ảnh đầu; tối đa 6 ảnh mỗi lần (đồng bộ web).
       const maxBatch = 6;
       final batch = picked.take(maxBatch).toList();
@@ -495,7 +520,8 @@ class _ChatScreenState extends State<ChatScreen> {
           content: sent.content ?? caption,
           encrypted: false,
           replyTo: optimistic.replyTo,
-          attachment: sent.attachment ??
+          attachment:
+              sent.attachment ??
               ChatAttachment(
                 id: attachmentId,
                 name: name,
@@ -509,8 +535,10 @@ class _ChatScreenState extends State<ChatScreen> {
       );
       _jumpToBottom();
     } catch (e) {
-      setState(() =>
-          _messages = _messages.where((item) => item.id != clientId).toList());
+      setState(
+        () =>
+            _messages = _messages.where((item) => item.id != clientId).toList(),
+      );
       _showError(e);
     } finally {
       _pendingClientIds.remove(clientId);
@@ -524,14 +552,19 @@ class _ChatScreenState extends State<ChatScreen> {
     _input.clear();
     if (content == (target.content ?? '').trim()) return;
     final previous = target.content;
-    _patch(target.id,
-        (message) => message.copyWith(content: content, editedAt: DateTime.now()));
+    _patch(
+      target.id,
+      (message) => message.copyWith(content: content, editedAt: DateTime.now()),
+    );
     try {
       final result = await MessagingApi.editMessage(target.id, content);
       _patch(
-          target.id,
-          (message) => message.copyWith(
-              content: result.content, editedAt: result.editedAt));
+        target.id,
+        (message) => message.copyWith(
+          content: result.content,
+          editedAt: result.editedAt,
+        ),
+      );
     } catch (e) {
       _patch(target.id, (message) => message.copyWith(content: previous));
       _showError(e);
@@ -546,8 +579,14 @@ class _ChatScreenState extends State<ChatScreen> {
   Future<void> _revoke(ChatMessage message) async {
     try {
       await MessagingApi.revoke(message.id);
-      _patch(message.id,
-          (item) => item.copyWith(clearContent: true, revokedAt: DateTime.now(), reactions: const []));
+      _patch(
+        message.id,
+        (item) => item.copyWith(
+          clearContent: true,
+          revokedAt: DateTime.now(),
+          reactions: const [],
+        ),
+      );
     } catch (e) {
       _showError(e);
     }
@@ -566,8 +605,9 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   Future<void> _toggleReaction(ChatMessage message, String emoji) async {
-    final active = message.reactions
-        .any((item) => item.emoji == emoji && item.userId == _me);
+    final active = message.reactions.any(
+      (item) => item.emoji == emoji && item.userId == _me,
+    );
     final me = _me;
     if (me == null) return;
     _patch(message.id, (item) {
@@ -590,8 +630,9 @@ class _ChatScreenState extends State<ChatScreen> {
 
   void _showError(Object error) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(error.toString())));
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(error.toString())));
   }
 
   // ─── Actions sheet ───
@@ -625,7 +666,10 @@ class _ChatScreenState extends State<ChatScreen> {
                         },
                         child: Padding(
                           padding: const EdgeInsets.all(6),
-                          child: Text(emoji, style: const TextStyle(fontSize: 26)),
+                          child: Text(
+                            emoji,
+                            style: const TextStyle(fontSize: 26),
+                          ),
                         ),
                       ),
                   ],
@@ -651,10 +695,14 @@ class _ChatScreenState extends State<ChatScreen> {
                 onTap: () {
                   Navigator.of(sheetContext).pop();
                   unawaited(
-                      Clipboard.setData(ClipboardData(text: message.content!)));
+                    Clipboard.setData(ClipboardData(text: message.content!)),
+                  );
                 },
               ),
-            if (canReact && mine && message.type == 'TEXT' && !message.encrypted)
+            if (canReact &&
+                mine &&
+                message.type == 'TEXT' &&
+                !message.encrypted)
               ListTile(
                 leading: const Icon(Icons.edit_outlined),
                 title: const Text('Chỉnh sửa'),
@@ -669,9 +717,14 @@ class _ChatScreenState extends State<ChatScreen> {
               ),
             if (canReact && mine)
               ListTile(
-                leading: const Icon(Icons.undo_outlined, color: AppColors.error),
-                title:
-                    const Text('Thu hồi', style: TextStyle(color: AppColors.error)),
+                leading: const Icon(
+                  Icons.undo_outlined,
+                  color: AppColors.error,
+                ),
+                title: const Text(
+                  'Thu hồi',
+                  style: TextStyle(color: AppColors.error),
+                ),
                 onTap: () {
                   Navigator.of(sheetContext).pop();
                   unawaited(_revoke(message));
@@ -679,8 +732,10 @@ class _ChatScreenState extends State<ChatScreen> {
               ),
             ListTile(
               leading: const Icon(Icons.delete_outline, color: AppColors.error),
-              title:
-                  const Text('Xóa', style: TextStyle(color: AppColors.error)),
+              title: const Text(
+                'Xóa',
+                style: TextStyle(color: AppColors.error),
+              ),
               onTap: () {
                 Navigator.of(sheetContext).pop();
                 unawaited(_hide(message));
@@ -701,8 +756,9 @@ class _ChatScreenState extends State<ChatScreen> {
     final other = widget.conversation.otherMember(_me);
     final online =
         !widget.conversation.isGroup && _realtime.isOnline(other?.userId ?? '');
-    final typingLabel =
-        _typingUsers.values.where((value) => value.isNotEmpty).join(', ');
+    final typingLabel = _typingUsers.values
+        .where((value) => value.isNotEmpty)
+        .join(', ');
 
     return Scaffold(
       appBar: AppBar(
@@ -710,25 +766,33 @@ class _ChatScreenState extends State<ChatScreen> {
         title: Row(
           children: [
             ChatAvatar(
-                name: name, avatarUrl: other?.avatarUrl, size: 38, online: online),
+              name: name,
+              avatarUrl: other?.avatarUrl,
+              size: 38,
+              online: online,
+            ),
             const SizedBox(width: 10),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(name,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.inter(
-                          fontSize: 15, fontWeight: FontWeight.w600)),
+                  Text(
+                    name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.inter(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                   Text(
                     typingLabel.isNotEmpty
                         ? '$typingLabel đang nhập…'
                         : widget.conversation.isGroup
-                            ? '${widget.conversation.members.length} thành viên'
-                            : online
-                                ? 'Đang hoạt động'
-                                : 'Ngoại tuyến',
+                        ? '${widget.conversation.members.length} thành viên'
+                        : online
+                        ? 'Đang hoạt động'
+                        : 'Ngoại tuyến',
                     style: GoogleFonts.inter(
                       fontSize: 11,
                       color: typingLabel.isNotEmpty
@@ -770,24 +834,32 @@ class _ChatScreenState extends State<ChatScreen> {
                     child: ListView.builder(
                       controller: _scroll,
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 12),
+                        horizontal: 12,
+                        vertical: 12,
+                      ),
                       itemCount: _messages.length + (_loadingOlder ? 1 : 0),
                       itemBuilder: (context, rawIndex) {
                         if (_loadingOlder && rawIndex == 0) {
                           return const Padding(
                             padding: EdgeInsets.all(10),
                             child: Center(
-                                child: SizedBox(
-                                    width: 18,
-                                    height: 18,
-                                    child: CircularProgressIndicator(
-                                        strokeWidth: 2))),
+                              child: SizedBox(
+                                width: 18,
+                                height: 18,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              ),
+                            ),
                           );
                         }
                         final index = _loadingOlder ? rawIndex - 1 : rawIndex;
                         final message = _messages[index];
-                        final previous = index > 0 ? _messages[index - 1] : null;
-                        final showDate = previous == null ||
+                        final previous = index > 0
+                            ? _messages[index - 1]
+                            : null;
+                        final showDate =
+                            previous == null ||
                             !_sameDay(previous.createdAt, message.createdAt);
                         return Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -797,7 +869,8 @@ class _ChatScreenState extends State<ChatScreen> {
                               message: message,
                               mine: message.senderId == _me,
                               me: _me,
-                              showSender: widget.conversation.isGroup &&
+                              showSender:
+                                  widget.conversation.isGroup &&
                                   message.senderId != _me &&
                                   previous?.senderId != message.senderId,
                               onLongPress: () => _openMessageActions(message),
@@ -857,11 +930,14 @@ class _DateChip extends StatelessWidget {
             color: theme.colorScheme.onSurface.withValues(alpha: 0.06),
             borderRadius: BorderRadius.circular(999),
           ),
-          child: Text(label,
-              style: GoogleFonts.inter(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w500,
-                  color: theme.colorScheme.onSurface.withValues(alpha: 0.6))),
+          child: Text(
+            label,
+            style: GoogleFonts.inter(
+              fontSize: 10,
+              fontWeight: FontWeight.w500,
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+            ),
+          ),
         ),
       ),
     );
@@ -894,27 +970,39 @@ class _MessageBubble extends StatelessWidget {
 
     Widget body;
     if (message.revoked) {
-      body = Text('Tin nhắn đã được thu hồi',
-          style: GoogleFonts.inter(
-              fontSize: 13,
-              fontStyle: FontStyle.italic,
-              color: (mine ? Colors.white : theme.colorScheme.onSurface)
-                  .withValues(alpha: 0.6)));
+      body = Text(
+        'Tin nhắn đã được thu hồi',
+        style: GoogleFonts.inter(
+          fontSize: 13,
+          fontStyle: FontStyle.italic,
+          color: (mine ? Colors.white : theme.colorScheme.onSurface).withValues(
+            alpha: 0.6,
+          ),
+        ),
+      );
     } else if (isSticker) {
-      body = Text(message.content ?? '🙂', style: const TextStyle(fontSize: 48));
+      body = Text(
+        message.content ?? '🙂',
+        style: const TextStyle(fontSize: 48),
+      );
     } else if (message.encrypted && message.content == null) {
-      body = Text('🔒 Tin nhắn được mã hoá',
-          style: GoogleFonts.inter(fontSize: 13, fontStyle: FontStyle.italic));
+      body = Text(
+        '🔒 Tin nhắn được mã hoá',
+        style: GoogleFonts.inter(fontSize: 13, fontStyle: FontStyle.italic),
+      );
     } else if (message.attachment != null ||
         message.localPreviewPath != null ||
         message.type == 'IMAGE') {
       body = _AttachmentBody(message: message, mine: mine);
     } else {
-      body = Text(message.content ?? '',
-          style: GoogleFonts.inter(
-              fontSize: 14,
-              height: 1.45,
-              color: mine ? Colors.white : theme.colorScheme.onSurface));
+      body = Text(
+        message.content ?? '',
+        style: GoogleFonts.inter(
+          fontSize: 14,
+          height: 1.45,
+          color: mine ? Colors.white : theme.colorScheme.onSurface,
+        ),
+      );
     }
 
     final bubble = isSticker
@@ -925,8 +1013,8 @@ class _MessageBubble extends StatelessWidget {
               color: mine
                   ? AppColors.primaryBrown
                   : theme.brightness == Brightness.dark
-                      ? Colors.white.withValues(alpha: 0.08)
-                      : theme.colorScheme.onSurface.withValues(alpha: 0.06),
+                  ? Colors.white.withValues(alpha: 0.08)
+                  : theme.colorScheme.onSurface.withValues(alpha: 0.06),
               borderRadius: BorderRadius.only(
                 topLeft: const Radius.circular(20),
                 topRight: const Radius.circular(20),
@@ -945,16 +1033,20 @@ class _MessageBubble extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 3),
       child: Column(
-        crossAxisAlignment:
-            mine ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+        crossAxisAlignment: mine
+            ? CrossAxisAlignment.end
+            : CrossAxisAlignment.start,
         children: [
           if (showSender)
             Padding(
               padding: const EdgeInsets.only(left: 6, bottom: 2),
-              child: Text(message.senderUsername,
-                  style: GoogleFonts.inter(
-                      fontSize: 11,
-                      color: theme.colorScheme.onSurface.withValues(alpha: 0.55))),
+              child: Text(
+                message.senderUsername,
+                style: GoogleFonts.inter(
+                  fontSize: 11,
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.55),
+                ),
+              ),
             ),
           if (message.replyTo != null)
             Container(
@@ -965,7 +1057,8 @@ class _MessageBubble extends StatelessWidget {
                 color: AppColors.primaryBrown.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(10),
                 border: const Border(
-                    left: BorderSide(color: AppColors.primaryBrown, width: 2)),
+                  left: BorderSide(color: AppColors.primaryBrown, width: 2),
+                ),
               ),
               child: Text(
                 message.replyTo!.revoked
@@ -974,8 +1067,9 @@ class _MessageBubble extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: GoogleFonts.inter(
-                    fontSize: 11,
-                    color: theme.colorScheme.onSurface.withValues(alpha: 0.6)),
+                  fontSize: 11,
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                ),
               ),
             ),
           GestureDetector(
@@ -984,7 +1078,8 @@ class _MessageBubble extends StatelessWidget {
               opacity: message.pending ? 0.55 : 1,
               child: ConstrainedBox(
                 constraints: BoxConstraints(
-                    maxWidth: MediaQuery.of(context).size.width * 0.76),
+                  maxWidth: MediaQuery.of(context).size.width * 0.76,
+                ),
                 child: bubble,
               ),
             ),
@@ -1001,14 +1096,19 @@ class _MessageBubble extends StatelessWidget {
                       onTap: () => onReactionTap(entry.key),
                       child: Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 7, vertical: 2),
+                          horizontal: 7,
+                          vertical: 2,
+                        ),
                         decoration: BoxDecoration(
-                          color:
-                              theme.colorScheme.onSurface.withValues(alpha: 0.07),
+                          color: theme.colorScheme.onSurface.withValues(
+                            alpha: 0.07,
+                          ),
                           borderRadius: BorderRadius.circular(999),
                         ),
-                        child: Text('${entry.key} ${entry.value}',
-                            style: const TextStyle(fontSize: 11)),
+                        child: Text(
+                          '${entry.key} ${entry.value}',
+                          style: const TextStyle(fontSize: 11),
+                        ),
                       ),
                     ),
                 ],
@@ -1020,11 +1120,12 @@ class _MessageBubble extends StatelessWidget {
               message.pending
                   ? '…'
                   : message.editedAt != null && !message.revoked
-                      ? '$time · đã chỉnh sửa'
-                      : time,
+                  ? '$time · đã chỉnh sửa'
+                  : time,
               style: GoogleFonts.inter(
-                  fontSize: 9,
-                  color: theme.colorScheme.onSurface.withValues(alpha: 0.45)),
+                fontSize: 9,
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.45),
+              ),
             ),
           ),
         ],
@@ -1074,19 +1175,22 @@ class _AttachmentBodyState extends State<_AttachmentBody> {
     // id tạm (clientId) chưa có trên server — không gọi download.
     if (attachment.id == widget.message.clientId) return;
     unawaited(
-        MessagingApi.attachmentDownloadUrl(attachment.id).then((url) {
-      if (mounted && url.isNotEmpty) setState(() => _url = url);
-    }).catchError((Object _) {}));
+      MessagingApi.attachmentDownloadUrl(attachment.id)
+          .then((url) {
+            if (mounted && url.isNotEmpty) setState(() => _url = url);
+          })
+          .catchError((Object _) {}),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final textColor =
-        widget.mine ? Colors.white : theme.colorScheme.onSurface;
+    final textColor = widget.mine ? Colors.white : theme.colorScheme.onSurface;
     final name = _attachment?.name ?? 'Ảnh';
-    final localFile =
-        _localPath != null && File(_localPath!).existsSync() ? File(_localPath!) : null;
+    final localFile = _localPath != null && File(_localPath!).existsSync()
+        ? File(_localPath!)
+        : null;
     final ImageProvider? provider = localFile != null
         ? FileImage(localFile)
         : (_url != null ? NetworkImage(_url!) : null);
@@ -1097,16 +1201,19 @@ class _AttachmentBodyState extends State<_AttachmentBody> {
       children: [
         if (provider != null)
           GestureDetector(
-            onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(
-              builder: (_) => Scaffold(
-                backgroundColor: Colors.black,
-                appBar: AppBar(
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (_) => Scaffold(
+                  backgroundColor: Colors.black,
+                  appBar: AppBar(
                     backgroundColor: Colors.black,
                     foregroundColor: Colors.white,
-                    title: Text(name, style: const TextStyle(fontSize: 14))),
-                body: PhotoView(imageProvider: provider),
+                    title: Text(name, style: const TextStyle(fontSize: 14)),
+                  ),
+                  body: PhotoView(imageProvider: provider),
+                ),
               ),
-            )),
+            ),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(12),
               child: Stack(
@@ -1162,15 +1269,19 @@ class _AttachmentBodyState extends State<_AttachmentBody> {
                     height: 24,
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
-                : Icon(Icons.broken_image_outlined,
-                    color: textColor.withValues(alpha: 0.5)),
+                : Icon(
+                    Icons.broken_image_outlined,
+                    color: textColor.withValues(alpha: 0.5),
+                  ),
           ),
         if (widget.message.content != null &&
             widget.message.content!.trim().isNotEmpty)
           Padding(
             padding: const EdgeInsets.only(top: 6),
-            child: Text(widget.message.content!,
-                style: GoogleFonts.inter(fontSize: 13, color: textColor)),
+            child: Text(
+              widget.message.content!,
+              style: GoogleFonts.inter(fontSize: 13, color: textColor),
+            ),
           ),
         if (_attachment != null && !_attachment!.isImage)
           Padding(
@@ -1181,10 +1292,12 @@ class _AttachmentBodyState extends State<_AttachmentBody> {
                 Icon(Icons.attach_file, size: 14, color: textColor),
                 const SizedBox(width: 4),
                 Flexible(
-                  child: Text(_attachment!.name,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.inter(fontSize: 11, color: textColor)),
+                  child: Text(
+                    _attachment!.name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.inter(fontSize: 11, color: textColor),
+                  ),
                 ),
               ],
             ),
@@ -1280,7 +1393,9 @@ class _Composer extends StatelessWidget {
                       isDense: true,
                       filled: true,
                       contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 14, vertical: 10),
+                        horizontal: 14,
+                        vertical: 10,
+                      ),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(22),
                         borderSide: BorderSide.none,
@@ -1297,8 +1412,11 @@ class _Composer extends StatelessWidget {
                     onTap: onSend,
                     child: const Padding(
                       padding: EdgeInsets.all(10),
-                      child: Icon(Icons.send_rounded,
-                          size: 20, color: Colors.white),
+                      child: Icon(
+                        Icons.send_rounded,
+                        size: 20,
+                        color: Colors.white,
+                      ),
                     ),
                   ),
                 ),
@@ -1341,18 +1459,23 @@ class _Banner extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title,
-                    style: GoogleFonts.inter(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                        color: color)),
-                Text(subtitle,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.inter(
-                        fontSize: 11,
-                        color:
-                            theme.colorScheme.onSurface.withValues(alpha: 0.6))),
+                Text(
+                  title,
+                  style: GoogleFonts.inter(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                    color: color,
+                  ),
+                ),
+                Text(
+                  subtitle,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.inter(
+                    fontSize: 11,
+                    color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                  ),
+                ),
               ],
             ),
           ),
@@ -1407,8 +1530,10 @@ class _StickerPickerState extends State<_StickerPicker> {
                           : null,
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    child: Text(kStickerGroups[index].label,
-                        style: const TextStyle(fontSize: 18)),
+                    child: Text(
+                      kStickerGroups[index].label,
+                      style: const TextStyle(fontSize: 18),
+                    ),
                   ),
                 ),
             ],
@@ -1423,8 +1548,11 @@ class _StickerPickerState extends State<_StickerPicker> {
                     borderRadius: BorderRadius.circular(12),
                     onTap: () => widget.onSticker(sticker),
                     child: Center(
-                        child:
-                            Text(sticker, style: const TextStyle(fontSize: 26))),
+                      child: Text(
+                        sticker,
+                        style: const TextStyle(fontSize: 26),
+                      ),
+                    ),
                   ),
               ],
             ),

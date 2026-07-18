@@ -27,8 +27,7 @@ class EditorialSurfaceCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final barColor =
-        accentColor ??
-        (isDark ? AppColors.darkAccent : AppColors.primaryBrown);
+        accentColor ?? (isDark ? AppColors.darkAccent : AppColors.primaryBrown);
     final surfaceColor = isDark ? AppColors.darkSurface : AppColors.surface;
     final borderColor = isDark ? AppColors.darkBorder : AppColors.border;
 

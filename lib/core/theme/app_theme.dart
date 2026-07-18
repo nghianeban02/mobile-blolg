@@ -58,17 +58,13 @@ class AppTheme {
       ),
       filledButtonTheme: FilledButtonThemeData(
         style: _pillButtonStyle().copyWith(
-          backgroundColor: const WidgetStatePropertyAll(
-            AppColors.primaryBrown,
-          ),
+          backgroundColor: const WidgetStatePropertyAll(AppColors.primaryBrown),
           foregroundColor: const WidgetStatePropertyAll(Colors.white),
         ),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: _pillButtonStyle().copyWith(
-          backgroundColor: const WidgetStatePropertyAll(
-            AppColors.primaryBrown,
-          ),
+          backgroundColor: const WidgetStatePropertyAll(AppColors.primaryBrown),
           foregroundColor: const WidgetStatePropertyAll(Colors.white),
           elevation: const WidgetStatePropertyAll(0),
           shadowColor: WidgetStatePropertyAll(
@@ -78,9 +74,7 @@ class AppTheme {
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: _pillButtonStyle().copyWith(
-          foregroundColor: const WidgetStatePropertyAll(
-            AppColors.homeTextDark,
-          ),
+          foregroundColor: const WidgetStatePropertyAll(AppColors.homeTextDark),
           side: const WidgetStatePropertyAll(
             BorderSide(color: AppColors.borderStrong),
           ),

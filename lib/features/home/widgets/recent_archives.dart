@@ -58,7 +58,9 @@ class RecentArchives extends StatelessWidget {
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute<void>(builder: (_) => const SearchScreen()),
+                    MaterialPageRoute<void>(
+                      builder: (_) => const SearchScreen(),
+                    ),
                   );
                 },
                 child: Padding(

@@ -908,7 +908,6 @@ class NotificationDto {
   }
 }
 
-
 /// `GET/PUT /api/notifications/preferences` — bật/tắt push theo từng loại,
 /// áp dụng cho mọi thiết bị của tài khoản (thực thi ở server khi gửi FCM).
 class PushPreferencesDto {
@@ -942,13 +941,13 @@ class PushPreferencesDto {
   }
 
   Map<String, dynamic> toJson() => {
-        'messages': messages,
-        'calls': calls,
-        'friends': friends,
-        'comments': comments,
-        'likes': likes,
-        'system': system,
-      };
+    'messages': messages,
+    'calls': calls,
+    'friends': friends,
+    'comments': comments,
+    'likes': likes,
+    'system': system,
+  };
 
   PushPreferencesDto copyWith({
     bool? messages,

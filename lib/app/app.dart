@@ -35,7 +35,9 @@ class _MobileAppState extends State<MobileApp> {
     _display.addListener(_refresh);
     _display.load();
     // Deep link từ notification cuộc gọi (Nhận / tap khi app tắt).
-    WidgetsBinding.instance.addPostFrameCallback((_) => _consumePushLaunchLink());
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => _consumePushLaunchLink(),
+    );
   }
 
   void _consumePushLaunchLink() {
@@ -43,7 +45,9 @@ class _MobileAppState extends State<MobileApp> {
     if (link == null || link.isEmpty) return;
     PushNotificationsService.pendingLaunchLink = null;
     try {
-      final uri = Uri.parse(link.startsWith('http') ? link : 'https://nooknh.com$link');
+      final uri = Uri.parse(
+        link.startsWith('http') ? link : 'https://nooknh.com$link',
+      );
       if (uri.path.startsWith('/messages') || uri.path == AppRoutes.messages) {
         final conversation = uri.queryParameters['conversation'];
         final target = conversation == null || conversation.isEmpty
@@ -74,7 +78,9 @@ class _MobileAppState extends State<MobileApp> {
     // Poll nhẹ khi có pending link từ notification (app vừa mở từ nền).
     final pending = PushNotificationsService.pendingLaunchLink;
     if (pending != null) {
-      WidgetsBinding.instance.addPostFrameCallback((_) => _consumePushLaunchLink());
+      WidgetsBinding.instance.addPostFrameCallback(
+        (_) => _consumePushLaunchLink(),
+      );
     }
     return MultiBlocProvider(
       providers: [

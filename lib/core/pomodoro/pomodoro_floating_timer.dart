@@ -60,8 +60,9 @@ class PomodoroFloatingTimer extends StatelessWidget {
                           CircularProgressIndicator(
                             value: progress,
                             strokeWidth: 3,
-                            backgroundColor: AppColors.homeTextDark
-                                .withValues(alpha: 0.06),
+                            backgroundColor: AppColors.homeTextDark.withValues(
+                              alpha: 0.06,
+                            ),
                             color: accent,
                           ),
                           Text(
@@ -88,9 +89,7 @@ class PomodoroFloatingTimer extends StatelessWidget {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Text(
-                              timer.isPaused
-                                  ? 'Đã tạm dừng'
-                                  : 'Đang tập trung',
+                              timer.isPaused ? 'Đã tạm dừng' : 'Đang tập trung',
                               style: const TextStyle(
                                 fontSize: 10,
                                 fontWeight: FontWeight.w700,

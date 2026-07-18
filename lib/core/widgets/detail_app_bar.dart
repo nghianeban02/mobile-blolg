@@ -28,11 +28,7 @@ class _DetailAppBarContent extends StatelessWidget {
       children: [
         IconButton(
           tooltip: 'Quay lại',
-          icon: Icon(
-            Icons.arrow_back_ios_new_rounded,
-            color: ink,
-            size: 18,
-          ),
+          icon: Icon(Icons.arrow_back_ios_new_rounded, color: ink, size: 18),
           onPressed: () => Navigator.pop(context),
         ),
         Expanded(

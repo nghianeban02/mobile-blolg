@@ -122,9 +122,7 @@ class _IncomingRequestTileState extends State<IncomingRequestTile> {
                         onPressed: _reject,
                         style: OutlinedButton.styleFrom(
                           foregroundColor: AppColors.homeTextDark,
-                          side: const BorderSide(
-                            color: AppColors.borderStrong,
-                          ),
+                          side: const BorderSide(color: AppColors.borderStrong),
                           minimumSize: const Size(0, 44),
                           padding: const EdgeInsets.symmetric(
                             horizontal: 20,

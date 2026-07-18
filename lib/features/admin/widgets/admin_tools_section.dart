@@ -40,7 +40,9 @@ class AdminToolsSection extends StatelessWidget {
           onActionTap: () {
             Navigator.push(
               context,
-              MaterialPageRoute<void>(builder: (_) => const AdminCatalogScreen()),
+              MaterialPageRoute<void>(
+                builder: (_) => const AdminCatalogScreen(),
+              ),
             );
           },
         ),

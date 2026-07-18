@@ -124,64 +124,64 @@ class _SavedScreenState extends State<SavedScreen> {
                 margin: const EdgeInsets.only(bottom: 12),
                 padding: const EdgeInsets.fromLTRB(18, 16, 8, 16),
                 child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                item.entityType == BookmarkEntityType.post
-                                    ? 'BÀI VIẾT'
-                                    : 'REVIEW',
-                                style: const TextStyle(
-                                  color: AppColors.primaryBrown,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 10,
-                                  letterSpacing: 1.2,
-                                ),
-                              ),
-                              const SizedBox(height: 7),
-                              Text(
-                                item.title,
-                                style: GoogleFonts.playfairDisplay(
-                                  fontSize: 19,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                              if (item.excerpt.isNotEmpty) ...[
-                                const SizedBox(height: 6),
-                                Text(
-                                  item.excerpt,
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(
-                                    color: AppColors.homeTextLight,
-                                    height: 1.4,
-                                  ),
-                                ),
-                              ],
-                              const SizedBox(height: 8),
-                              Text(
-                                'Đã lưu ${formatCommentDateTime(item.savedAt)}',
-                                style: const TextStyle(
-                                  fontSize: 10,
-                                  color: AppColors.homeTextLight,
-                                ),
-                              ),
-                            ],
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            item.entityType == BookmarkEntityType.post
+                                ? 'BÀI VIẾT'
+                                : 'REVIEW',
+                            style: const TextStyle(
+                              color: AppColors.primaryBrown,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 10,
+                              letterSpacing: 1.2,
+                            ),
                           ),
-                        ),
-                        IconButton(
-                          tooltip: 'Bỏ lưu',
-                          onPressed: () => _remove(item),
-                          icon: const Icon(
-                            Icons.bookmark,
-                            color: AppColors.primaryBrown,
+                          const SizedBox(height: 7),
+                          Text(
+                            item.title,
+                            style: GoogleFonts.playfairDisplay(
+                              fontSize: 19,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
-                        ),
-                      ],
+                          if (item.excerpt.isNotEmpty) ...[
+                            const SizedBox(height: 6),
+                            Text(
+                              item.excerpt,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                color: AppColors.homeTextLight,
+                                height: 1.4,
+                              ),
+                            ),
+                          ],
+                          const SizedBox(height: 8),
+                          Text(
+                            'Đã lưu ${formatCommentDateTime(item.savedAt)}',
+                            style: const TextStyle(
+                              fontSize: 10,
+                              color: AppColors.homeTextLight,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
+                    IconButton(
+                      tooltip: 'Bỏ lưu',
+                      onPressed: () => _remove(item),
+                      icon: const Icon(
+                        Icons.bookmark,
+                        color: AppColors.primaryBrown,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
         ],

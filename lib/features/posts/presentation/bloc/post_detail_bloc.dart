@@ -35,9 +35,7 @@ class PostDetailBloc extends Bloc<PostDetailEvent, PostDetailState> {
       );
       return;
     }
-    emit(
-      state.copyWith(status: PostDetailStatus.success, post: result.data),
-    );
+    emit(state.copyWith(status: PostDetailStatus.success, post: result.data));
   }
 
   Future<void> _onDelete(

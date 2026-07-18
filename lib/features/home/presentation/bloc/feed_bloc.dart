@@ -44,7 +44,9 @@ class FeedBloc extends Bloc<FeedEvent, FeedState> {
   ) async {
     emit(
       state.copyWith(
-        status: state.items.isEmpty ? FeedStatus.loading : FeedStatus.refreshing,
+        status: state.items.isEmpty
+            ? FeedStatus.loading
+            : FeedStatus.refreshing,
         clearError: true,
         page: 0,
         hasMore: true,
@@ -83,8 +85,7 @@ class FeedBloc extends Bloc<FeedEvent, FeedState> {
           state.copyWith(
             status: FeedStatus.failure,
             errorMessage:
-                result.message ??
-                'Không tải được feed. Đăng nhập rồi thử lại.',
+                result.message ?? 'Không tải được feed. Đăng nhập rồi thử lại.',
           ),
         );
         return;
@@ -115,10 +116,7 @@ class FeedBloc extends Bloc<FeedEvent, FeedState> {
       emit(state.copyWith(status: FeedStatus.failure, errorMessage: e.message));
     } on Exception catch (e) {
       emit(
-        state.copyWith(
-          status: FeedStatus.failure,
-          errorMessage: e.toString(),
-        ),
+        state.copyWith(status: FeedStatus.failure, errorMessage: e.toString()),
       );
     }
   }

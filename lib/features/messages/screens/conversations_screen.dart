@@ -79,7 +79,8 @@ class _ConversationsView extends StatelessWidget {
     return BlocBuilder<ConversationsBloc, ConversationsState>(
       builder: (context, state) {
         final filtered = state.filtered;
-        final loading = state.status == ConversationsStatus.loading &&
+        final loading =
+            state.status == ConversationsStatus.loading &&
             state.conversations.isEmpty;
         return Scaffold(
           appBar: AppBar(
@@ -160,7 +161,8 @@ class _ConversationsView extends StatelessWidget {
                             return _ConversationTile(
                               conversation: conversation,
                               currentUserId: state.currentUserId,
-                              online: !conversation.isGroup &&
+                              online:
+                                  !conversation.isGroup &&
                                   realtime.isOnline(
                                     conversation
                                             .otherMember(state.currentUserId)

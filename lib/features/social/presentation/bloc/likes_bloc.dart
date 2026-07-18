@@ -25,7 +25,10 @@ class LikesBloc extends Bloc<LikesEvent, LikesState> {
   final String targetId;
   final BeBlogLikesRepository _repository;
 
-  Future<void> _onLoad(LikesLoadRequested event, Emitter<LikesState> emit) async {
+  Future<void> _onLoad(
+    LikesLoadRequested event,
+    Emitter<LikesState> emit,
+  ) async {
     emit(state.copyWith(status: LikesStatus.loading));
     final result = target == LikeTarget.post
         ? await _repository.statusPost(targetId)
@@ -39,9 +42,7 @@ class LikesBloc extends Bloc<LikesEvent, LikesState> {
       );
       return;
     }
-    emit(
-      state.copyWith(status: LikesStatus.success, likeStatus: result.data),
-    );
+    emit(state.copyWith(status: LikesStatus.success, likeStatus: result.data));
   }
 
   Future<void> _onReact(
@@ -52,7 +53,9 @@ class LikesBloc extends Bloc<LikesEvent, LikesState> {
         ? await _repository.likePost(targetId, type: event.type)
         : await _repository.like(targetId, type: event.type);
     if (result.success) {
-      emit(state.copyWith(likeStatus: result.data, status: LikesStatus.success));
+      emit(
+        state.copyWith(likeStatus: result.data, status: LikesStatus.success),
+      );
     }
   }
 
@@ -64,7 +67,9 @@ class LikesBloc extends Bloc<LikesEvent, LikesState> {
         ? await _repository.unlikePost(targetId)
         : await _repository.unlike(targetId);
     if (result.success) {
-      emit(state.copyWith(likeStatus: result.data, status: LikesStatus.success));
+      emit(
+        state.copyWith(likeStatus: result.data, status: LikesStatus.success),
+      );
     }
   }
 }

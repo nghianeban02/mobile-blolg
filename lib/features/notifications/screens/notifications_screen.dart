@@ -139,9 +139,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                             Align(
                               alignment: Alignment.centerRight,
                               child: TextButton(
-                                onPressed: () => context
-                                    .read<NotificationsBloc>()
-                                    .add(
+                                onPressed: () =>
+                                    context.read<NotificationsBloc>().add(
                                       const NotificationsMarkAllReadRequested(),
                                     ),
                                 child: Text(

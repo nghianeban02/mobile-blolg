@@ -43,6 +43,13 @@ final class SearchState extends Equatable {
   }
 
   @override
-  List<Object?> get props =>
-      [status, query, filter, hits, page, hasMore, errorMessage];
+  List<Object?> get props => [
+    status,
+    query,
+    filter,
+    hits,
+    page,
+    hasMore,
+    errorMessage,
+  ];
 }

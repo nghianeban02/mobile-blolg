@@ -56,7 +56,9 @@ class _ActionChip extends StatelessWidget {
   Widget build(BuildContext context) {
     return Material(
       color: AppColors.white,
-      shape: const StadiumBorder(side: BorderSide(color: AppColors.borderStrong)),
+      shape: const StadiumBorder(
+        side: BorderSide(color: AppColors.borderStrong),
+      ),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onTap,

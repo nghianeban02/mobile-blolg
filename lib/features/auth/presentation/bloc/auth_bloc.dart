@@ -143,9 +143,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     Emitter<AuthState> emit,
   ) async {
     await _auth.logout();
-    emit(
-      const AuthState(status: AuthStatus.unauthenticated),
-    );
+    emit(const AuthState(status: AuthStatus.unauthenticated));
   }
 
   Future<void> _onSessionExpired(

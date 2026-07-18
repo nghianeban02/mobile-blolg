@@ -137,154 +137,155 @@ class _RegisterScreenState extends State<RegisterScreen>
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 440),
                 child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  const SiteBrand(
-                    variant: SiteBrandVariant.mobile,
-                    showSlogan: true,
-                    showMark: true,
-                    markSize: 36,
-                  ),
-                  const SizedBox(height: 28),
-                  Container(
-                    padding: const EdgeInsets.fromLTRB(22, 28, 22, 28),
-                    decoration: BoxDecoration(
-                      color: AppColors.surface,
-                      borderRadius: AppRadius.card,
-                      border: Border.all(color: AppColors.border),
-                      boxShadow: AppShadows.soft,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const SiteBrand(
+                      variant: SiteBrandVariant.mobile,
+                      showSlogan: true,
+                      showMark: true,
+                      markSize: 36,
                     ),
-                    child: Form(
-                      key: _formKey,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          Text(
-                            'Tạo tài khoản',
-                            style: GoogleFonts.playfairDisplay(
-                              fontSize: 30,
-                              color: AppColors.homeTextDark,
-                              fontWeight: FontWeight.w500,
+                    const SizedBox(height: 28),
+                    Container(
+                      padding: const EdgeInsets.fromLTRB(22, 28, 22, 28),
+                      decoration: BoxDecoration(
+                        color: AppColors.surface,
+                        borderRadius: AppRadius.card,
+                        border: Border.all(color: AppColors.border),
+                        boxShadow: AppShadows.soft,
+                      ),
+                      child: Form(
+                        key: _formKey,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Text(
+                              'Tạo tài khoản',
+                              style: GoogleFonts.playfairDisplay(
+                                fontSize: 30,
+                                color: AppColors.homeTextDark,
+                                fontWeight: FontWeight.w500,
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 10),
-                          Text(
-                            'Tham gia cộng đồng đọc và viết trên Nook.',
-                            style: GoogleFonts.inter(
-                              fontSize: 14,
-                              color: AppColors.homeTextLight,
-                              height: 1.5,
+                            const SizedBox(height: 10),
+                            Text(
+                              'Tham gia cộng đồng đọc và viết trên Nook.',
+                              style: GoogleFonts.inter(
+                                fontSize: 14,
+                                color: AppColors.homeTextLight,
+                                height: 1.5,
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 28),
-                          AuthFormField(
-                            label: 'Tên đăng nhập',
-                            hint: 'ten_dang_nhap',
-                            controller: _usernameController,
-                            validator: (v) {
-                              final t = v?.trim() ?? '';
-                              if (t.isEmpty) return 'Vui lòng nhập username';
-                              if (t.length < 3) {
-                                return 'Username tối thiểu 3 ký tự';
-                              }
-                              return null;
-                            },
-                          ),
-                          const SizedBox(height: 20),
-                          AuthFormField(
-                            label: 'Email',
-                            hint: 'email@example.com',
-                            controller: _emailController,
-                            keyboardType: TextInputType.emailAddress,
-                            validator: (v) {
-                              final t = v?.trim() ?? '';
-                              if (t.isEmpty) return 'Vui lòng nhập email';
-                              if (!t.contains('@')) return 'Email không hợp lệ';
-                              return null;
-                            },
-                          ),
-                          const SizedBox(height: 20),
-                          AuthFormField(
-                            label: 'Mật khẩu',
-                            hint: '••••••••',
-                            controller: _passwordController,
-                            obscureText: _obscurePassword,
-                            showVisibilityToggle: true,
-                            onToggleVisibility: () => setState(
-                              () => _obscurePassword = !_obscurePassword,
+                            const SizedBox(height: 28),
+                            AuthFormField(
+                              label: 'Tên đăng nhập',
+                              hint: 'ten_dang_nhap',
+                              controller: _usernameController,
+                              validator: (v) {
+                                final t = v?.trim() ?? '';
+                                if (t.isEmpty) return 'Vui lòng nhập username';
+                                if (t.length < 3) {
+                                  return 'Username tối thiểu 3 ký tự';
+                                }
+                                return null;
+                              },
                             ),
-                            validator: (v) {
-                              if (v == null || v.isEmpty) {
-                                return 'Vui lòng nhập mật khẩu';
-                              }
-                              if (v.length < 6) {
-                                return 'Mật khẩu phải có ít nhất 6 ký tự';
-                              }
-                              return null;
-                            },
-                          ),
-                          const SizedBox(height: 28),
-                          AuthFormField(
-                            label: 'Xác nhận mật khẩu',
-                            hint: '••••••••',
-                            controller: _confirmPasswordController,
-                            obscureText: _obscureConfirm,
-                            showVisibilityToggle: true,
-                            onToggleVisibility: () => setState(
-                              () => _obscureConfirm = !_obscureConfirm,
-                            ),
-                            validator: (v) {
-                              if (v != _passwordController.text) {
-                                return 'Mật khẩu không khớp';
-                              }
-                              return null;
-                            },
-                          ),
-                          if (_errorMessage != null) ...[
                             const SizedBox(height: 20),
-                            AuthErrorBanner(message: _errorMessage!),
+                            AuthFormField(
+                              label: 'Email',
+                              hint: 'email@example.com',
+                              controller: _emailController,
+                              keyboardType: TextInputType.emailAddress,
+                              validator: (v) {
+                                final t = v?.trim() ?? '';
+                                if (t.isEmpty) return 'Vui lòng nhập email';
+                                if (!t.contains('@'))
+                                  return 'Email không hợp lệ';
+                                return null;
+                              },
+                            ),
+                            const SizedBox(height: 20),
+                            AuthFormField(
+                              label: 'Mật khẩu',
+                              hint: '••••••••',
+                              controller: _passwordController,
+                              obscureText: _obscurePassword,
+                              showVisibilityToggle: true,
+                              onToggleVisibility: () => setState(
+                                () => _obscurePassword = !_obscurePassword,
+                              ),
+                              validator: (v) {
+                                if (v == null || v.isEmpty) {
+                                  return 'Vui lòng nhập mật khẩu';
+                                }
+                                if (v.length < 6) {
+                                  return 'Mật khẩu phải có ít nhất 6 ký tự';
+                                }
+                                return null;
+                              },
+                            ),
+                            const SizedBox(height: 28),
+                            AuthFormField(
+                              label: 'Xác nhận mật khẩu',
+                              hint: '••••••••',
+                              controller: _confirmPasswordController,
+                              obscureText: _obscureConfirm,
+                              showVisibilityToggle: true,
+                              onToggleVisibility: () => setState(
+                                () => _obscureConfirm = !_obscureConfirm,
+                              ),
+                              validator: (v) {
+                                if (v != _passwordController.text) {
+                                  return 'Mật khẩu không khớp';
+                                }
+                                return null;
+                              },
+                            ),
+                            if (_errorMessage != null) ...[
+                              const SizedBox(height: 20),
+                              AuthErrorBanner(message: _errorMessage!),
+                            ],
+                            const SizedBox(height: 28),
+                            FilledButton(
+                              onPressed: _loading ? null : _register,
+                              child: Text(
+                                _loading ? 'Đang tạo…' : 'Tạo tài khoản',
+                              ),
+                            ),
                           ],
-                          const SizedBox(height: 28),
-                          FilledButton(
-                            onPressed: _loading ? null : _register,
-                            child: Text(
-                              _loading ? 'Đang tạo…' : 'Tạo tài khoản',
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 28),
+                    Text.rich(
+                      TextSpan(
+                        style: GoogleFonts.inter(
+                          fontSize: 14,
+                          color: AppColors.homeTextLight,
+                        ),
+                        children: [
+                          const TextSpan(text: 'Đã có tài khoản? '),
+                          WidgetSpan(
+                            alignment: PlaceholderAlignment.baseline,
+                            baseline: TextBaseline.alphabetic,
+                            child: GestureDetector(
+                              onTap: () => Navigator.pop(context),
+                              child: Text(
+                                'Đăng nhập',
+                                style: GoogleFonts.inter(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppColors.homeTextDark,
+                                  decoration: TextDecoration.underline,
+                                ),
+                              ),
                             ),
                           ),
                         ],
                       ),
+                      textAlign: TextAlign.center,
                     ),
-                  ),
-                  const SizedBox(height: 28),
-                  Text.rich(
-                    TextSpan(
-                      style: GoogleFonts.inter(
-                        fontSize: 14,
-                        color: AppColors.homeTextLight,
-                      ),
-                      children: [
-                        const TextSpan(text: 'Đã có tài khoản? '),
-                        WidgetSpan(
-                          alignment: PlaceholderAlignment.baseline,
-                          baseline: TextBaseline.alphabetic,
-                          child: GestureDetector(
-                            onTap: () => Navigator.pop(context),
-                            child: Text(
-                              'Đăng nhập',
-                              style: GoogleFonts.inter(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w700,
-                                color: AppColors.homeTextDark,
-                                decoration: TextDecoration.underline,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ],
+                  ],
                 ),
               ),
             ),

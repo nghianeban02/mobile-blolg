@@ -95,8 +95,13 @@ class MessagingApi {
   // --- Conversations ---
 
   static Future<List<ChatConversation>> conversations({int size = 100}) async {
-    final result = _map(await _request('GET', '/api/chat/conversations',
-        query: {'size': '$size'}));
+    final result = _map(
+      await _request(
+        'GET',
+        '/api/chat/conversations',
+        query: {'size': '$size'},
+      ),
+    );
     return (result['items'] as List? ?? const [])
         .whereType<Map<String, dynamic>>()
         .map(ChatConversation.fromJson)
@@ -117,14 +122,27 @@ class MessagingApi {
   }
 
   static Future<String> createDirect(String recipientId) async {
-    final result = _map(await _request('POST', '/api/chat/conversations/direct',
-        body: {'recipientId': recipientId}));
+    final result = _map(
+      await _request(
+        'POST',
+        '/api/chat/conversations/direct',
+        body: {'recipientId': recipientId},
+      ),
+    );
     return result['id'] as String? ?? '';
   }
 
-  static Future<String> createGroup(String title, List<String> memberIds) async {
-    final result = _map(await _request('POST', '/api/chat/conversations/group',
-        body: {'title': title, 'memberIds': memberIds}));
+  static Future<String> createGroup(
+    String title,
+    List<String> memberIds,
+  ) async {
+    final result = _map(
+      await _request(
+        'POST',
+        '/api/chat/conversations/group',
+        body: {'title': title, 'memberIds': memberIds},
+      ),
+    );
     return result['id'] as String? ?? '';
   }
 
@@ -135,19 +153,18 @@ class MessagingApi {
     int? before,
     int size = 50,
   }) async {
-    final result = _map(await _request(
-      'GET',
-      '/api/chat/conversations/$conversationId/messages',
-      query: {'size': '$size', if (before != null) 'before': '$before'},
-    ));
+    final result = _map(
+      await _request(
+        'GET',
+        '/api/chat/conversations/$conversationId/messages',
+        query: {'size': '$size', if (before != null) 'before': '$before'},
+      ),
+    );
     final items = (result['items'] as List? ?? const [])
         .whereType<Map<String, dynamic>>()
         .map(ChatMessage.fromJson)
         .toList();
-    return (
-      items: items,
-      nextCursor: (result['nextCursor'] as num?)?.toInt(),
-    );
+    return (items: items, nextCursor: (result['nextCursor'] as num?)?.toInt());
   }
 
   static Future<ChatMessage> sendMessage(
@@ -158,23 +175,27 @@ class MessagingApi {
     String? replyToId,
     String? attachmentId,
   }) async {
-    final result = _map(await _request(
-      'POST',
-      '/api/chat/conversations/$conversationId/messages',
-      body: {
-        'clientId': clientId,
-        'type': type,
-        'content': ?content,
-        'replyToId': ?replyToId,
-        'attachmentId': ?attachmentId,
-      },
-    ));
+    final result = _map(
+      await _request(
+        'POST',
+        '/api/chat/conversations/$conversationId/messages',
+        body: {
+          'clientId': clientId,
+          'type': type,
+          'content': ?content,
+          'replyToId': ?replyToId,
+          'attachmentId': ?attachmentId,
+        },
+      ),
+    );
     return ChatMessage.fromJson({...result, 'conversationId': conversationId});
   }
 
-  static Future<void> markRead(String conversationId, int sequence) =>
-      _request('POST', '/api/chat/conversations/$conversationId/read',
-          body: {'sequence': sequence});
+  static Future<void> markRead(String conversationId, int sequence) => _request(
+    'POST',
+    '/api/chat/conversations/$conversationId/read',
+    body: {'sequence': sequence},
+  );
 
   static Future<void> revoke(String messageId) =>
       _request('DELETE', '/api/chat/messages/$messageId');
@@ -184,47 +205,60 @@ class MessagingApi {
       _request('POST', '/api/chat/messages/$messageId/hide');
 
   static Future<({String content, DateTime? editedAt})> editMessage(
-      String messageId, String content) async {
-    final result = _map(await _request(
-        'PATCH', '/api/chat/messages/$messageId',
-        body: {'content': content}));
+    String messageId,
+    String content,
+  ) async {
+    final result = _map(
+      await _request(
+        'PATCH',
+        '/api/chat/messages/$messageId',
+        body: {'content': content},
+      ),
+    );
     return (
       content: result['content'] as String? ?? content,
-      editedAt: DateTime.tryParse(result['editedAt'] as String? ?? '')?.toLocal(),
+      editedAt: DateTime.tryParse(
+        result['editedAt'] as String? ?? '',
+      )?.toLocal(),
     );
   }
 
-  static Future<void> react(String messageId, String emoji) =>
-      _request('PUT', '/api/chat/messages/$messageId/reactions',
-          body: {'value': emoji});
+  static Future<void> react(String messageId, String emoji) => _request(
+    'PUT',
+    '/api/chat/messages/$messageId/reactions',
+    body: {'value': emoji},
+  );
 
-  static Future<void> unreact(String messageId, String emoji) =>
-      _request('DELETE', '/api/chat/messages/$messageId/reactions',
-          query: {'value': emoji});
+  static Future<void> unreact(String messageId, String emoji) => _request(
+    'DELETE',
+    '/api/chat/messages/$messageId/reactions',
+    query: {'value': emoji},
+  );
 
   // --- Attachments (presign → PUT bytes → complete → send message) ---
 
-  static Future<({
-    String attachmentId,
-    String? uploadPath,
-    String uploadUrl,
-    String method,
-    Map<String, String> headers,
-  })> presignAttachment(
+  static Future<
+    ({
+      String attachmentId,
+      String? uploadPath,
+      String uploadUrl,
+      String method,
+      Map<String, String> headers,
+    })
+  >
+  presignAttachment(
     String conversationId, {
     required String name,
     required String mimeType,
     required int sizeBytes,
   }) async {
-    final result = _map(await _request(
-      'POST',
-      '/api/chat/conversations/$conversationId/attachments/presign',
-      body: {
-        'name': name,
-        'mimeType': mimeType,
-        'sizeBytes': sizeBytes,
-      },
-    ));
+    final result = _map(
+      await _request(
+        'POST',
+        '/api/chat/conversations/$conversationId/attachments/presign',
+        body: {'name': name, 'mimeType': mimeType, 'sizeBytes': sizeBytes},
+      ),
+    );
     final headers = <String, String>{};
     final rawHeaders = result['headers'];
     if (rawHeaders is Map) {
@@ -235,7 +269,9 @@ class MessagingApi {
     final uploadPath = result['uploadPath'] as String?;
     return (
       attachmentId: result['attachmentId'] as String? ?? '',
-      uploadPath: (uploadPath != null && uploadPath.isNotEmpty) ? uploadPath : null,
+      uploadPath: (uploadPath != null && uploadPath.isNotEmpty)
+          ? uploadPath
+          : null,
       uploadUrl: result['uploadUrl'] as String? ?? '',
       method: (result['method'] as String? ?? 'PUT').toUpperCase(),
       headers: headers,
@@ -270,12 +306,18 @@ class MessagingApi {
       sizeBytes: bytes,
     );
     if (ticket.attachmentId.isEmpty) {
-      throw const MessagingApiException(500, 'Không tạo được liên kết tải lên.');
+      throw const MessagingApiException(
+        500,
+        'Không tạo được liên kết tải lên.',
+      );
     }
     final useDirect = ticket.uploadPath != null;
     final url = useDirect ? '$baseUrl${ticket.uploadPath}' : ticket.uploadUrl;
     if (url.isEmpty) {
-      throw const MessagingApiException(500, 'Không tạo được liên kết tải lên.');
+      throw const MessagingApiException(
+        500,
+        'Không tạo được liên kết tải lên.',
+      );
     }
     try {
       final response = await ApiClient.instance.dio.request<List<int>>(
@@ -283,10 +325,7 @@ class MessagingApi {
         data: file.openRead(),
         options: Options(
           method: ticket.method,
-          headers: {
-            ...ticket.headers,
-            Headers.contentLengthHeader: bytes,
-          },
+          headers: {...ticket.headers, Headers.contentLengthHeader: bytes},
           contentType: type,
           // Direct path cần JWT; presigned thì tắt auth.
           extra: {'auth': useDirect},
@@ -308,7 +347,9 @@ class MessagingApi {
     } on DioException catch (e) {
       if (e.error is SocketException) {
         throw const MessagingApiException(
-            0, 'Không kết nối được máy chủ. Kiểm tra mạng trên thiết bị.');
+          0,
+          'Không kết nối được máy chủ. Kiểm tra mạng trên thiết bị.',
+        );
       }
       throw const MessagingApiException(0, 'Không tải được ảnh lên.');
     }
@@ -336,12 +377,18 @@ class MessagingApi {
       sizeBytes: bytes.length,
     );
     if (ticket.attachmentId.isEmpty) {
-      throw const MessagingApiException(500, 'Không tạo được liên kết tải lên.');
+      throw const MessagingApiException(
+        500,
+        'Không tạo được liên kết tải lên.',
+      );
     }
     final useDirect = ticket.uploadPath != null;
     final url = useDirect ? '$baseUrl${ticket.uploadPath}' : ticket.uploadUrl;
     if (url.isEmpty) {
-      throw const MessagingApiException(500, 'Không tạo được liên kết tải lên.');
+      throw const MessagingApiException(
+        500,
+        'Không tạo được liên kết tải lên.',
+      );
     }
     try {
       final response = await ApiClient.instance.dio.request<List<int>>(
@@ -373,7 +420,9 @@ class MessagingApi {
     } on DioException catch (e) {
       if (e.error is SocketException) {
         throw const MessagingApiException(
-            0, 'Không kết nối được máy chủ. Kiểm tra mạng trên thiết bị.');
+          0,
+          'Không kết nối được máy chủ. Kiểm tra mạng trên thiết bị.',
+        );
       }
       throw const MessagingApiException(0, 'Không tải được ảnh lên.');
     }
@@ -384,7 +433,8 @@ class MessagingApi {
 
   static Future<String> attachmentDownloadUrl(String attachmentId) async {
     final result = _map(
-        await _request('GET', '/api/chat/attachments/$attachmentId/download'));
+      await _request('GET', '/api/chat/attachments/$attachmentId/download'),
+    );
     return result['url'] as String? ?? '';
   }
 
@@ -395,27 +445,28 @@ class MessagingApi {
     return ChatConfig.fromJson(result);
   }
 
-  static Future<ChatCall> createCall(
-    String conversationId,
-    String mode,
-  ) async {
-    final result = _map(await _request(
-      'POST',
-      '/api/chat/conversations/$conversationId/calls',
-      body: {'mode': mode},
-    ));
+  static Future<ChatCall> createCall(String conversationId, String mode) async {
+    final result = _map(
+      await _request(
+        'POST',
+        '/api/chat/conversations/$conversationId/calls',
+        body: {'mode': mode},
+      ),
+    );
     return ChatCall.fromJson(result);
   }
 
   static Future<ChatCall> answerCall(String callId) async {
-    final result =
-        _map(await _request('POST', '/api/chat/calls/$callId/answer'));
+    final result = _map(
+      await _request('POST', '/api/chat/calls/$callId/answer'),
+    );
     return ChatCall.fromJson(result);
   }
 
   static Future<ChatCall> rejectCall(String callId) async {
-    final result =
-        _map(await _request('POST', '/api/chat/calls/$callId/reject'));
+    final result = _map(
+      await _request('POST', '/api/chat/calls/$callId/reject'),
+    );
     return ChatCall.fromJson(result);
   }
 
@@ -429,12 +480,10 @@ class MessagingApi {
   }
 
   static Future<({List<ChatRealtimeEvent> items, String nextCursor})>
-      callSignals({String after = '0'}) async {
-    final result = _map(await _request(
-      'GET',
-      '/api/chat/call-signals',
-      query: {'after': after},
-    ));
+  callSignals({String after = '0'}) async {
+    final result = _map(
+      await _request('GET', '/api/chat/call-signals', query: {'after': after}),
+    );
     final items = (result['items'] as List? ?? const [])
         .whereType<Map<String, dynamic>>()
         .map(ChatRealtimeEvent.fromJson)

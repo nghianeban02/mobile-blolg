@@ -100,7 +100,9 @@ class _BookDetailReadingListBarState extends State<BookDetailReadingListBar> {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute<void>(builder: (_) => const MyReadingListScreen()),
+                MaterialPageRoute<void>(
+                  builder: (_) => const MyReadingListScreen(),
+                ),
               );
             },
             icon: const Icon(

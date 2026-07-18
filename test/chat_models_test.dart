@@ -9,7 +9,12 @@ void main() {
       'title': null,
       'members': [
         {'userId': 'u1', 'username': 'an', 'avatarUrl': null, 'role': 'OWNER'},
-        {'userId': 'u2', 'username': 'binh', 'avatarUrl': '/a.png', 'role': 'MEMBER'},
+        {
+          'userId': 'u2',
+          'username': 'binh',
+          'avatarUrl': '/a.png',
+          'role': 'MEMBER',
+        },
       ],
       'lastMessage': {
         'id': 'm9',
@@ -40,7 +45,13 @@ void main() {
       'type': 'TEXT',
       'content': 'xin chào',
       'encrypted': false,
-      'replyTo': {'id': 'm0', 'senderId': 'u1', 'content': 'hi', 'type': 'TEXT', 'revokedAt': null},
+      'replyTo': {
+        'id': 'm0',
+        'senderId': 'u1',
+        'content': 'hi',
+        'type': 'TEXT',
+        'revokedAt': null,
+      },
       'reactions': [
         {'userId': 'u1', 'emoji': '❤️'},
         {'userId': 'u2', 'emoji': '❤️'},
@@ -56,7 +67,10 @@ void main() {
     expect(message.editedAt, isNotNull);
     expect(message.revoked, isFalse);
 
-    final revoked = message.copyWith(clearContent: true, revokedAt: DateTime.now());
+    final revoked = message.copyWith(
+      clearContent: true,
+      revokedAt: DateTime.now(),
+    );
     expect(revoked.content, isNull);
     expect(revoked.revoked, isTrue);
   });

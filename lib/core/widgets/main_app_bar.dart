@@ -153,7 +153,9 @@ class MainAppBarState extends State<MainAppBar> with WidgetsBindingObserver {
                     EditorialHeaderChip(
                       icon: Icons.chat_bubble_outline_rounded,
                       onPressed: _openMessages,
-                      badge: chatUnread > 0 ? _countBadge(chatBadgeLabel) : null,
+                      badge: chatUnread > 0
+                          ? _countBadge(chatBadgeLabel)
+                          : null,
                     ),
                     const SizedBox(width: 6),
                     BlocBuilder<NotificationsBloc, NotificationsState>(

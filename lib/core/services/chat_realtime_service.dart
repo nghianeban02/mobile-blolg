@@ -169,8 +169,8 @@ class ChatRealtimeService extends ChangeNotifier {
   void _scheduleReconnect() {
     if (!_running) return;
     _reconnect?.cancel();
-    final delayMs = min(30000, 750 * pow(2, _attempt).toInt()) +
-        Random().nextInt(500);
+    final delayMs =
+        min(30000, 750 * pow(2, _attempt).toInt()) + Random().nextInt(500);
     _attempt += 1;
     _reconnect = Timer(Duration(milliseconds: delayMs), _connect);
   }

@@ -33,5 +33,10 @@ final class CreatePostState extends Equatable {
   }
 
   @override
-  List<Object?> get props => [status, uploadProgress, created?.id, errorMessage];
+  List<Object?> get props => [
+    status,
+    uploadProgress,
+    created?.id,
+    errorMessage,
+  ];
 }

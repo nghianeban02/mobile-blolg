@@ -17,7 +17,6 @@ import 'package:mobile/data/auth/register_request.dart';
 /// to perform login and managing the local session token via [TokenStore]
 /// (flutter_secure_storage).
 class AuthRepository {
-
   /// Performs a login attempt by hitting the backend API.
   /// Returns a [LoginResponse] which dictates if the action was successful or not.
   Future<LoginResponse> login(LoginRequest request) async {
@@ -222,8 +221,7 @@ class AuthRepository {
     }
   }
 
-  Future<void> _saveToken(String token) =>
-      TokenStore.instance.write(token);
+  Future<void> _saveToken(String token) => TokenStore.instance.write(token);
 
   /// Retrieves the saved JWT auth token, if any.
   Future<String?> getToken() => TokenStore.instance.read();

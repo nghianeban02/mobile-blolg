@@ -168,9 +168,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               FilledButton(
                                 onPressed: _isLoading ? null : _handleLogin,
                                 child: Text(
-                                  _isLoading
-                                      ? 'Đang đăng nhập…'
-                                      : 'Đăng nhập',
+                                  _isLoading ? 'Đang đăng nhập…' : 'Đăng nhập',
                                 ),
                               ),
                               const SizedBox(height: 12),
@@ -203,11 +201,10 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                               const SizedBox(height: 20),
                               OutlinedButton(
-                                onPressed:
-                                    _isLoading ? null : _handleGuestLogin,
-                                child: const Text(
-                                  'Tiếp tục với tư cách khách',
-                                ),
+                                onPressed: _isLoading
+                                    ? null
+                                    : _handleGuestLogin,
+                                child: const Text('Tiếp tục với tư cách khách'),
                               ),
                               const SizedBox(height: 10),
                               Text(

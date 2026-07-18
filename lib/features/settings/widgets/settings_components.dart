@@ -282,7 +282,9 @@ class AccountSecuritySection extends StatelessWidget {
           actionText: 'Update',
           onActionTap: () => Navigator.push(
             context,
-            MaterialPageRoute<void>(builder: (_) => const ChangePasswordScreen()),
+            MaterialPageRoute<void>(
+              builder: (_) => const ChangePasswordScreen(),
+            ),
           ),
         ),
       ],
@@ -467,7 +469,9 @@ class _NotificationsSectionState extends State<NotificationsSection> {
       // Hoàn tác khi lưu thất bại để UI luôn khớp server.
       setState(() => _preferences = previous);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Không lưu được tùy chọn thông báo. Thử lại.')),
+        const SnackBar(
+          content: Text('Không lưu được tùy chọn thông báo. Thử lại.'),
+        ),
       );
     } else {
       setState(() => _preferences = result.data);
@@ -500,65 +504,68 @@ class _NotificationsSectionState extends State<NotificationsSection> {
                   ),
                 )
               : _loadFailed
-                  ? Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Không tải được tùy chọn thông báo.',
-                          style: GoogleFonts.inter(
-                            color: AppColors.homeTextDark.withValues(alpha: 0.7),
-                            fontSize: 13,
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        TextButton(onPressed: _load, child: const Text('Thử lại')),
-                      ],
-                    )
-                  : Column(
-                      children: [
-                        SettingsCheckboxTile(
-                          title: 'Tin nhắn mới',
-                          subtitle: 'Tin nhắn chat khi bạn không mở app.',
-                          isChecked: preferences.messages,
-                          onChanged: (v) => _apply(preferences.copyWith(messages: v)),
-                        ),
-                        const SizedBox(height: 24),
-                        SettingsCheckboxTile(
-                          title: 'Cuộc gọi & cuộc gọi nhỡ',
-                          subtitle: 'Cuộc gọi đến và thông báo gọi nhỡ.',
-                          isChecked: preferences.calls,
-                          onChanged: (v) => _apply(preferences.copyWith(calls: v)),
-                        ),
-                        const SizedBox(height: 24),
-                        SettingsCheckboxTile(
-                          title: 'Lời mời kết bạn',
-                          subtitle: 'Lời mời mới và khi được chấp nhận.',
-                          isChecked: preferences.friends,
-                          onChanged: (v) => _apply(preferences.copyWith(friends: v)),
-                        ),
-                        const SizedBox(height: 24),
-                        SettingsCheckboxTile(
-                          title: 'Bình luận & trả lời',
-                          subtitle: 'Bình luận trên bài viết/review của bạn.',
-                          isChecked: preferences.comments,
-                          onChanged: (v) => _apply(preferences.copyWith(comments: v)),
-                        ),
-                        const SizedBox(height: 24),
-                        SettingsCheckboxTile(
-                          title: 'Lượt thích',
-                          subtitle: 'Khi có người thích nội dung của bạn.',
-                          isChecked: preferences.likes,
-                          onChanged: (v) => _apply(preferences.copyWith(likes: v)),
-                        ),
-                        const SizedBox(height: 24),
-                        SettingsCheckboxTile(
-                          title: 'Cập nhật hệ thống',
-                          subtitle: 'Duyệt bài và thông báo quản trị.',
-                          isChecked: preferences.system,
-                          onChanged: (v) => _apply(preferences.copyWith(system: v)),
-                        ),
-                      ],
+              ? Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Không tải được tùy chọn thông báo.',
+                      style: GoogleFonts.inter(
+                        color: AppColors.homeTextDark.withValues(alpha: 0.7),
+                        fontSize: 13,
+                      ),
                     ),
+                    const SizedBox(height: 12),
+                    TextButton(onPressed: _load, child: const Text('Thử lại')),
+                  ],
+                )
+              : Column(
+                  children: [
+                    SettingsCheckboxTile(
+                      title: 'Tin nhắn mới',
+                      subtitle: 'Tin nhắn chat khi bạn không mở app.',
+                      isChecked: preferences.messages,
+                      onChanged: (v) =>
+                          _apply(preferences.copyWith(messages: v)),
+                    ),
+                    const SizedBox(height: 24),
+                    SettingsCheckboxTile(
+                      title: 'Cuộc gọi & cuộc gọi nhỡ',
+                      subtitle: 'Cuộc gọi đến và thông báo gọi nhỡ.',
+                      isChecked: preferences.calls,
+                      onChanged: (v) => _apply(preferences.copyWith(calls: v)),
+                    ),
+                    const SizedBox(height: 24),
+                    SettingsCheckboxTile(
+                      title: 'Lời mời kết bạn',
+                      subtitle: 'Lời mời mới và khi được chấp nhận.',
+                      isChecked: preferences.friends,
+                      onChanged: (v) =>
+                          _apply(preferences.copyWith(friends: v)),
+                    ),
+                    const SizedBox(height: 24),
+                    SettingsCheckboxTile(
+                      title: 'Bình luận & trả lời',
+                      subtitle: 'Bình luận trên bài viết/review của bạn.',
+                      isChecked: preferences.comments,
+                      onChanged: (v) =>
+                          _apply(preferences.copyWith(comments: v)),
+                    ),
+                    const SizedBox(height: 24),
+                    SettingsCheckboxTile(
+                      title: 'Lượt thích',
+                      subtitle: 'Khi có người thích nội dung của bạn.',
+                      isChecked: preferences.likes,
+                      onChanged: (v) => _apply(preferences.copyWith(likes: v)),
+                    ),
+                    const SizedBox(height: 24),
+                    SettingsCheckboxTile(
+                      title: 'Cập nhật hệ thống',
+                      subtitle: 'Duyệt bài và thông báo quản trị.',
+                      isChecked: preferences.system,
+                      onChanged: (v) => _apply(preferences.copyWith(system: v)),
+                    ),
+                  ],
+                ),
         ),
       ],
     );

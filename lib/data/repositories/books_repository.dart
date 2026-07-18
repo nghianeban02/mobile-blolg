@@ -89,8 +89,7 @@ class BeBlogBooksRepository {
           if (isbn != null && isbn.isNotEmpty) 'isbn': isbn,
           if (language != null && language.isNotEmpty) 'language': language,
           if (pageCount != null) 'pageCount': pageCount.toString(),
-          if (publishedDate != null)
-            'publishedDate': _isoDate(publishedDate),
+          if (publishedDate != null) 'publishedDate': _isoDate(publishedDate),
         },
         files: {
           if (coverImageFile != null) 'coverImage': [coverImageFile],
@@ -143,8 +142,7 @@ class BeBlogBooksRepository {
           if (isbn?.isNotEmpty == true) 'isbn': isbn!,
           if (language?.isNotEmpty == true) 'language': language!,
           if (pageCount != null) 'pageCount': '$pageCount',
-          if (publishedDate != null)
-            'publishedDate': _isoDate(publishedDate),
+          if (publishedDate != null) 'publishedDate': _isoDate(publishedDate),
         },
         files: {
           if (coverImageFile != null) 'coverImage': [coverImageFile],

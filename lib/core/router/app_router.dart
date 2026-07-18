@@ -217,10 +217,7 @@ class _SplashScreen extends StatelessWidget {
         children: [
           const NookMark(size: 72),
           const SizedBox(height: 16),
-          const SiteBrand(
-            variant: SiteBrandVariant.hero,
-            showSlogan: true,
-          ),
+          const SiteBrand(variant: SiteBrandVariant.hero, showSlogan: true),
           const SizedBox(height: 28),
           const CircularProgressIndicator(color: AppColors.primaryBrown),
         ],

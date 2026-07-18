@@ -43,10 +43,7 @@ class PomodoroEntryMeta {
         totalFocusSeconds: entry.totalFocusSeconds,
       );
 
-  CalendarEntryDto toEntry({
-    int? pomodoroCompleted,
-    int? totalFocusSeconds,
-  }) =>
+  CalendarEntryDto toEntry({int? pomodoroCompleted, int? totalFocusSeconds}) =>
       CalendarEntryDto(
         id: id,
         userId: userId,
@@ -63,7 +60,7 @@ class PomodoroEntryMeta {
 /// Timer Pomodoro toàn app — tương đương `usePomodoroTimer` + context trên web.
 class PomodoroTimerController extends ChangeNotifier {
   PomodoroTimerController({BeBlogCalendarRepository? repository})
-      : _repository = repository ?? BeBlogCalendarRepository();
+    : _repository = repository ?? BeBlogCalendarRepository();
 
   static final PomodoroTimerController instance = PomodoroTimerController();
 
@@ -140,8 +137,10 @@ class PomodoroTimerController extends ChangeNotifier {
   void _syncRemaining() {
     final deadline = _deadline;
     if (deadline == null || !isRunning) return;
-    final remaining =
-        deadline.difference(DateTime.now()).inSeconds.clamp(0, totalSeconds);
+    final remaining = deadline
+        .difference(DateTime.now())
+        .inSeconds
+        .clamp(0, totalSeconds);
     if (remaining != remainingSeconds) {
       remainingSeconds = remaining;
       notifyListeners();

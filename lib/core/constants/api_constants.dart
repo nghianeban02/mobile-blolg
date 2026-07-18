@@ -75,7 +75,8 @@ class ApiConstants {
       '/api/notifications/$id/read';
   static const String notificationsMarkAllRead = '/api/notifications/read-all';
   static const String notificationDevices = '/api/notifications/devices';
-  static const String notificationsPreferences = '/api/notifications/preferences';
+  static const String notificationsPreferences =
+      '/api/notifications/preferences';
 
   // --- Friends ---
   static const String friends = '/api/friends';

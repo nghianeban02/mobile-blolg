@@ -175,8 +175,7 @@ class EditorialStatusChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color:
-            backgroundColor ?? AppColors.primaryBrown.withValues(alpha: 0.1),
+        color: backgroundColor ?? AppColors.primaryBrown.withValues(alpha: 0.1),
         borderRadius: AppRadius.pill,
       ),
       child: Text(

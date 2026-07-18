@@ -79,14 +79,13 @@ class PushNotificationsService {
     }
 
     await _tokenRefreshSubscription?.cancel();
-    _tokenRefreshSubscription =
-        FirebaseMessaging.instance.onTokenRefresh.listen((token) {
-      unawaited(_registerToken(token));
-    });
+    _tokenRefreshSubscription = FirebaseMessaging.instance.onTokenRefresh
+        .listen((token) {
+          unawaited(_registerToken(token));
+        });
 
     await _foregroundSubscription?.cancel();
-    _foregroundSubscription =
-        FirebaseMessaging.onMessage.listen((message) {
+    _foregroundSubscription = FirebaseMessaging.onMessage.listen((message) {
       unawaited(showRemoteMessage(message));
     });
 
@@ -120,12 +119,15 @@ class PushNotificationsService {
       onDidReceiveNotificationResponse: (response) {
         unawaited(handleNotificationResponse(response));
       },
-      onDidReceiveBackgroundNotificationResponse: onNotificationActionBackground,
+      onDidReceiveBackgroundNotificationResponse:
+          onNotificationActionBackground,
     );
 
     if (Platform.isAndroid) {
-      final android = _local.resolvePlatformSpecificImplementation<
-          AndroidFlutterLocalNotificationsPlugin>();
+      final android = _local
+          .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin
+          >();
       await android?.createNotificationChannel(
         const AndroidNotificationChannel(
           kNookPushChannelId,
@@ -185,7 +187,8 @@ class PushNotificationsService {
     if (!_initialized) return;
     try {
       final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString(_lastTokenPrefsKey) ??
+      final token =
+          prefs.getString(_lastTokenPrefsKey) ??
           await FirebaseMessaging.instance.getToken();
       if (token != null && token.isNotEmpty) {
         final encoded = Uri.encodeQueryComponent(token);
@@ -207,7 +210,9 @@ class PushNotificationsService {
     final data = Map<String, String>.from(message.data);
     final title = notification?.title ?? data['title'] ?? 'Nook';
     final body = notification?.body ?? data['body'] ?? data['message'] ?? '';
-    if (body.trim().isEmpty && notification == null && data['kind'] != 'chat.call') {
+    if (body.trim().isEmpty &&
+        notification == null &&
+        data['kind'] != 'chat.call') {
       return;
     }
 
@@ -323,7 +328,9 @@ class PushNotificationsService {
       final rejectUrl = data['rejectUrl'];
       if (rejectUrl != null && rejectUrl.isNotEmpty) {
         try {
-          await http.post(Uri.parse(rejectUrl)).timeout(const Duration(seconds: 5));
+          await http
+              .post(Uri.parse(rejectUrl))
+              .timeout(const Duration(seconds: 5));
         } catch (e) {
           debugPrint('Call decline from notification failed: $e');
         }

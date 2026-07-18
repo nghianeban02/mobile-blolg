@@ -56,7 +56,9 @@ class _CalendarScreenState extends State<CalendarScreen> {
     final error = _pomodoro.lastError;
     if (error != null) {
       _pomodoro.lastError = null;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(error)));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(error)));
     }
   }
 
@@ -237,8 +239,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
               (entry) => _EntryCard(
                 entry: entry,
                 isActiveFocus: _pomodoro.activeEntryId == entry.id,
-                isPaused: _pomodoro.isPaused &&
-                    _pomodoro.activeEntryId == entry.id,
+                isPaused:
+                    _pomodoro.isPaused && _pomodoro.activeEntryId == entry.id,
                 onChanged: (value) => _toggle(entry, value),
                 onEdit: () => _edit(entry),
                 onDelete: () => _delete(entry),
@@ -274,8 +276,9 @@ class _ActivePomodoroCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final accent =
-        timer.isRunning ? AppColors.primaryBrown : const Color(0xFFD97706);
+    final accent = timer.isRunning
+        ? AppColors.primaryBrown
+        : const Color(0xFFD97706);
     return Card(
       elevation: 0,
       color: accent.withValues(alpha: 0.08),
@@ -437,16 +440,17 @@ class _EntryCard extends StatelessWidget {
                   Text(
                     isActiveFocus
                         ? (isPaused
-                            ? 'Pomodoro đang tạm dừng'
-                            : 'Đang chạy Pomodoro')
+                              ? 'Pomodoro đang tạm dừng'
+                              : 'Đang chạy Pomodoro')
                         : '${entry.pomodoroMinutes} phút · ${entry.pomodoroCompleted} phiên · ${_focusTime(entry.totalFocusSeconds)} tập trung',
                     style: TextStyle(
                       fontSize: 10,
                       color: isActiveFocus
                           ? AppColors.primaryBrown
                           : AppColors.homeTextLight,
-                      fontWeight:
-                          isActiveFocus ? FontWeight.w600 : FontWeight.w400,
+                      fontWeight: isActiveFocus
+                          ? FontWeight.w600
+                          : FontWeight.w400,
                     ),
                   ),
                 ],

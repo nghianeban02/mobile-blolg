@@ -109,9 +109,14 @@ class ConversationsBloc extends Bloc<ConversationsEvent, ConversationsState> {
     }
   }
 
-  Future<void> _load(Emitter<ConversationsState> emit, {bool silent = false}) async {
+  Future<void> _load(
+    Emitter<ConversationsState> emit, {
+    bool silent = false,
+  }) async {
     if (!silent) {
-      emit(state.copyWith(status: ConversationsStatus.loading, clearError: true));
+      emit(
+        state.copyWith(status: ConversationsStatus.loading, clearError: true),
+      );
     }
     try {
       final items = await MessagingApi.conversations();
