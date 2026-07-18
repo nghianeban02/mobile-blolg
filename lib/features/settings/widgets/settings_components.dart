@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:mobile/core/brand/site_brand.dart';
 import 'package:mobile/core/constants/app_colors.dart';
 import 'package:mobile/core/preferences/display_preferences.dart';
 import 'package:mobile/core/router/app_router.dart';
@@ -29,38 +30,10 @@ class SettingsHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'PREFERENCES',
-          style: GoogleFonts.inter(
-            color: AppColors.homeTextLight,
-            fontSize: 10,
-            fontWeight: FontWeight.bold,
-            letterSpacing: 2.0,
-          ),
-        ),
-        const SizedBox(height: 12),
-        Text(
-          'Settings',
-          style: GoogleFonts.playfairDisplay(
-            color: AppColors.homeTextDark,
-            fontSize: 48,
-            fontWeight: FontWeight.w600,
-            height: 1.0,
-          ),
-        ),
-        const SizedBox(height: 16),
-        Text(
-          'Refine your reading experience and\nmanage your editorial archive.',
-          style: GoogleFonts.inter(
-            color: AppColors.homeTextDark.withValues(alpha: 0.7),
-            fontSize: 14,
-            height: 1.5,
-          ),
-        ),
-      ],
+    return const EditorialPageHeader(
+      title: 'Cài đặt',
+      subtitle: 'Tuỳ chỉnh trải nghiệm đọc và quản lý tài khoản Nook.',
+      padding: EdgeInsets.zero,
     );
   }
 }
@@ -602,54 +575,30 @@ class SettingsFooter extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Text(
-          'Editorial Intelligence',
-          style: GoogleFonts.playfairDisplay(
-            color: AppColors.homeTextDark,
-            fontSize: 22,
-            fontStyle: FontStyle.italic,
-            fontWeight: FontWeight.w600,
-          ),
+        const SiteBrand(
+          variant: SiteBrandVariant.header,
+          showSlogan: true,
+          showMark: true,
+          markSize: 28,
         ),
         const SizedBox(height: 12),
         Text(
-          'V1.1.0 — NOOK MOBILE',
+          'Nook Mobile · 1.1.0',
           style: GoogleFonts.inter(
             color: AppColors.homeTextLight,
-            fontSize: 9,
-            fontWeight: FontWeight.bold,
-            letterSpacing: 2.0,
+            fontSize: 12,
           ),
         ),
-        const SizedBox(height: 24),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text('Privacy Policy', style: _linkStyle()),
-            const SizedBox(width: 20),
-            Text('Terms of Service', style: _linkStyle()),
-            const SizedBox(width: 20),
-            Text('Copyright', style: _linkStyle()),
-          ],
-        ),
-        const SizedBox(height: 40),
+        const SizedBox(height: 32),
         EditorialPillButton(
-          label: 'Log Out Account',
+          label: 'Đăng xuất',
           destructive: true,
           expanded: true,
           onPressed: () {
-            // Router tự chuyển về /login khi AuthBloc sang unauthenticated.
             context.read<AuthBloc>().add(const AuthLogoutRequested());
           },
         ),
       ],
-    );
-  }
-
-  TextStyle _linkStyle() {
-    return GoogleFonts.inter(
-      color: AppColors.homeTextDark.withValues(alpha: 0.8),
-      fontSize: 11,
     );
   }
 }

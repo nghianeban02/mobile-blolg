@@ -4,9 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mobile/core/constants/app_colors.dart';
 
-/// Bottom nav đồng bộ web (mobile-nav): 5 mục
-/// Home · Search · Write (nút nâu tròn nổi bật) · Library · Me,
-/// nền glass mờ + viền trên mảnh, label 10px.
+/// Bottom nav mirror web `MobileNav`: Home · Search · Write · Library · Me.
 class MainBottomNavBar extends StatelessWidget {
   final int currentIndex;
   final ValueChanged<int>? onIndexChanged;
@@ -25,22 +23,22 @@ class MainBottomNavBar extends StatelessWidget {
     (
       icon: Icons.home_outlined,
       activeIcon: Icons.home_rounded,
-      label: 'Home',
+      label: 'Trang chủ',
     ),
     (
       icon: Icons.search_rounded,
       activeIcon: Icons.search_rounded,
-      label: 'Search',
+      label: 'Tìm kiếm',
     ),
     (
       icon: Icons.auto_stories_outlined,
       activeIcon: Icons.auto_stories_rounded,
-      label: 'Library',
+      label: 'Thư viện',
     ),
     (
       icon: Icons.person_outline_rounded,
       activeIcon: Icons.person_rounded,
-      label: 'Me',
+      label: 'Tôi',
     ),
   ];
 
@@ -48,7 +46,7 @@ class MainBottomNavBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final barColor = (isDark ? AppColors.darkBackground : AppColors.surface)
-        .withValues(alpha: 0.85);
+        .withValues(alpha: 0.9);
     final borderColor = isDark ? AppColors.darkBorder : AppColors.border;
 
     return ClipRect(
@@ -68,7 +66,7 @@ class MainBottomNavBar extends StatelessWidget {
           ),
           child: SafeArea(
             child: SizedBox(
-              height: 60,
+              height: 62,
               child: Row(
                 children: [
                   Expanded(child: _tab(context, 0)),
@@ -100,7 +98,6 @@ class MainBottomNavBar extends StatelessWidget {
   }
 }
 
-/// Nút Write ở giữa — vòng tròn nâu nổi giống web mobile-nav.
 class _WriteButton extends StatelessWidget {
   final VoidCallback? onTap;
 
@@ -126,14 +123,14 @@ class _WriteButton extends StatelessWidget {
               child: const SizedBox(
                 width: 40,
                 height: 40,
-                child: Icon(Icons.add_rounded, color: Colors.white, size: 24),
+                child: Icon(Icons.edit_rounded, color: Colors.white, size: 20),
               ),
             ),
           ),
         ),
         const SizedBox(height: 2),
         Text(
-          'Write',
+          'Viết',
           style: GoogleFonts.inter(
             color: AppColors.primaryBrown,
             fontSize: 10,
@@ -177,7 +174,7 @@ class _NavItem extends StatelessWidget {
           AnimatedContainer(
             duration: const Duration(milliseconds: 180),
             curve: Curves.easeOut,
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
             decoration: BoxDecoration(
               color: isSelected
                   ? activeColor.withValues(alpha: 0.12)
@@ -189,6 +186,8 @@ class _NavItem extends StatelessWidget {
           const SizedBox(height: 2),
           Text(
             label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
             style: GoogleFonts.inter(
               color: color,
               fontSize: 10,

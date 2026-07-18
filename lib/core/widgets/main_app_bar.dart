@@ -1,8 +1,10 @@
 import 'dart:async';
+import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:mobile/core/brand/site_brand.dart';
 import 'package:mobile/core/constants/app_colors.dart';
 import 'package:mobile/core/services/chat_realtime_service.dart';
 import 'package:mobile/core/widgets/editorial_ui.dart';
@@ -11,7 +13,8 @@ import 'package:mobile/features/messages/screens/conversations_screen.dart';
 import 'package:mobile/features/notifications/presentation/bloc/notifications_bloc.dart';
 import 'package:mobile/features/notifications/screens/notifications_screen.dart';
 
-/// App bar Home: logo, bạn bè, tin nhắn, chuông thông báo (badge chưa đọc).
+/// App bar mobile — wordmark Nook (trái) + bạn bè / tin nhắn / chuông (phải),
+/// nền glass + viền dưới giống `app-shell` header trên web.
 class MainAppBar extends StatefulWidget {
   const MainAppBar({super.key});
 
@@ -47,7 +50,6 @@ class MainAppBarState extends State<MainAppBar> with WidgetsBindingObserver {
     if (state == AppLifecycleState.resumed) refreshUnread();
   }
 
-  /// Gọi sau khi quay lại Home hoặc sau thao tác tạo nội dung.
   void refreshUnread() {
     if (!mounted) return;
     context.read<NotificationsBloc>().add(
@@ -104,65 +106,80 @@ class MainAppBarState extends State<MainAppBar> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final barColor = (isDark ? AppColors.darkBackground : AppColors.surface)
+        .withValues(alpha: 0.88);
+    final borderColor = isDark ? AppColors.darkBorder : AppColors.border;
     final chatUnread = _chatRealtime.unreadCount;
     final chatBadgeLabel = chatUnread > 99 ? '99+' : '$chatUnread';
 
     return SliverAppBar(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      expandedHeight: 60,
+      backgroundColor: Colors.transparent,
+      expandedHeight: 64,
+      toolbarHeight: 64,
       floating: true,
       pinned: true,
       elevation: 0,
-      centerTitle: true,
+      scrolledUnderElevation: 0,
+      surfaceTintColor: Colors.transparent,
       automaticallyImplyLeading: false,
-      title: Image.asset(
-        'assets/images/app_logo.png',
-        height: 40,
-        fit: BoxFit.contain,
+      flexibleSpace: ClipRect(
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              color: barColor,
+              border: Border(bottom: BorderSide(color: borderColor)),
+            ),
+            child: SafeArea(
+              bottom: false,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 6, 10, 6),
+                child: Row(
+                  children: [
+                    const Expanded(
+                      child: SiteBrand(
+                        variant: SiteBrandVariant.mobile,
+                        showSlogan: true,
+                        showMark: true,
+                        markSize: 28,
+                      ),
+                    ),
+                    EditorialHeaderChip(
+                      icon: Icons.people_outline_rounded,
+                      onPressed: _openFriends,
+                    ),
+                    const SizedBox(width: 6),
+                    EditorialHeaderChip(
+                      icon: Icons.chat_bubble_outline_rounded,
+                      onPressed: _openMessages,
+                      badge: chatUnread > 0 ? _countBadge(chatBadgeLabel) : null,
+                    ),
+                    const SizedBox(width: 6),
+                    BlocBuilder<NotificationsBloc, NotificationsState>(
+                      buildWhen: (a, b) => a.unreadCount != b.unreadCount,
+                      builder: (context, state) {
+                        final badgeLabel = state.unreadCount > 99
+                            ? '99+'
+                            : '${state.unreadCount}';
+                        return EditorialHeaderChip(
+                          icon: Icons.notifications_outlined,
+                          backgroundColor: AppColors.headerIconBg,
+                          iconColor: Colors.white,
+                          onPressed: _openNotifications,
+                          badge: state.unreadCount > 0
+                              ? _countBadge(badgeLabel)
+                              : null,
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
       ),
-      actions: [
-        Padding(
-          padding: const EdgeInsets.only(right: 8),
-          child: Center(
-            child: EditorialHeaderChip(
-              icon: Icons.people_outline,
-              onPressed: _openFriends,
-            ),
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.only(right: 8),
-          child: Center(
-            child: EditorialHeaderChip(
-              icon: Icons.chat_bubble_outline,
-              onPressed: _openMessages,
-              badge: chatUnread > 0 ? _countBadge(chatBadgeLabel) : null,
-            ),
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.only(right: 16),
-          child: Center(
-            child: BlocBuilder<NotificationsBloc, NotificationsState>(
-              buildWhen: (a, b) => a.unreadCount != b.unreadCount,
-              builder: (context, state) {
-                final badgeLabel = state.unreadCount > 99
-                    ? '99+'
-                    : '${state.unreadCount}';
-                return EditorialHeaderChip(
-                  icon: Icons.notifications_outlined,
-                  backgroundColor: AppColors.headerIconBg,
-                  iconColor: Colors.white,
-                  onPressed: _openNotifications,
-                  badge: state.unreadCount > 0
-                      ? _countBadge(badgeLabel)
-                      : null,
-                );
-              },
-            ),
-          ),
-        ),
-      ],
     );
   }
 }

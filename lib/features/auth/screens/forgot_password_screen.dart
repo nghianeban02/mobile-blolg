@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:mobile/core/brand/site_brand.dart';
 import 'package:mobile/core/constants/app_colors.dart';
 import 'package:mobile/core/router/app_router.dart';
 import 'package:mobile/data/auth/auth_repository.dart';
@@ -52,11 +53,16 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const SizedBox(height: 32),
+              const SiteBrand(
+                variant: SiteBrandVariant.mobile,
+                showMark: true,
+                markSize: 32,
+              ),
+              const SizedBox(height: 28),
               Text(
                 'Quên mật khẩu?',
                 style: GoogleFonts.playfairDisplay(
-                  fontSize: 34,
+                  fontSize: 32,
                   fontWeight: FontWeight.w600,
                   color: AppColors.homeTextDark,
                 ),
@@ -72,7 +78,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               const SizedBox(height: 36),
               AuthFormField(
                 label: 'Email',
-                hint: 'reader@archive.com',
+                hint: 'email@example.com',
                 controller: _email,
                 keyboardType: TextInputType.emailAddress,
                 validator: (value) {

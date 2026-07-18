@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:mobile/core/brand/site_brand.dart';
 import 'package:mobile/core/constants/app_colors.dart';
 import 'package:mobile/data/auth/auth_repository.dart';
 import 'package:mobile/data/auth/register_request.dart';
@@ -132,32 +133,21 @@ class _RegisterScreenState extends State<RegisterScreen>
           child: SlideTransition(
             position: _slideAnimation,
             child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 48),
-              child: Column(
+              padding: const EdgeInsets.fromLTRB(20, 28, 20, 32),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 440),
+                child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Center(
-                    child: Image.asset(
-                      'assets/images/app_logo.png',
-                      width: 140,
-                      height: 140,
-                      fit: BoxFit.contain,
-                    ),
+                  const SiteBrand(
+                    variant: SiteBrandVariant.mobile,
+                    showSlogan: true,
+                    showMark: true,
+                    markSize: 36,
                   ),
-                  Text(
-                    'Editorial Intelligence',
-                    textAlign: TextAlign.center,
-                    style: GoogleFonts.playfairDisplay(
-                      fontSize: 22,
-                      color: AppColors.homeTextDark,
-                    ),
-                  ),
-                  const SizedBox(height: 40),
+                  const SizedBox(height: 28),
                   Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 32,
-                      vertical: 40,
-                    ),
+                    padding: const EdgeInsets.fromLTRB(22, 28, 22, 28),
                     decoration: BoxDecoration(
                       color: AppColors.surface,
                       borderRadius: AppRadius.card,
@@ -170,26 +160,26 @@ class _RegisterScreenState extends State<RegisterScreen>
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
                           Text(
-                            'Create account',
+                            'Tạo tài khoản',
                             style: GoogleFonts.playfairDisplay(
-                              fontSize: 32,
+                              fontSize: 30,
                               color: AppColors.homeTextDark,
                               fontWeight: FontWeight.w500,
                             ),
                           ),
-                          const SizedBox(height: 12),
+                          const SizedBox(height: 10),
                           Text(
-                            'Join the archive — save reviews,\nreading lists, and your personal feed.',
+                            'Tham gia cộng đồng đọc và viết trên Nook.',
                             style: GoogleFonts.inter(
                               fontSize: 14,
                               color: AppColors.homeTextLight,
                               height: 1.5,
                             ),
                           ),
-                          const SizedBox(height: 40),
+                          const SizedBox(height: 28),
                           AuthFormField(
-                            label: 'Username',
-                            hint: 'your_name',
+                            label: 'Tên đăng nhập',
+                            hint: 'ten_dang_nhap',
                             controller: _usernameController,
                             validator: (v) {
                               final t = v?.trim() ?? '';
@@ -200,10 +190,10 @@ class _RegisterScreenState extends State<RegisterScreen>
                               return null;
                             },
                           ),
-                          const SizedBox(height: 28),
+                          const SizedBox(height: 20),
                           AuthFormField(
-                            label: 'Email address',
-                            hint: 'reader@archive.com',
+                            label: 'Email',
+                            hint: 'email@example.com',
                             controller: _emailController,
                             keyboardType: TextInputType.emailAddress,
                             validator: (v) {
@@ -213,9 +203,9 @@ class _RegisterScreenState extends State<RegisterScreen>
                               return null;
                             },
                           ),
-                          const SizedBox(height: 28),
+                          const SizedBox(height: 20),
                           AuthFormField(
-                            label: 'Password',
+                            label: 'Mật khẩu',
                             hint: '••••••••',
                             controller: _passwordController,
                             obscureText: _obscurePassword,
@@ -235,7 +225,7 @@ class _RegisterScreenState extends State<RegisterScreen>
                           ),
                           const SizedBox(height: 28),
                           AuthFormField(
-                            label: 'Confirm password',
+                            label: 'Xác nhận mật khẩu',
                             hint: '••••••••',
                             controller: _confirmPasswordController,
                             obscureText: _obscureConfirm,
@@ -255,80 +245,51 @@ class _RegisterScreenState extends State<RegisterScreen>
                             AuthErrorBanner(message: _errorMessage!),
                           ],
                           const SizedBox(height: 28),
-                          _buildRegisterButton(),
+                          FilledButton(
+                            onPressed: _loading ? null : _register,
+                            child: Text(
+                              _loading ? 'Đang tạo…' : 'Tạo tài khoản',
+                            ),
+                          ),
                         ],
                       ),
                     ),
                   ),
-                  const SizedBox(height: 32),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        'Already have an account? ',
-                        style: GoogleFonts.inter(
-                          color: AppColors.homeTextDark.withValues(alpha: 0.6),
-                          fontSize: 14,
-                        ),
+                  const SizedBox(height: 28),
+                  Text.rich(
+                    TextSpan(
+                      style: GoogleFonts.inter(
+                        fontSize: 14,
+                        color: AppColors.homeTextLight,
                       ),
-                      GestureDetector(
-                        onTap: () => Navigator.pop(context),
-                        child: Text(
-                          'Sign in',
-                          style: GoogleFonts.inter(
-                            color: AppColors.homeTextDark,
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                            decoration: TextDecoration.underline,
+                      children: [
+                        const TextSpan(text: 'Đã có tài khoản? '),
+                        WidgetSpan(
+                          alignment: PlaceholderAlignment.baseline,
+                          baseline: TextBaseline.alphabetic,
+                          child: GestureDetector(
+                            onTap: () => Navigator.pop(context),
+                            child: Text(
+                              'Đăng nhập',
+                              style: GoogleFonts.inter(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.homeTextDark,
+                                decoration: TextDecoration.underline,
+                              ),
+                            ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
+                    textAlign: TextAlign.center,
                   ),
                 ],
+                ),
               ),
             ),
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildRegisterButton() {
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        borderRadius: AppRadius.pill,
-        boxShadow: _loading ? null : AppShadows.primaryButton,
-      ),
-      child: ElevatedButton(
-        onPressed: _loading ? null : _register,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.primaryBrown,
-          foregroundColor: Colors.white,
-          disabledBackgroundColor: AppColors.primaryBrown.withValues(
-            alpha: 0.6,
-          ),
-          padding: const EdgeInsets.symmetric(vertical: 18),
-          shape: const StadiumBorder(),
-          elevation: 0,
-        ),
-        child: _loading
-            ? const SizedBox(
-                height: 20,
-                width: 20,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation(Colors.white),
-                ),
-              )
-            : Text(
-                'SIGN UP',
-                style: GoogleFonts.inter(
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 2,
-                ),
-              ),
       ),
     );
   }

@@ -193,7 +193,7 @@ class _SearchScreenState extends State<SearchScreen> {
                       ),
                     ),
                     const SizedBox(height: 20),
-                    const PostSectionLabel(text: 'Search results'),
+                    const PostSectionLabel(text: 'Kết quả tìm kiếm'),
                     const SizedBox(height: 16),
                     SearchArchiveResults(
                       hits: _hits,

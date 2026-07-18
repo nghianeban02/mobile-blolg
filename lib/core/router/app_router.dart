@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:mobile/core/brand/site_brand.dart';
 import 'package:mobile/core/constants/app_colors.dart';
 import 'package:mobile/core/navigation/main_shell.dart';
 import 'package:mobile/features/auth/presentation/bloc/auth_bloc.dart';
@@ -214,13 +215,13 @@ class _SplashScreen extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Image.asset(
-            'assets/images/app_logo.png',
-            width: 140,
-            height: 140,
-            fit: BoxFit.contain,
+          const NookMark(size: 72),
+          const SizedBox(height: 16),
+          const SiteBrand(
+            variant: SiteBrandVariant.hero,
+            showSlogan: true,
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 28),
           const CircularProgressIndicator(color: AppColors.primaryBrown),
         ],
       ),

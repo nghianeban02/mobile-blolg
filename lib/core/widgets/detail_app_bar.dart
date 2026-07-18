@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:mobile/core/brand/site_brand.dart';
 import 'package:mobile/core/cache/session_cache.dart';
 import 'package:mobile/core/constants/app_colors.dart';
 import 'package:mobile/core/navigation/open_user_profile.dart';
 import 'package:mobile/core/widgets/editorial_ui.dart';
 import 'package:mobile/features/review/screens/create_book_review_screen.dart';
 
-/// App bar nội dung dùng chung (back, logo, actions).
+/// App bar chi tiết — back + wordmark Nook / title (giống DetailHeader web).
 class _DetailAppBarContent extends StatelessWidget {
   final String? title;
 
@@ -20,39 +21,45 @@ class _DetailAppBarContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final ink = isDark ? AppColors.darkForeground : AppColors.homeTextDark;
+
     return Row(
       children: [
         IconButton(
-          icon: const Icon(
-            Icons.arrow_back_ios_new,
-            color: AppColors.homeTextDark,
-            size: 20,
+          tooltip: 'Quay lại',
+          icon: Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: ink,
+            size: 18,
           ),
           onPressed: () => Navigator.pop(context),
         ),
         Expanded(
-          child: Center(
-            child: title != null && title!.isNotEmpty
-                ? Text(
-                    title!.toUpperCase(),
-                    style: GoogleFonts.inter(
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 1.6,
-                      color: AppColors.homeTextDark,
-                    ),
-                  )
-                : Image.asset(
-                    'assets/images/app_logo.png',
-                    height: 40,
-                    fit: BoxFit.contain,
+          child: title != null && title!.isNotEmpty
+              ? Text(
+                  title!,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.playfairDisplay(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: ink,
                   ),
-          ),
+                )
+              : const Center(
+                  child: SiteBrand(
+                    variant: SiteBrandVariant.header,
+                    showMark: true,
+                    markSize: 24,
+                  ),
+                ),
         ),
         Padding(
-          padding: const EdgeInsets.only(right: 8),
+          padding: const EdgeInsets.only(right: 4),
           child: EditorialHeaderChip(
-            icon: Icons.add,
+            icon: Icons.add_rounded,
             backgroundColor: AppColors.primaryBrown.withValues(alpha: 0.12),
             iconColor: AppColors.primaryBrown,
             onPressed: () {
@@ -67,14 +74,14 @@ class _DetailAppBarContent extends StatelessWidget {
         ),
         if (SessionCache.profile != null)
           Padding(
-            padding: const EdgeInsets.only(right: 12),
+            padding: const EdgeInsets.only(right: 8),
             child: EditorialHeaderChip(
-              icon: Icons.person_outline,
+              icon: Icons.person_outline_rounded,
               onPressed: () => _openOwnProfile(context),
             ),
           )
         else
-          const SizedBox(width: 12),
+          const SizedBox(width: 8),
       ],
     );
   }

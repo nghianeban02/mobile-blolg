@@ -40,6 +40,7 @@ dependencies:
   flutter_cache_manager: ^3.4.1
   flutter_local_notifications: ^19.4.0
   flutter_secure_storage: ^9.2.4
+  flutter_svg: ^2.3.0
   flutter_webrtc: ^1.5.2
   gal: ^2.3.1
   go_router: ^16.2.4
@@ -61,7 +62,7 @@ dev_dependencies:
 flutter_launcher_icons:
   android: true
   ios: true
-  image_path: assets/images/app_logo.png
+  image_path: assets/brand/nook_mark.png
   remove_alpha_ios: true
 
 # For information on the generic Dart part of this file, see the
@@ -76,6 +77,9 @@ flutter:
   uses-material-design: true
   assets:
     - assets/images/app_logo.png
+    - assets/brand/icon.svg
+    - assets/brand/nook_mark.png
+    - assets/brand/app_icon.svg
 
   # To add assets to your application, add an assets section, like this:
   # assets:

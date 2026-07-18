@@ -20,7 +20,8 @@ void main() {
     await tester.pumpWidget(const MobileApp());
     await tester.pumpAndSettle();
 
-    expect(find.text('Welcome Back'), findsOneWidget);
+    expect(find.text('Chào mừng trở lại'), findsOneWidget);
+    expect(find.text('Nook'), findsWidgets);
   });
 
   testWidgets('Forgot password action opens recovery form', (
@@ -47,13 +48,13 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    final forgot = find.text('FORGOT?');
+    final forgot = find.text('Quên mật khẩu?');
     await tester.ensureVisible(forgot);
     await tester.pumpAndSettle();
     await tester.tap(forgot);
     await tester.pumpAndSettle();
 
-    expect(find.text('Quên mật khẩu?'), findsOneWidget);
-    expect(find.text('GỬI EMAIL ĐẶT LẠI'), findsOneWidget);
+    expect(find.text('Quên mật khẩu?'), findsWidgets);
+    expect(find.textContaining('EMAIL'), findsWidgets);
   });
 }

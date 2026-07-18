@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:mobile/core/brand/site_brand.dart';
 import 'package:mobile/core/constants/app_colors.dart';
 
 // ----------------------------------------------------------------------
@@ -15,28 +16,23 @@ class SearchHeader extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Search',
-          style: GoogleFonts.playfairDisplay(
-            color: AppColors.homeTextDark,
-            fontSize: 44,
-            fontWeight: FontWeight.w600,
-          ),
+        const EditorialPageHeader(
+          title: 'Tìm kiếm',
+          subtitle: 'Bài viết, review và sách trong kho lưu trữ Nook.',
+          padding: EdgeInsets.zero,
         ),
-        const SizedBox(height: 24),
+        const SizedBox(height: 16),
         TextField(
           controller: controller,
-          style: GoogleFonts.playfairDisplay(
+          style: GoogleFonts.inter(
             color: AppColors.homeTextDark,
-            fontSize: 20,
-            fontStyle: FontStyle.italic,
+            fontSize: 16,
           ),
           decoration: InputDecoration(
-            hintText: 'Explore the Archives',
-            hintStyle: GoogleFonts.playfairDisplay(
-              color: AppColors.homeTextLight.withValues(alpha: 0.6),
-              fontSize: 20,
-              fontStyle: FontStyle.italic,
+            hintText: 'Tìm trong kho lưu trữ…',
+            hintStyle: GoogleFonts.inter(
+              color: AppColors.homeTextLight.withValues(alpha: 0.7),
+              fontSize: 16,
             ),
             prefixIcon: const Padding(
               padding: EdgeInsets.only(left: 12.0, right: 12.0),
@@ -73,7 +69,7 @@ class SearchHeader extends StatelessWidget {
         ),
         const SizedBox(height: 12),
         Text(
-          'ARCHIVAL SEARCH INDEX (2024)',
+          'CHỈ MỤC LƯU TRỮ',
           style: GoogleFonts.inter(
             color: AppColors.homeTextLight,
             fontSize: 8,
