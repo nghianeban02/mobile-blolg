@@ -1,6 +1,6 @@
 # Bảng đối chiếu chức năng Web (web-blog) ↔ Mobile (Flutter)
 
-Cập nhật: 2026-07-18. Trạng thái: ✅ tương đương · 🟡 tương đương một phần · ❌ chưa có · ➖ không áp dụng cho mobile.
+Cập nhật: 2026-07-22. Trạng thái: ✅ tương đương · 🟡 tương đương một phần · ❌ chưa có · ➖ không áp dụng cho mobile.
 
 ## Xác thực & phiên
 
@@ -46,7 +46,8 @@ Cập nhật: 2026-07-18. Trạng thái: ✅ tương đương · 🟡 tương đ
 | Typing / presence / seen | Messenger | `chat_screen` (WS) | ✅ |
 | Nhóm chat (tạo/đổi tên/thành viên) | Messenger dialogs | conversations/chat widgets | ✅ |
 | Gọi thoại / video (WebRTC) | chat-call-context + TURN | `CallController` + `CallOverlay` + nút trên chat | ✅ cùng signaling WS + REST calls + poll `/api/chat/call-signals` fallback |
-| Nhận push cuộc gọi + mở đúng hội thoại | SW notification actions | FCM tap → conversation; overlay nhận cuộc gọi khi WS/poll có offer | ✅ nhận trong overlay (auto-answer deep link `answer=1` có thể bổ sung sau) |
+| Ringtone / ringback | Web Audio | SystemSound + Haptic | ✅ |
+| Nhận push cuộc gọi + mở đúng hội thoại | SW notification actions | FCM tap → conversation; overlay nhận cuộc gọi khi WS/poll có offer | ✅ auto-answer deep link `answer=1` |
 
 ## Thông báo
 
@@ -62,12 +63,13 @@ Cập nhật: 2026-07-18. Trạng thái: ✅ tương đương · 🟡 tương đ
 | Chức năng | Web | Mobile | Ghi chú |
 |---|---|---|---|
 | Theme sáng/tối + cỡ chữ | display preferences | `SettingsBloc` + DisplayPreferences | ✅ |
-| Đa ngôn ngữ (vi/en/ja/de) | locale context | — (UI cố định) | 🟡 mobile chưa có i18n runtime |
+| Âm thanh tin nhắn / cuộc gọi | ChatSoundSettings | Settings → sounds + SystemSound | ✅ |
+| Chia sẻ bài / review | ShareButton | ShareButton (share_plus) | ✅ |
+| Đa ngôn ngữ (vi/en/ja/de) | locale context | `LocaleController` + Settings | ✅ catalog JSON sync từ web |
 | Loading / empty / error state | skeleton + EmptyState | mỗi screen tự xử lý | ✅ |
 
 ## Việc còn lại (đã thống nhất là gap, không phải bug)
 
-1. **i18n runtime** cho mobile nếu muốn ngang web (4 ngôn ngữ: vi/en/ja/de).
-2. **Call polish**: ringtone/ringback audio, chọn thiết bị I/O chi tiết như web,
-   auto-answer từ deep link `?answer=1&call=…`, ReliableRealtimeOutbox ACK đầy đủ.
+1. **i18n coverage**: chrome chính (nav/settings/auth keys) đã dùng `t()`; một số màn nội dung vẫn còn chuỗi cứng — chạy `node scripts/sync_i18n_from_web.mjs` khi web cập nhật copy rồi thay dần.
+2. **Call polish**: chọn thiết bị I/O chi tiết như web; ringtone hiện dùng SystemSound/Haptic (không Web Audio).
 3. **Push FCM end-to-end**: cần file Firebase config trên máy build (chưa có trong repo).

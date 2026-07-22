@@ -30,7 +30,7 @@ final class AuthLogoutRequested extends AuthEvent {
   const AuthLogoutRequested();
 }
 
-/// Nhận từ [SessionEvents] khi API trả 401 (JWT 24h hết hạn, không có refresh).
+/// Nhận từ [SessionEvents] khi API trả 401 (JWT hết hạn/thu hồi, không có refresh).
 final class AuthSessionExpired extends AuthEvent {
   const AuthSessionExpired();
 }

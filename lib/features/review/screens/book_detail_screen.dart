@@ -2,11 +2,13 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:mobile/core/cache/session_cache.dart';
+import 'package:mobile/core/config/app_config.dart';
 import 'package:mobile/core/constants/api_constants.dart';
 import 'package:mobile/core/constants/app_colors.dart';
 import 'package:mobile/core/network/be_blog_http.dart';
 import 'package:mobile/core/widgets/async_loading_view.dart';
 import 'package:mobile/core/widgets/editorial_confirm_dialog.dart';
+import 'package:mobile/core/widgets/share_button.dart';
 import 'package:mobile/data/auth/auth_repository.dart';
 import 'package:mobile/data/models/dtos.dart';
 import 'package:mobile/data/models/engagement_dtos.dart';
@@ -334,6 +336,11 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                   authorDisplayName: _authorName,
                 ),
                 ReviewEngagementBar(reviewId: review.id),
+                const SizedBox(height: 12),
+                ShareButton(
+                  title: review.title,
+                  url: AppConfig.publicReviewUrl(review.id),
+                ),
                 const SizedBox(height: 8),
                 ReviewTagsSection(
                   reviewId: review.id,

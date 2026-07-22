@@ -76,9 +76,19 @@ Bundle ID: `com.nguyenhuunghia.mobileblog`. Tên hiển thị theo `APP_ENV` (`N
 
 ## Auth & phiên
 
-- JWT đơn, hạn ~24h, **không có refresh token**.
+- JWT dài hạn (khớp BE / web), **không có refresh token** — phiên kết thúc khi đăng xuất hoặc server trả 401.
 - Token lưu trong `flutter_secure_storage` (có migrate một lần từ SharedPreferences `auth_token`).
 - HTTP 401 có auth → `SessionEvents` → `AuthBloc` đăng xuất → GoRouter về `/login`.
+
+## i18n
+
+Catalog 4 ngôn ngữ (vi/en/ja/de) lấy từ `web-blog/lib/i18n/messages` → `assets/i18n/*.json`.
+
+```bash
+node scripts/sync_i18n_from_web.mjs
+```
+
+Đổi ngôn ngữ trong Settings; dùng `context.t('nav.home')` / `LocaleController.instance.t(...)`.
 
 ## Firebase push
 
@@ -110,6 +120,6 @@ Chưa / hạn chế:
 - Freezed/json_serializable: giữ DTO viết tay (đã có test) để tránh nổ bán kính thay đổi
 - Onboarding: web không có → bỏ qua
 - Một số màn (chat thread chi tiết, admin, notes/calendar) vẫn setState nội bộ; đã có Bloc cho auth/feed/create-post/conversations/notifications/search/settings/social
-- i18n runtime (web có vi/en/ja/de) — UI mobile hiện cố định tiếng Việt
+- Một số chuỗi nội dung màn hình chưa thay hết sang `t()` (catalog đã sẵn)
 - Push FCM: chưa kiểm chứng thiếu Firebase config
 - iOS IPA: cần signing thủ công trên máy Mac có certificate

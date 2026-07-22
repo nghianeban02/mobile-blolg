@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
+import 'package:mobile/core/messaging/chat_sounds.dart';
 import 'package:mobile/core/services/chat_realtime_service.dart';
 import 'package:mobile/data/messaging/chat_models.dart';
 import 'package:mobile/data/messaging/messaging_api.dart';
@@ -83,6 +84,9 @@ class CallController extends ChangeNotifier {
   Timer? _disconnectedTimer;
   Timer? _signalPollTimer;
   String _signalCursor = '0';
+  final _ringtone = CallRingtone();
+  final _ringback = OutgoingRingback();
+  bool _autoAnswerPending = false;
 
   RTCVideoRenderer get localRenderer => _localRenderer;
   RTCVideoRenderer get remoteRenderer => _remoteRenderer;
@@ -187,6 +191,7 @@ class CallController extends ChangeNotifier {
 
       activeCall = call.copyWith(status: CallUiStatus.ringing);
       notifyListeners();
+      unawaited(_ringback.start());
       _armOutgoingTimeout(created.id);
 
       // Re-send enriched SDP after ICE gathering settles.
@@ -221,6 +226,8 @@ class CallController extends ChangeNotifier {
     final call = activeCall;
     if (call == null || call.offer == null) return;
     try {
+      _ringtone.stop();
+      _ringback.stop();
       _ringTimer?.cancel();
       activeCall = call.copyWith(status: CallUiStatus.connecting);
       notifyListeners();
@@ -275,6 +282,9 @@ class CallController extends ChangeNotifier {
   Future<void> rejectCall() async {
     final call = activeCall;
     if (call == null) return;
+    _ringtone.stop();
+    _ringback.stop();
+    _autoAnswerPending = false;
     await _sendSignal({
       'type': 'call.reject',
       'conversationId': call.conversationId,
@@ -282,6 +292,25 @@ class CallController extends ChangeNotifier {
     });
     unawaited(MessagingApi.rejectCall(call.id).then((_) {}, onError: (_) {}));
     await _clearMedia();
+  }
+
+  /// Deep link `?answer=1` — tự nhận khi đã có offer SDP.
+  void requestAutoAnswer() {
+    _autoAnswerPending = true;
+    _tryAutoAnswer();
+  }
+
+  void _tryAutoAnswer() {
+    if (!_autoAnswerPending) return;
+    final call = activeCall;
+    if (call == null ||
+        call.direction != CallDirection.incoming ||
+        call.offer == null ||
+        call.status != CallUiStatus.ringing) {
+      return;
+    }
+    _autoAnswerPending = false;
+    unawaited(acceptCall());
   }
 
   Future<void> endCall({bool notifyPeer = true}) async {
@@ -509,8 +538,10 @@ class CallController extends ChangeNotifier {
       _signalingFailedCallId = null;
       activeCall = incoming;
       notifyListeners();
+      unawaited(_ringtone.start(mode: incoming.mode));
       _armIncomingTimeout(incoming);
       if (incoming.offer == null) _requestOffer(incoming);
+      _tryAutoAnswer();
       return;
     }
 
@@ -549,7 +580,9 @@ class CallController extends ChangeNotifier {
       _signalingFailedCallId = null;
       _offerRequestTimer?.cancel();
       notifyListeners();
+      unawaited(_ringtone.start(mode: mode));
       _armIncomingTimeout(activeCall!);
+      _tryAutoAnswer();
       return;
     }
 
@@ -752,6 +785,9 @@ class CallController extends ChangeNotifier {
 
   Future<void> _clearMedia() async {
     final callId = activeCall?.id;
+    _ringtone.stop();
+    _ringback.stop();
+    _autoAnswerPending = false;
     _ringTimer?.cancel();
     _offerRequestTimer?.cancel();
     _disconnectedTimer?.cancel();

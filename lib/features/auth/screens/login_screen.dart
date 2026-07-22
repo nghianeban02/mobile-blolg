@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mobile/core/brand/site_brand.dart';
 import 'package:mobile/core/constants/app_colors.dart';
+import 'package:mobile/core/i18n/locale_controller.dart';
 import 'package:mobile/core/router/app_router.dart';
 import 'package:mobile/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:mobile/features/auth/widgets/auth_form_field.dart';
@@ -52,13 +53,7 @@ class _LoginScreenState extends State<LoginScreen> {
       _errorMessage = state.loginError;
     });
     if (state.isAuthenticated) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Đăng nhập thành công!'),
-          backgroundColor: AppColors.success,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+      // GoRouter redirect handles navigation; no toast needed.
     }
   }
 
@@ -99,7 +94,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
                               Text(
-                                'Chào mừng trở lại',
+                                context.t('auth.welcomeBack'),
                                 style: GoogleFonts.playfairDisplay(
                                   fontSize: 30,
                                   fontWeight: FontWeight.w500,
@@ -108,7 +103,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                               const SizedBox(height: 10),
                               Text(
-                                'Đăng nhập để xem dòng thời gian và thư viện của bạn.',
+                                context.t('auth.signInSubtitle'),
                                 style: GoogleFonts.inter(
                                   fontSize: 14,
                                   height: 1.5,
@@ -117,20 +112,22 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                               const SizedBox(height: 28),
                               AuthFormField(
-                                label: 'Tên đăng nhập',
-                                hint: 'ten_dang_nhap hoặc email@…',
+                                label: context.t('auth.username'),
+                                hint: context.t('auth.usernamePlaceholder'),
                                 controller: _emailController,
                                 keyboardType: TextInputType.emailAddress,
                                 validator: (v) {
                                   if ((v?.trim() ?? '').isEmpty) {
-                                    return 'Vui lòng nhập email hoặc username';
+                                    return context.t(
+                                      'auth.usernamePlaceholder',
+                                    );
                                   }
                                   return null;
                                 },
                               ),
                               const SizedBox(height: 20),
                               AuthFormField(
-                                label: 'Mật khẩu',
+                                label: context.t('auth.password'),
                                 hint: '••••••••',
                                 controller: _passwordController,
                                 obscureText: _obscurePassword,
@@ -142,7 +139,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                   onTap: () =>
                                       context.push(AppRoutes.forgotPassword),
                                   child: Text(
-                                    'Quên mật khẩu?',
+                                    context.t('auth.forgotPassword'),
                                     style: GoogleFonts.inter(
                                       fontSize: 13,
                                       fontWeight: FontWeight.w600,
@@ -152,10 +149,10 @@ class _LoginScreenState extends State<LoginScreen> {
                                 ),
                                 validator: (value) {
                                   if (value == null || value.isEmpty) {
-                                    return 'Vui lòng nhập mật khẩu';
+                                    return context.t('auth.password');
                                   }
                                   if (value.length < 6) {
-                                    return 'Mật khẩu phải có ít nhất 6 ký tự';
+                                    return context.t('auth.password');
                                   }
                                   return null;
                                 },
@@ -168,7 +165,9 @@ class _LoginScreenState extends State<LoginScreen> {
                               FilledButton(
                                 onPressed: _isLoading ? null : _handleLogin,
                                 child: Text(
-                                  _isLoading ? 'Đang đăng nhập…' : 'Đăng nhập',
+                                  _isLoading
+                                      ? context.t('auth.signingIn')
+                                      : context.t('auth.signIn'),
                                 ),
                               ),
                               const SizedBox(height: 12),
@@ -176,7 +175,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 onPressed: _isLoading
                                     ? null
                                     : () => context.push(AppRoutes.register),
-                                child: const Text('Tạo tài khoản'),
+                                child: Text(context.t('auth.createAccountBtn')),
                               ),
                               const SizedBox(height: 28),
                               Row(
@@ -187,7 +186,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                       horizontal: 12,
                                     ),
                                     child: Text(
-                                      'HOẶC',
+                                      context.t('auth.or'),
                                       style: GoogleFonts.inter(
                                         fontSize: 11,
                                         letterSpacing: 1.6,
@@ -204,11 +203,11 @@ class _LoginScreenState extends State<LoginScreen> {
                                 onPressed: _isLoading
                                     ? null
                                     : _handleGuestLogin,
-                                child: const Text('Tiếp tục với tư cách khách'),
+                                child: Text(context.t('auth.continueGuest')),
                               ),
                               const SizedBox(height: 10),
                               Text(
-                                'Xem bài công khai — chưa thể bình luận, thích hay đăng nội dung mới.',
+                                context.t('auth.guestHint'),
                                 textAlign: TextAlign.center,
                                 style: GoogleFonts.inter(
                                   fontSize: 12,
@@ -229,14 +228,14 @@ class _LoginScreenState extends State<LoginScreen> {
                           color: AppColors.homeTextLight,
                         ),
                         children: [
-                          const TextSpan(text: 'Chưa có tài khoản? '),
+                          TextSpan(text: '${context.t('auth.noAccount')} '),
                           WidgetSpan(
                             alignment: PlaceholderAlignment.baseline,
                             baseline: TextBaseline.alphabetic,
                             child: GestureDetector(
                               onTap: () => context.push(AppRoutes.register),
                               child: Text(
-                                'Đăng ký',
+                                context.t('auth.createAccount'),
                                 style: GoogleFonts.inter(
                                   fontSize: 14,
                                   fontWeight: FontWeight.w700,

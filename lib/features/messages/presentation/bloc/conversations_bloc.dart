@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mobile/core/messaging/chat_sounds.dart';
 import 'package:mobile/core/services/chat_realtime_service.dart';
 import 'package:mobile/data/messaging/chat_models.dart';
 import 'package:mobile/data/messaging/messaging_api.dart';
@@ -35,6 +36,13 @@ class ConversationsBloc extends Bloc<ConversationsEvent, ConversationsState> {
   ) async {
     await _realtime.start();
     _eventsSub ??= _realtime.events.listen((e) {
+      if (e.type == 'message.created') {
+        final senderId = e.payload['senderId'] as String? ?? '';
+        final me = state.currentUserId;
+        if (me != null && senderId.isNotEmpty && senderId != me) {
+          unawaited(ChatSounds.playMessageSound());
+        }
+      }
       if (e.type == 'message.created' ||
           e.type == 'message.revoked' ||
           e.type == 'conversation.read' ||

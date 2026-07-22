@@ -13,7 +13,7 @@ part 'auth_state.dart';
 
 /// Quản lý vòng đời phiên đăng nhập toàn app.
 ///
-/// be-blog phát JWT đơn hạn 24h, không có refresh token — nên khi nhận 401
+/// be-blog phát JWT dài hạn, không có refresh token — nên khi nhận 401
 /// ([SessionEvents]) chỉ có thể dọn phiên và yêu cầu đăng nhập lại.
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   AuthBloc({

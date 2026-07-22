@@ -4,6 +4,9 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mobile/core/brand/site_brand.dart';
 import 'package:mobile/core/constants/app_colors.dart';
+import 'package:mobile/core/i18n/app_locale.dart';
+import 'package:mobile/core/i18n/locale_controller.dart';
+import 'package:mobile/core/messaging/chat_sounds.dart';
 import 'package:mobile/core/preferences/display_preferences.dart';
 import 'package:mobile/core/router/app_router.dart';
 import 'package:mobile/core/widgets/editorial_surface_card.dart';
@@ -21,6 +24,7 @@ import 'package:mobile/features/settings/screens/change_password_screen.dart';
 import 'package:mobile/features/settings/widgets/settings_checkbox_tile.dart';
 import 'package:mobile/features/settings/widgets/settings_item_row.dart';
 import 'package:mobile/features/settings/widgets/settings_section_title.dart';
+import 'package:mobile/features/settings/widgets/settings_switch.dart';
 
 // ----------------------------------------------------------------------
 // HEADER
@@ -30,10 +34,232 @@ class SettingsHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const EditorialPageHeader(
-      title: 'Cài đặt',
-      subtitle: 'Tuỳ chỉnh trải nghiệm đọc và quản lý tài khoản Nook.',
+    return EditorialPageHeader(
+      title: context.t('settings.title'),
+      subtitle: context.t('settings.subtitle'),
       padding: EdgeInsets.zero,
+    );
+  }
+}
+
+// ----------------------------------------------------------------------
+// LANGUAGE — parity web LanguageSettings
+// ----------------------------------------------------------------------
+class LanguageSettingsSection extends StatelessWidget {
+  const LanguageSettingsSection({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final locale = LocaleController.instance;
+    return ListenableBuilder(
+      listenable: locale,
+      builder: (context, _) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SettingsSectionTitle(
+              text: context.t('language.title').toUpperCase(),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              context.t('language.subtitle'),
+              style: GoogleFonts.inter(
+                color: AppColors.homeTextLight,
+                fontSize: 13,
+              ),
+            ),
+            const SizedBox(height: 20),
+            Wrap(
+              spacing: 12,
+              runSpacing: 12,
+              children: [
+                for (final option in AppLocale.values)
+                  _LocaleChip(
+                    locale: option,
+                    selected: locale.locale == option,
+                    label: context.t('language.${option.code}'),
+                    onTap: () => locale.setLocale(option),
+                  ),
+              ],
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _LocaleChip extends StatelessWidget {
+  final AppLocale locale;
+  final bool selected;
+  final String label;
+  final VoidCallback onTap;
+
+  const _LocaleChip({
+    required this.locale,
+    required this.selected,
+    required this.label,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: selected
+          ? AppColors.primaryBrown.withValues(alpha: 0.12)
+          : AppColors.hoverWash,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppRadius.md),
+        side: BorderSide(
+          color: selected ? AppColors.primaryBrown : AppColors.borderStrong,
+        ),
+      ),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(AppRadius.md),
+        child: SizedBox(
+          width: 148,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: GoogleFonts.inter(
+                    color: AppColors.homeTextDark,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  locale.code.toUpperCase(),
+                  style: GoogleFonts.inter(
+                    color: AppColors.homeTextLight,
+                    fontSize: 11,
+                    letterSpacing: 1.2,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ----------------------------------------------------------------------
+// CHAT SOUNDS — parity web ChatSoundSettings
+// ----------------------------------------------------------------------
+class ChatSoundSettingsSection extends StatefulWidget {
+  const ChatSoundSettingsSection({super.key});
+
+  @override
+  State<ChatSoundSettingsSection> createState() =>
+      _ChatSoundSettingsSectionState();
+}
+
+class _ChatSoundSettingsSectionState extends State<ChatSoundSettingsSection> {
+  final _prefs = ChatSoundPreferences.instance;
+
+  @override
+  void initState() {
+    super.initState();
+    _prefs.addListener(_refresh);
+    _prefs.load();
+  }
+
+  @override
+  void dispose() {
+    _prefs.removeListener(_refresh);
+    super.dispose();
+  }
+
+  void _refresh() {
+    if (mounted) setState(() {});
+  }
+
+  Future<void> _toggle(String key) async {
+    if (key == 'messages') {
+      await _prefs.set(messages: !_prefs.messages);
+    } else {
+      await _prefs.set(calls: !_prefs.calls);
+    }
+    if (!mounted) return;
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(context.t('push.saved'))));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SettingsSectionTitle(text: context.t('push.soundsTitle').toUpperCase()),
+        const SizedBox(height: 8),
+        Text(
+          context.t('push.soundsSubtitle'),
+          style: GoogleFonts.inter(
+            color: AppColors.homeTextLight,
+            fontSize: 13,
+          ),
+        ),
+        const SizedBox(height: 20),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          decoration: BoxDecoration(
+            color: AppColors.hoverWash,
+            borderRadius: BorderRadius.circular(AppRadius.lg),
+          ),
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 10),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        context.t('push.soundMessages'),
+                        style: GoogleFonts.inter(
+                          color: AppColors.homeTextDark,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ),
+                    SettingsSwitch(
+                      value: _prefs.messages,
+                      onChanged: (_) => _toggle('messages'),
+                    ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 10),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        context.t('push.soundCalls'),
+                        style: GoogleFonts.inter(
+                          color: AppColors.homeTextDark,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ),
+                    SettingsSwitch(
+                      value: _prefs.calls,
+                      onChanged: (_) => _toggle('calls'),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }
@@ -147,11 +373,11 @@ class ProfileCard extends StatelessWidget {
             runSpacing: 12,
             children: [
               EditorialPillButton(
-                label: 'Edit Profile',
+                label: context.t('settings.editProfile'),
                 onPressed: isLoading ? null : onEdit,
               ),
               EditorialPillButton(
-                label: 'View Public Page',
+                label: context.t('settings.viewProfile'),
                 outline: true,
                 onPressed: isLoading ? null : onViewPublic,
               ),
@@ -174,12 +400,12 @@ class FriendsSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const SettingsSectionTitle(text: 'SOCIAL'),
+        SettingsSectionTitle(text: context.t('friends.title').toUpperCase()),
         const SizedBox(height: 24),
         SettingsItemRow(
-          title: 'Editorial circle',
-          subtitle: 'Friends, incoming and outgoing requests',
-          actionText: 'Open',
+          title: context.t('friends.title'),
+          subtitle: context.t('friends.subtitleFriends'),
+          actionText: context.t('common.viewDetails'),
           onActionTap: () => Navigator.push(
             context,
             MaterialPageRoute<void>(builder: (_) => const FriendsScreen()),
@@ -598,7 +824,7 @@ class SettingsFooter extends StatelessWidget {
         ),
         const SizedBox(height: 32),
         EditorialPillButton(
-          label: 'Đăng xuất',
+          label: context.t('common.logout'),
           destructive: true,
           expanded: true,
           onPressed: () {

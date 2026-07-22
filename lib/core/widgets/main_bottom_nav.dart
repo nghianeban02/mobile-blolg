@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mobile/core/constants/app_colors.dart';
+import 'package:mobile/core/i18n/locale_controller.dart';
 
 /// Bottom nav mirror web `MobileNav`: Home · Search · Write · Library · Me.
 class MainBottomNavBar extends StatelessWidget {
@@ -19,35 +20,34 @@ class MainBottomNavBar extends StatelessWidget {
     this.onCreateTap,
   });
 
-  static const _items = <({IconData icon, IconData activeIcon, String label})>[
-    (
-      icon: Icons.home_outlined,
-      activeIcon: Icons.home_rounded,
-      label: 'Trang chủ',
-    ),
-    (
-      icon: Icons.search_rounded,
-      activeIcon: Icons.search_rounded,
-      label: 'Tìm kiếm',
-    ),
-    (
-      icon: Icons.auto_stories_outlined,
-      activeIcon: Icons.auto_stories_rounded,
-      label: 'Thư viện',
-    ),
-    (
-      icon: Icons.person_outline_rounded,
-      activeIcon: Icons.person_rounded,
-      label: 'Tôi',
-    ),
-  ];
-
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final barColor = (isDark ? AppColors.darkBackground : AppColors.surface)
         .withValues(alpha: 0.9);
     final borderColor = isDark ? AppColors.darkBorder : AppColors.border;
+    final items = <({IconData icon, IconData activeIcon, String label})>[
+      (
+        icon: Icons.home_outlined,
+        activeIcon: Icons.home_rounded,
+        label: context.t('nav.home'),
+      ),
+      (
+        icon: Icons.search_rounded,
+        activeIcon: Icons.search_rounded,
+        label: context.t('nav.search'),
+      ),
+      (
+        icon: Icons.auto_stories_outlined,
+        activeIcon: Icons.auto_stories_rounded,
+        label: context.t('nav.library'),
+      ),
+      (
+        icon: Icons.person_outline_rounded,
+        activeIcon: Icons.person_rounded,
+        label: context.t('common.me'),
+      ),
+    ];
 
     return ClipRect(
       child: BackdropFilter(
@@ -69,11 +69,11 @@ class MainBottomNavBar extends StatelessWidget {
               height: 62,
               child: Row(
                 children: [
-                  Expanded(child: _tab(context, 0)),
-                  Expanded(child: _tab(context, 1)),
+                  Expanded(child: _tab(context, items, 0)),
+                  Expanded(child: _tab(context, items, 1)),
                   Expanded(child: _WriteButton(onTap: onCreateTap)),
-                  Expanded(child: _tab(context, 2)),
-                  Expanded(child: _tab(context, 3)),
+                  Expanded(child: _tab(context, items, 2)),
+                  Expanded(child: _tab(context, items, 3)),
                 ],
               ),
             ),
@@ -83,8 +83,12 @@ class MainBottomNavBar extends StatelessWidget {
     );
   }
 
-  Widget _tab(BuildContext context, int index) {
-    final item = _items[index];
+  Widget _tab(
+    BuildContext context,
+    List<({IconData icon, IconData activeIcon, String label})> items,
+    int index,
+  ) {
+    final item = items[index];
     final selected = index == currentIndex;
     return _NavItem(
       icon: selected ? item.activeIcon : item.icon,
@@ -130,7 +134,7 @@ class _WriteButton extends StatelessWidget {
         ),
         const SizedBox(height: 2),
         Text(
-          'Viết',
+          context.t('common.write'),
           style: GoogleFonts.inter(
             color: AppColors.primaryBrown,
             fontSize: 10,

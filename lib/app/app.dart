@@ -1,7 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mobile/core/config/app_config.dart';
+import 'package:mobile/core/i18n/locale_controller.dart';
+import 'package:mobile/core/messaging/chat_sounds.dart';
 import 'package:mobile/core/pomodoro/pomodoro_floating_timer.dart';
 import 'package:mobile/core/preferences/display_preferences.dart';
 import 'package:mobile/core/router/app_router.dart';
@@ -12,7 +17,7 @@ import 'package:mobile/features/messages/call/call_controller.dart';
 import 'package:mobile/features/messages/call/call_overlay.dart';
 import 'package:mobile/features/notifications/presentation/bloc/notifications_bloc.dart';
 
-/// Root app: [AuthBloc] + [NotificationsBloc] toàn cục + GoRouter + theme.
+/// Root app: [AuthBloc] + [NotificationsBloc] toàn cục + GoRouter + theme + i18n.
 class MobileApp extends StatefulWidget {
   const MobileApp({super.key});
 
@@ -22,6 +27,7 @@ class MobileApp extends StatefulWidget {
 
 class _MobileAppState extends State<MobileApp> {
   final _display = DisplayPreferences.instance;
+  final _locale = LocaleController.instance;
   late final AuthBloc _authBloc;
   late final NotificationsBloc _notificationsBloc;
   late final GoRouter _router;
@@ -33,7 +39,10 @@ class _MobileAppState extends State<MobileApp> {
     _notificationsBloc = NotificationsBloc()..startPolling();
     _router = createAppRouter(_authBloc);
     _display.addListener(_refresh);
+    _locale.addListener(_refresh);
     _display.load();
+    _locale.load();
+    unawaited(ChatSoundPreferences.instance.load());
     // Deep link từ notification cuộc gọi (Nhận / tap khi app tắt).
     WidgetsBinding.instance.addPostFrameCallback(
       (_) => _consumePushLaunchLink(),
@@ -50,10 +59,14 @@ class _MobileAppState extends State<MobileApp> {
       );
       if (uri.path.startsWith('/messages') || uri.path == AppRoutes.messages) {
         final conversation = uri.queryParameters['conversation'];
+        final answer = uri.queryParameters['answer'] == '1';
         final target = conversation == null || conversation.isEmpty
             ? AppRoutes.messages
             : '${AppRoutes.messages}?conversation=$conversation';
         _router.go(target);
+        if (answer) {
+          CallController.instance.requestAutoAnswer();
+        }
       }
     } catch (_) {
       // ignore malformed push link
@@ -63,6 +76,7 @@ class _MobileAppState extends State<MobileApp> {
   @override
   void dispose() {
     _display.removeListener(_refresh);
+    _locale.removeListener(_refresh);
     _router.dispose();
     _notificationsBloc.close();
     _authBloc.close();
@@ -93,6 +107,13 @@ class _MobileAppState extends State<MobileApp> {
         theme: AppTheme.buildLightTheme(),
         darkTheme: AppTheme.buildDarkTheme(),
         themeMode: _display.themeMode,
+        locale: _locale.materialLocale,
+        supportedLocales: LocaleController.supportedLocales,
+        localizationsDelegates: const [
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
         routerConfig: _router,
         builder: (context, child) {
           final media = MediaQuery.of(context);

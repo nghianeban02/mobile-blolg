@@ -2,8 +2,9 @@ import 'dart:async';
 
 /// Phát tín hiệu phiên đăng nhập hết hạn (401 từ API có auth).
 ///
-/// be-blog dùng JWT đơn 24h, không có refresh token — khi hết hạn chỉ có thể
-/// đăng nhập lại. AuthBloc lắng nghe stream này để dọn phiên và điều hướng.
+/// be-blog dùng JWT dài hạn, không có refresh token — khi server trả 401
+/// (token bị thu hồi / hết hạn thật) chỉ có thể đăng nhập lại.
+/// AuthBloc lắng nghe stream này để dọn phiên và điều hướng.
 class SessionEvents {
   SessionEvents._();
 

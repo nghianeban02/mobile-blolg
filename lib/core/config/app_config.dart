@@ -74,6 +74,16 @@ abstract final class AppConfig {
   static String get messagingWsBaseUrl =>
       messagingBaseUrl.replaceFirst(RegExp('^http'), 'ws');
 
+  /// Public web origin — dùng cho share link `/p/posts|reviews/...`.
+  static const String siteUrl = String.fromEnvironment(
+    'SITE_URL',
+    defaultValue: 'https://nooknh.com',
+  );
+
+  static String publicPostUrl(String id) => '$siteUrl/p/posts/$id';
+
+  static String publicReviewUrl(String id) => '$siteUrl/p/reviews/$id';
+
   // --- Timeouts ---
 
   static const Duration connectTimeout = Duration(seconds: 30);
