@@ -13,7 +13,9 @@ import 'package:mobile/features/search/widgets/search_components.dart';
 
 /// Search tab: live filter over posts, reviews, and books from the API.
 class SearchScreen extends StatefulWidget {
-  const SearchScreen({super.key});
+  final String? initialQuery;
+
+  const SearchScreen({super.key, this.initialQuery});
 
   @override
   State<SearchScreen> createState() => _SearchScreenState();
@@ -38,6 +40,11 @@ class _SearchScreenState extends State<SearchScreen> {
   @override
   void initState() {
     super.initState();
+    final seed = widget.initialQuery?.trim() ?? '';
+    if (seed.isNotEmpty) {
+      _queryController.text = seed;
+      _query = seed;
+    }
     _loadIndex();
     _queryController.addListener(_onQueryChanged);
   }

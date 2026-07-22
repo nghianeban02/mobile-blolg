@@ -75,8 +75,6 @@ class _LoginScreenState extends State<LoginScreen> {
                     const SiteBrand(
                       variant: SiteBrandVariant.mobile,
                       showSlogan: true,
-                      showMark: true,
-                      markSize: 36,
                     ),
                     const SizedBox(height: 28),
                     DecoratedBox(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mobile/core/widgets/app_drawer.dart';
 import 'package:mobile/core/widgets/main_app_bar.dart';
 import 'package:mobile/data/models/dtos.dart';
 import 'package:mobile/data/repositories/users_repository.dart';
@@ -7,7 +8,7 @@ import 'package:mobile/features/profile/screens/user_profile_screen.dart';
 import 'package:mobile/features/settings/screens/edit_profile_screen.dart';
 import 'package:mobile/features/settings/widgets/settings_components.dart';
 
-/// Settings tab: profile from `GET /api/users/me`, edit via `PUT /api/users/me`.
+/// Settings — parity web `/settings` (language, display, push, sounds, profile…).
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
 
@@ -69,53 +70,53 @@ class SettingsScreenState extends State<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      bottom: false,
-      child: CustomScrollView(
-        physics: const BouncingScrollPhysics(),
-        slivers: [
-          const MainAppBar(),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  const SizedBox(height: 16),
-                  const SettingsHeader(),
-                  const SizedBox(height: 40),
-                  const LanguageSettingsSection(),
-                  const SizedBox(height: 40),
-                  const ReadingExperienceSection(),
-                  const SizedBox(height: 40),
-                  const NotificationsSection(),
-                  const SizedBox(height: 40),
-                  const ChatSoundSettingsSection(),
-                  const SizedBox(height: 40),
-                  ProfileCard(
-                    profile: _profile,
-                    isLoading: _loading,
-                    onEdit: _openEdit,
-                    onViewPublic: _openPublicProfile,
-                  ),
-                  const SizedBox(height: 40),
-                  AdminToolsSection(profile: _profile),
-                  if (_profile?.isAdmin == true) const SizedBox(height: 40),
-                  const FriendsSection(),
-                  const SizedBox(height: 40),
-                  const PersonalToolsSection(),
-                  const SizedBox(height: 40),
-                  AccountSecuritySection(profile: _profile),
-                  const SizedBox(height: 48),
-                  const DeveloperBeBlogSection(),
-                  const SizedBox(height: 64),
-                  const SettingsFooter(),
-                  const SizedBox(height: 48),
-                ],
+    return Scaffold(
+      drawer: const AppDrawer(),
+      body: SafeArea(
+        bottom: false,
+        child: CustomScrollView(
+          physics: const BouncingScrollPhysics(),
+          slivers: [
+            const MainAppBar(),
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const SizedBox(height: 16),
+                    const SettingsHeader(),
+                    const SizedBox(height: 40),
+                    const LanguageSettingsSection(),
+                    const SizedBox(height: 40),
+                    const ReadingExperienceSection(),
+                    const SizedBox(height: 40),
+                    const NotificationsSection(),
+                    const SizedBox(height: 40),
+                    const ChatSoundSettingsSection(),
+                    const SizedBox(height: 40),
+                    ProfileCard(
+                      profile: _profile,
+                      isLoading: _loading,
+                      onEdit: _openEdit,
+                      onViewPublic: _openPublicProfile,
+                    ),
+                    const SizedBox(height: 40),
+                    AccountSecuritySection(profile: _profile),
+                    const SizedBox(height: 40),
+                    const QuickLinksSection(),
+                    const SizedBox(height: 40),
+                    AdminToolsSection(profile: _profile),
+                    if (_profile?.isAdmin == true) const SizedBox(height: 40),
+                    const SizedBox(height: 24),
+                    const SettingsFooter(),
+                    const SizedBox(height: 48),
+                  ],
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

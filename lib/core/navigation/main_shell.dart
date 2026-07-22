@@ -1,17 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mobile/core/widgets/app_drawer.dart';
 import 'package:mobile/core/widgets/main_bottom_nav.dart';
+import 'package:mobile/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:mobile/features/home/screens/home_screen.dart';
 import 'package:mobile/features/posts/screens/create_post_screen.dart';
+import 'package:mobile/features/profile/screens/user_profile_screen.dart';
 import 'package:mobile/features/reading_list/screens/reading_list_screen.dart';
-import 'package:mobile/features/review/screens/create_book_review_screen.dart';
 import 'package:mobile/features/search/screens/search_screen.dart';
-import 'package:mobile/features/settings/screens/settings_screen.dart';
 
-/// Root scaffold after login: preserves tab state via [IndexedStack].
+/// Root scaffold after login — bottom nav mirror web MobileNav:
+/// Home · Search · Write · Library · Me (profile).
+/// Sidebar drawer mirror web AppShell for notes/messages/settings/…
 class MainShell extends StatefulWidget {
   final int initialIndex;
+  final String? initialSearchQuery;
 
-  const MainShell({super.key, this.initialIndex = 0});
+  const MainShell({super.key, this.initialIndex = 0, this.initialSearchQuery});
 
   @override
   State<MainShell> createState() => _MainShellState();
@@ -34,32 +39,13 @@ class _MainShellState extends State<MainShell> {
     }
   }
 
-  /// Nút Write luôn hiển thị (đồng bộ bottom nav web):
-  /// mặc định tạo bài viết, riêng tab Library tạo review sách.
-  void _onCreateTap() {
-    if (_currentIndex == 2) {
-      _openCreateBookReview();
-    } else {
-      _openCreatePost();
-    }
-  }
-
-  Future<void> _openCreatePost() async {
+  /// Nút Write — luôn tạo bài viết (parity web `/posts/create`).
+  Future<void> _onCreateTap() async {
     final created = await Navigator.of(
       context,
     ).push<bool>(MaterialPageRoute(builder: (_) => const CreatePostScreen()));
     if (created == true) {
       _homeKey.currentState?.refresh();
-    }
-  }
-
-  Future<void> _openCreateBookReview() async {
-    final created = await Navigator.of(context).push<bool>(
-      MaterialPageRoute(builder: (_) => const CreateBookReviewScreen()),
-    );
-    if (created == true) {
-      _homeKey.currentState?.refresh();
-      _libraryKey.currentState?.refresh();
     }
   }
 
@@ -74,16 +60,33 @@ class _MainShellState extends State<MainShell> {
 
   @override
   Widget build(BuildContext context) {
+    final profile = context.watch<AuthBloc>().state.profile;
+    final meId = profile?.id;
+
     return Scaffold(
+      drawer: const AppDrawer(),
       body: IndexedStack(
         index: _currentIndex,
         children: [
           RepaintBoundary(child: HomeScreen(key: _homeKey)),
-          const RepaintBoundary(child: SearchScreen()),
+          RepaintBoundary(
+            child: SearchScreen(initialQuery: widget.initialSearchQuery),
+          ),
           RepaintBoundary(
             child: ReadingListScreen(key: _libraryKey, loadOnMount: false),
           ),
-          const RepaintBoundary(child: SettingsScreen()),
+          RepaintBoundary(
+            child: meId == null
+                ? const Center(child: CircularProgressIndicator())
+                : UserProfileScreen(
+                    userId: meId,
+                    embeddedInShell: true,
+                    initialDisplayName:
+                        profile?.title?.trim().isNotEmpty == true
+                        ? profile!.title!.trim()
+                        : profile?.username,
+                  ),
+          ),
         ],
       ),
       bottomNavigationBar: MainBottomNavBar(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mobile/core/i18n/locale_controller.dart';
 import 'package:mobile/data/models/dtos.dart';
 import 'package:mobile/features/admin/screens/admin_catalog_screen.dart';
 import 'package:mobile/features/admin/screens/admin_posts_screen.dart';
@@ -6,7 +7,7 @@ import 'package:mobile/features/admin/screens/admin_users_screen.dart';
 import 'package:mobile/features/settings/widgets/settings_item_row.dart';
 import 'package:mobile/features/settings/widgets/settings_section_title.dart';
 
-/// Admin-only shortcuts for unused be-blog management APIs.
+/// Admin shortcuts — parity web settings admin links.
 class AdminToolsSection extends StatelessWidget {
   final UserProfileDto? profile;
 
@@ -19,12 +20,11 @@ class AdminToolsSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const SettingsSectionTitle(text: 'EDITORIAL ADMIN'),
+        SettingsSectionTitle(text: context.t('common.admin').toUpperCase()),
         const SizedBox(height: 24),
         SettingsItemRow(
-          title: 'Post moderation',
-          subtitle: 'Review, approve or reject pending posts',
-          actionText: 'Review',
+          title: context.t('settings.adminPosts'),
+          actionText: context.t('common.viewDetails'),
           onActionTap: () {
             Navigator.push(
               context,
@@ -34,9 +34,8 @@ class AdminToolsSection extends StatelessWidget {
         ),
         const SizedBox(height: 24),
         SettingsItemRow(
-          title: 'Catalog',
-          subtitle: 'Tags, genres, authors — create, edit, delete',
-          actionText: 'Manage',
+          title: context.t('settings.adminCatalog'),
+          actionText: context.t('common.viewDetails'),
           onActionTap: () {
             Navigator.push(
               context,
@@ -48,9 +47,8 @@ class AdminToolsSection extends StatelessWidget {
         ),
         const SizedBox(height: 24),
         SettingsItemRow(
-          title: 'Members',
-          subtitle: 'All registered readers and critics',
-          actionText: 'View',
+          title: context.t('settings.adminUsers'),
+          actionText: context.t('common.viewDetails'),
           onActionTap: () {
             Navigator.push(
               context,

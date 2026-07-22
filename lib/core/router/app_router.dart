@@ -12,7 +12,6 @@ import 'package:mobile/features/auth/screens/login_screen.dart';
 import 'package:mobile/features/auth/screens/register_screen.dart';
 import 'package:mobile/features/auth/screens/reset_password_screen.dart';
 import 'package:mobile/features/calendar/screens/calendar_screen.dart';
-import 'package:mobile/features/developer/screens/api_demo_screen.dart';
 import 'package:mobile/features/friends/screens/friends_screen.dart';
 import 'package:mobile/features/messages/screens/conversations_screen.dart';
 import 'package:mobile/features/notes/screens/notes_screen.dart';
@@ -21,6 +20,7 @@ import 'package:mobile/features/posts/screens/post_detail_screen.dart';
 import 'package:mobile/features/profile/screens/user_profile_screen.dart';
 import 'package:mobile/features/review/screens/book_detail_screen.dart';
 import 'package:mobile/features/saved/screens/saved_screen.dart';
+import 'package:mobile/features/settings/screens/settings_screen.dart';
 
 /// Route paths dùng chung (đường dẫn GoRouter).
 abstract final class AppRoutes {
@@ -33,13 +33,13 @@ abstract final class AppRoutes {
   static const search = '/search';
   static const library = '/library';
   static const me = '/me';
+  static const settings = '/settings';
   static const messages = '/messages';
   static const notifications = '/notifications';
   static const friends = '/friends';
   static const saved = '/saved';
   static const notes = '/notes';
   static const calendar = '/calendar';
-  static const apiDemo = '/api-demo';
 
   static String post(String id) => '/posts/$id';
   static String review(String id) => '/reviews/$id';
@@ -131,7 +131,10 @@ GoRouter createAppRouter(AuthBloc authBloc) {
       ),
       GoRoute(
         path: AppRoutes.search,
-        builder: (context, state) => const MainShell(initialIndex: 1),
+        builder: (context, state) => MainShell(
+          initialIndex: 1,
+          initialSearchQuery: state.uri.queryParameters['q'],
+        ),
       ),
       GoRoute(
         path: AppRoutes.library,
@@ -140,6 +143,10 @@ GoRouter createAppRouter(AuthBloc authBloc) {
       GoRoute(
         path: AppRoutes.me,
         builder: (context, state) => const MainShell(initialIndex: 3),
+      ),
+      GoRoute(
+        path: AppRoutes.settings,
+        builder: (context, state) => const SettingsScreen(),
       ),
       GoRoute(
         path: '/posts/:id',
@@ -181,10 +188,6 @@ GoRouter createAppRouter(AuthBloc authBloc) {
       GoRoute(
         path: AppRoutes.calendar,
         builder: (context, state) => const CalendarScreen(),
-      ),
-      GoRoute(
-        path: AppRoutes.apiDemo,
-        builder: (context, state) => const ApiDemoScreen(),
       ),
     ],
   );

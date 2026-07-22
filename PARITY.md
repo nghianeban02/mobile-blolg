@@ -2,6 +2,10 @@
 
 Cập nhật: 2026-07-22. Trạng thái: ✅ tương đương · 🟡 tương đương một phần · ❌ chưa có · ➖ không áp dụng cho mobile.
 
+Mobile shell đã căn theo web mobile: header (menu + search + streak + bell),
+drawer sidebar, bottom nav Home/Search/Write/Library/Me(profile), settings
+khớp `/settings`. Đã gỡ màn Developer/API demo (web không có).
+
 ## Xác thực & phiên
 
 | Chức năng | Web | Mobile | Ghi chú |
@@ -70,6 +74,7 @@ Cập nhật: 2026-07-22. Trạng thái: ✅ tương đương · 🟡 tương đ
 
 ## Việc còn lại (đã thống nhất là gap, không phải bug)
 
-1. **i18n coverage**: chrome chính (nav/settings/auth keys) đã dùng `t()`; một số màn nội dung vẫn còn chuỗi cứng — chạy `node scripts/sync_i18n_from_web.mjs` khi web cập nhật copy rồi thay dần.
-2. **Call polish**: chọn thiết bị I/O chi tiết như web; ringtone hiện dùng SystemSound/Haptic (không Web Audio).
+1. **i18n coverage**: chrome chính đã dùng `t()`; một số màn nội dung vẫn còn chuỗi cứng — chạy `node scripts/sync_i18n_from_web.mjs` khi web cập nhật copy rồi thay dần.
+2. **Call polish**: chọn thiết bị I/O chi tiết như web; ringtone dùng SystemSound/Haptic.
 3. **Push FCM end-to-end**: cần file Firebase config trên máy build (chưa có trong repo).
+4. **Public SEO pages** (`/p/*`, RSS): ➖ chỉ web.

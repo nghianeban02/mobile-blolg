@@ -4,14 +4,14 @@ import 'package:mobile/core/constants/app_colors.dart';
 
 class SettingsItemRow extends StatelessWidget {
   final String title;
-  final String subtitle;
+  final String? subtitle;
   final String? actionText;
   final VoidCallback? onActionTap;
 
   const SettingsItemRow({
     super.key,
     required this.title,
-    required this.subtitle,
+    this.subtitle,
     this.actionText,
     this.onActionTap,
   });
@@ -33,14 +33,16 @@ class SettingsItemRow extends StatelessWidget {
                   fontWeight: FontWeight.w500,
                 ),
               ),
-              const SizedBox(height: 4),
-              Text(
-                subtitle,
-                style: GoogleFonts.inter(
-                  color: AppColors.homeTextDark.withValues(alpha: 0.7),
-                  fontSize: 12,
+              if (subtitle != null && subtitle!.isNotEmpty) ...[
+                const SizedBox(height: 4),
+                Text(
+                  subtitle!,
+                  style: GoogleFonts.inter(
+                    color: AppColors.homeTextDark.withValues(alpha: 0.7),
+                    fontSize: 12,
+                  ),
                 ),
-              ),
+              ],
             ],
           ),
         ),

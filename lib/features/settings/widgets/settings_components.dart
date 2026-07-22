@@ -14,12 +14,7 @@ import 'package:mobile/core/widgets/editorial_ui.dart';
 import 'package:mobile/data/models/dtos.dart';
 import 'package:mobile/data/repositories/notifications_repository.dart';
 import 'package:mobile/features/auth/presentation/bloc/auth_bloc.dart';
-import 'package:mobile/features/calendar/screens/calendar_screen.dart';
 import 'package:mobile/features/friends/screens/friends_screen.dart';
-import 'package:mobile/features/messages/screens/conversations_screen.dart';
-import 'package:mobile/features/notes/screens/notes_screen.dart';
-import 'package:mobile/features/reading_list/screens/create_book_screen.dart';
-import 'package:mobile/features/saved/screens/saved_screen.dart';
 import 'package:mobile/features/settings/screens/change_password_screen.dart';
 import 'package:mobile/features/settings/widgets/settings_checkbox_tile.dart';
 import 'package:mobile/features/settings/widgets/settings_item_row.dart';
@@ -390,26 +385,45 @@ class ProfileCard extends StatelessWidget {
 }
 
 // ----------------------------------------------------------------------
-// FRIENDS — `/api/friends`
+// QUICK LINKS — parity web settings.quickLinks
 // ----------------------------------------------------------------------
-class FriendsSection extends StatelessWidget {
-  const FriendsSection({super.key});
+class QuickLinksSection extends StatelessWidget {
+  const QuickLinksSection({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SettingsSectionTitle(text: context.t('friends.title').toUpperCase()),
-        const SizedBox(height: 24),
+        SettingsSectionTitle(
+          text: context.t('settings.quickLinks').toUpperCase(),
+        ),
+        const SizedBox(height: 20),
         SettingsItemRow(
-          title: context.t('friends.title'),
-          subtitle: context.t('friends.subtitleFriends'),
+          title: context.t('common.friends'),
           actionText: context.t('common.viewDetails'),
           onActionTap: () => Navigator.push(
             context,
             MaterialPageRoute<void>(builder: (_) => const FriendsScreen()),
           ),
+        ),
+        const SizedBox(height: 16),
+        SettingsItemRow(
+          title: context.t('common.notifications'),
+          actionText: context.t('common.viewDetails'),
+          onActionTap: () => context.push(AppRoutes.notifications),
+        ),
+        const SizedBox(height: 16),
+        SettingsItemRow(
+          title: context.t('settings.readingList'),
+          actionText: context.t('common.viewDetails'),
+          onActionTap: () => context.go(AppRoutes.library),
+        ),
+        const SizedBox(height: 16),
+        SettingsItemRow(
+          title: context.t('nav.library'),
+          actionText: context.t('common.viewDetails'),
+          onActionTap: () => context.go(AppRoutes.library),
         ),
       ],
     );
@@ -417,72 +431,7 @@ class FriendsSection extends StatelessWidget {
 }
 
 // ----------------------------------------------------------------------
-// PERSONAL TOOLS — web-blog parity routes
-// ----------------------------------------------------------------------
-class PersonalToolsSection extends StatelessWidget {
-  const PersonalToolsSection({super.key});
-
-  @override
-  Widget build(BuildContext context) => Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      const SettingsSectionTitle(text: 'PERSONAL TOOLS'),
-      const SizedBox(height: 20),
-      SettingsItemRow(
-        title: 'Tin nhắn',
-        subtitle: 'Trò chuyện riêng, nhóm và gửi ảnh',
-        actionText: 'Open',
-        onActionTap: () => Navigator.push(
-          context,
-          MaterialPageRoute<void>(builder: (_) => const ConversationsScreen()),
-        ),
-      ),
-      const SizedBox(height: 20),
-      SettingsItemRow(
-        title: 'Ghi chú',
-        subtitle: 'Thư mục, nhãn, ghim, lưu trữ và thùng rác',
-        actionText: 'Open',
-        onActionTap: () => Navigator.push(
-          context,
-          MaterialPageRoute<void>(builder: (_) => const NotesScreen()),
-        ),
-      ),
-      const SizedBox(height: 20),
-      SettingsItemRow(
-        title: 'Lịch & Pomodoro',
-        subtitle: 'Quản lý công việc và phiên tập trung',
-        actionText: 'Open',
-        onActionTap: () => Navigator.push(
-          context,
-          MaterialPageRoute<void>(builder: (_) => const CalendarScreen()),
-        ),
-      ),
-      const SizedBox(height: 20),
-      SettingsItemRow(
-        title: 'Đã lưu',
-        subtitle: 'Bài viết và review để đọc sau',
-        actionText: 'Open',
-        onActionTap: () => Navigator.push(
-          context,
-          MaterialPageRoute<void>(builder: (_) => const SavedScreen()),
-        ),
-      ),
-      const SizedBox(height: 20),
-      SettingsItemRow(
-        title: 'Thêm sách',
-        subtitle: 'Tạo một mục catalog mà không cần viết review',
-        actionText: 'Create',
-        onActionTap: () => Navigator.push(
-          context,
-          MaterialPageRoute<void>(builder: (_) => const CreateBookScreen()),
-        ),
-      ),
-    ],
-  );
-}
-
-// ----------------------------------------------------------------------
-// ACCOUNT SECURITY
+// ACCOUNT SECURITY — parity web settings.account / password
 // ----------------------------------------------------------------------
 class AccountSecuritySection extends StatelessWidget {
   final UserProfileDto? profile;
@@ -493,49 +442,25 @@ class AccountSecuritySection extends StatelessWidget {
   Widget build(BuildContext context) {
     final email = profile?.email?.trim().isNotEmpty == true
         ? profile!.email!.trim()
-        : (profile?.username ?? 'Chưa cập nhật email');
+        : (profile?.username ?? '—');
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const SettingsSectionTitle(text: 'ACCOUNT SECURITY'),
+        SettingsSectionTitle(text: context.t('settings.account').toUpperCase()),
         const SizedBox(height: 24),
-        SettingsItemRow(title: 'Email Address', subtitle: email),
+        SettingsItemRow(title: context.t('auth.email'), subtitle: email),
         const SizedBox(height: 24),
         SettingsItemRow(
-          title: 'Password',
-          subtitle: 'Đổi mật khẩu đăng nhập của bạn',
-          actionText: 'Update',
+          title: context.t('settings.passwordTitle'),
+          subtitle: context.t('settings.passwordSubtitle'),
+          actionText: context.t('common.edit'),
           onActionTap: () => Navigator.push(
             context,
             MaterialPageRoute<void>(
               builder: (_) => const ChangePasswordScreen(),
             ),
           ),
-        ),
-      ],
-    );
-  }
-}
-
-// ----------------------------------------------------------------------
-// DEVELOPER — Spring be-blog API samples
-// ----------------------------------------------------------------------
-class DeveloperBeBlogSection extends StatelessWidget {
-  const DeveloperBeBlogSection({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const SettingsSectionTitle(text: 'DEVELOPER'),
-        const SizedBox(height: 24),
-        SettingsItemRow(
-          title: 'be-blog REST samples',
-          subtitle: 'Posts, books, reviews, catalog, JWT demos',
-          actionText: 'Open',
-          onActionTap: () => context.push(AppRoutes.apiDemo),
         ),
       ],
     );
@@ -808,20 +733,8 @@ class SettingsFooter extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        const SiteBrand(
-          variant: SiteBrandVariant.header,
-          showSlogan: true,
-          showMark: true,
-          markSize: 28,
-        ),
+        const SiteBrand(variant: SiteBrandVariant.header, showSlogan: true),
         const SizedBox(height: 12),
-        Text(
-          'Nook Mobile · 1.1.0',
-          style: GoogleFonts.inter(
-            color: AppColors.homeTextLight,
-            fontSize: 12,
-          ),
-        ),
         const SizedBox(height: 32),
         EditorialPillButton(
           label: context.t('common.logout'),

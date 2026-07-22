@@ -4,6 +4,7 @@ import 'package:mobile/core/constants/app_colors.dart';
 import 'package:mobile/core/network/be_blog_http.dart';
 import 'package:mobile/core/widgets/async_loading_view.dart';
 import 'package:mobile/core/widgets/detail_app_bar.dart';
+import 'package:mobile/core/widgets/main_app_bar.dart';
 import 'package:mobile/data/models/dtos.dart';
 import 'package:mobile/data/repositories/users_repository.dart';
 import 'package:mobile/features/posts/screens/post_detail_screen.dart';
@@ -18,10 +19,14 @@ class UserProfileScreen extends StatefulWidget {
   final String userId;
   final String? initialDisplayName;
 
+  /// Khi true (tab Me trong shell): dùng MainAppBar + drawer thay vì nút Back.
+  final bool embeddedInShell;
+
   const UserProfileScreen({
     super.key,
     required this.userId,
     this.initialDisplayName,
+    this.embeddedInShell = false,
   });
 
   @override
@@ -110,113 +115,119 @@ class _UserProfileScreenState extends State<UserProfileScreen>
   Widget build(BuildContext context) {
     final profile = _profile;
 
-    return Scaffold(
-      backgroundColor: AppColors.homeBackground,
-      body: SafeArea(
-        bottom: false,
-        child: RefreshIndicator(
-          color: AppColors.primaryBrown,
-          onRefresh: () => _load(forceRefresh: true),
-          child: NestedScrollView(
-            physics: const AlwaysScrollableScrollPhysics(
-              parent: BouncingScrollPhysics(),
-            ),
-            headerSliverBuilder: (context, _) => [
+    final content = SafeArea(
+      bottom: false,
+      child: RefreshIndicator(
+        color: AppColors.primaryBrown,
+        onRefresh: () => _load(forceRefresh: true),
+        child: NestedScrollView(
+          physics: const AlwaysScrollableScrollPhysics(
+            parent: BouncingScrollPhysics(),
+          ),
+          headerSliverBuilder: (context, _) => [
+            if (widget.embeddedInShell)
+              const MainAppBar()
+            else
               const DetailSliverAppBar(),
-              if (_loading)
-                const SliverFillRemaining(
-                  hasScrollBody: false,
-                  child: Center(
-                    child: CircularProgressIndicator(
-                      color: AppColors.primaryBrown,
-                    ),
+            if (_loading)
+              const SliverFillRemaining(
+                hasScrollBody: false,
+                child: Center(
+                  child: CircularProgressIndicator(
+                    color: AppColors.primaryBrown,
                   ),
-                )
-              else if (_error != null)
-                SliverFillRemaining(
-                  hasScrollBody: false,
-                  child: AsyncLoadingView(
-                    isLoading: false,
-                    errorMessage: _error,
-                    onRetry: () => _load(forceRefresh: true),
+                ),
+              )
+            else if (_error != null)
+              SliverFillRemaining(
+                hasScrollBody: false,
+                child: AsyncLoadingView(
+                  isLoading: false,
+                  errorMessage: _error,
+                  onRetry: () => _load(forceRefresh: true),
+                ),
+              )
+            else if (profile != null) ...[
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(24, 8, 24, 0),
+                  child: UserProfileHeader(
+                    profile: profile,
+                    postCount: _posts.length,
+                    reviewCount: _reviews.length,
+                    onFriendshipChanged: () => _load(forceRefresh: true),
                   ),
-                )
-              else if (profile != null) ...[
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(24, 8, 24, 0),
-                    child: UserProfileHeader(
-                      profile: profile,
-                      postCount: _posts.length,
-                      reviewCount: _reviews.length,
-                      onFriendshipChanged: () => _load(forceRefresh: true),
+                ),
+              ),
+              if (!profile.canViewFeed)
+                const SliverToBoxAdapter(child: ProfilePrivateFeedBanner())
+              else
+                SliverPersistentHeader(
+                  pinned: true,
+                  delegate: _ProfileTabBarDelegate(
+                    tabBar: TabBar(
+                      controller: _tabs,
+                      labelColor: AppColors.primaryBrown,
+                      unselectedLabelColor: AppColors.homeTextLight,
+                      indicatorColor: AppColors.primaryBrown,
+                      labelStyle: GoogleFonts.inter(
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 1,
+                      ),
+                      tabs: [
+                        Tab(text: 'BÀI ĐĂNG (${_posts.length})'),
+                        Tab(text: 'REVIEW (${_reviews.length})'),
+                      ],
                     ),
                   ),
                 ),
-                if (!profile.canViewFeed)
-                  const SliverToBoxAdapter(child: ProfilePrivateFeedBanner())
-                else
-                  SliverPersistentHeader(
-                    pinned: true,
-                    delegate: _ProfileTabBarDelegate(
-                      tabBar: TabBar(
-                        controller: _tabs,
-                        labelColor: AppColors.primaryBrown,
-                        unselectedLabelColor: AppColors.homeTextLight,
-                        indicatorColor: AppColors.primaryBrown,
-                        labelStyle: GoogleFonts.inter(
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 1,
+            ],
+          ],
+          body: _showTabs
+              ? TabBarView(
+                  controller: _tabs,
+                  children: [
+                    _PostsTab(
+                      posts: _posts,
+                      onOpen: (p) => Navigator.push(
+                        context,
+                        MaterialPageRoute<void>(
+                          builder: (_) =>
+                              PostDetailScreen(postId: p.id, initialPost: p),
                         ),
-                        tabs: [
-                          Tab(text: 'BÀI ĐĂNG (${_posts.length})'),
-                          Tab(text: 'REVIEW (${_reviews.length})'),
-                        ],
                       ),
                     ),
-                  ),
-              ],
-            ],
-            body: _showTabs
-                ? TabBarView(
-                    controller: _tabs,
-                    children: [
-                      _PostsTab(
-                        posts: _posts,
-                        onOpen: (p) => Navigator.push(
+                    _ReviewsTab(
+                      reviews: _reviews,
+                      isOwnProfile: _isOwnProfile,
+                      onOpen: (r) {
+                        final profile = _profile;
+                        Navigator.push(
                           context,
                           MaterialPageRoute<void>(
-                            builder: (_) =>
-                                PostDetailScreen(postId: p.id, initialPost: p),
-                          ),
-                        ),
-                      ),
-                      _ReviewsTab(
-                        reviews: _reviews,
-                        isOwnProfile: _isOwnProfile,
-                        onOpen: (r) {
-                          final profile = _profile;
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute<void>(
-                              builder: (_) => BookDetailScreen(
-                                reviewId: r.id,
-                                initialReview: r,
-                                authorId: widget.userId,
-                                authorDisplayName: profile?.displayName,
-                              ),
+                            builder: (_) => BookDetailScreen(
+                              reviewId: r.id,
+                              initialReview: r,
+                              authorId: widget.userId,
+                              authorDisplayName: profile?.displayName,
                             ),
-                          );
-                        },
-                      ),
-                    ],
-                  )
-                : const SizedBox.shrink(),
-          ),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                )
+              : const SizedBox.shrink(),
         ),
       ),
     );
+
+    if (widget.embeddedInShell) {
+      return ColoredBox(color: AppColors.homeBackground, child: content);
+    }
+
+    return Scaffold(backgroundColor: AppColors.homeBackground, body: content);
   }
 }
 

@@ -3,8 +3,9 @@ import 'package:flutter/material.dart';
 /// Centralized color palette for the application.
 /// Đồng bộ với design tokens của web-blog (globals.css / @theme).
 class AppColors {
-  static const Color success = Color(0xFF10B981);
-  static const Color error = Color(0xFFEF4444);
+  static const Color success = Color(0xFF15803D); // --app-success
+  static const Color error = Color(0xFFDC2626); // --app-danger
+  static const Color warning = Color(0xFFB45309); // --app-warning
   static const Color white = Color(0xFFFFFFFF);
 
   // Editorial palette (đồng bộ design tokens của web-blog)
@@ -29,6 +30,13 @@ class AppColors {
   static const Color darkMuted = Color(0xFFA3A09A);
   static const Color darkAccent = Color(0xFFC4886F);
   static const Color darkBorder = Color(0x1AFFFFFF); // rgb(255 255 255 / 0.1)
+  static const Color darkBorderStrong = Color(0x24FFFFFF); // rgb(255 255 255 / 0.14)
+  static const Color darkHover = Color(0x0FFFFFFF); // rgb(255 255 255 / 0.06)
+  static const Color darkCoverTeal = Color(0xFF3D5C56);
+  static const Color darkCoverSand = Color(0xFF5C4A38);
+  static const Color darkSuccess = Color(0xFF4ADE80);
+  static const Color darkWarning = Color(0xFFFBBF24);
+  static const Color darkDanger = Color(0xFFF87171);
 }
 
 /// Border radius tokens — web: --app-radius-sm/md/lg/xl.

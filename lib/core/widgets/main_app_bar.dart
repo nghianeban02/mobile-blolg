@@ -3,18 +3,17 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:mobile/core/brand/site_brand.dart';
 import 'package:mobile/core/constants/app_colors.dart';
-import 'package:mobile/core/services/chat_realtime_service.dart';
+import 'package:mobile/core/i18n/locale_controller.dart';
+import 'package:mobile/core/router/app_router.dart';
 import 'package:mobile/core/widgets/editorial_ui.dart';
-import 'package:mobile/features/friends/screens/friends_screen.dart';
-import 'package:mobile/features/messages/screens/conversations_screen.dart';
+import 'package:mobile/core/widgets/streak_badge.dart';
 import 'package:mobile/features/notifications/presentation/bloc/notifications_bloc.dart';
-import 'package:mobile/features/notifications/screens/notifications_screen.dart';
 
-/// App bar mobile — wordmark Nook (trái) + bạn bè / tin nhắn / chuông (phải),
-/// nền glass + viền dưới giống `app-shell` header trên web.
+/// App bar mobile — parity web AppShell header:
+/// menu + search | streak + notifications.
 class MainAppBar extends StatefulWidget {
   const MainAppBar({super.key});
 
@@ -23,25 +22,19 @@ class MainAppBar extends StatefulWidget {
 }
 
 class MainAppBarState extends State<MainAppBar> with WidgetsBindingObserver {
-  final _chatRealtime = ChatRealtimeService.instance;
+  final _searchController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     refreshUnread();
-    _chatRealtime.addListener(_onChatState);
-    unawaited(_chatRealtime.start());
-  }
-
-  void _onChatState() {
-    if (mounted) setState(() {});
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    _chatRealtime.removeListener(_onChatState);
+    _searchController.dispose();
     super.dispose();
   }
 
@@ -58,27 +51,17 @@ class MainAppBarState extends State<MainAppBar> with WidgetsBindingObserver {
   }
 
   Future<void> _openNotifications() async {
-    await Navigator.push(
-      context,
-      MaterialPageRoute<void>(builder: (_) => const NotificationsScreen()),
-    );
+    await context.push(AppRoutes.notifications);
     refreshUnread();
   }
 
-  Future<void> _openFriends() async {
-    await Navigator.push(
-      context,
-      MaterialPageRoute<void>(builder: (_) => const FriendsScreen()),
-    );
-    refreshUnread();
-  }
-
-  Future<void> _openMessages() async {
-    await Navigator.push(
-      context,
-      MaterialPageRoute<void>(builder: (_) => const ConversationsScreen()),
-    );
-    unawaited(_chatRealtime.refreshUnread());
+  void _submitSearch(String raw) {
+    final q = raw.trim();
+    if (q.isEmpty) {
+      context.go(AppRoutes.search);
+      return;
+    }
+    context.go('${AppRoutes.search}?q=${Uri.encodeQueryComponent(q)}');
   }
 
   Widget _countBadge(String label) => Container(
@@ -110,8 +93,7 @@ class MainAppBarState extends State<MainAppBar> with WidgetsBindingObserver {
     final barColor = (isDark ? AppColors.darkBackground : AppColors.surface)
         .withValues(alpha: 0.88);
     final borderColor = isDark ? AppColors.darkBorder : AppColors.border;
-    final chatUnread = _chatRealtime.unreadCount;
-    final chatBadgeLabel = chatUnread > 99 ? '99+' : '$chatUnread';
+    final muted = isDark ? AppColors.darkMuted : AppColors.homeTextLight;
 
     return SliverAppBar(
       backgroundColor: Colors.transparent,
@@ -134,29 +116,59 @@ class MainAppBarState extends State<MainAppBar> with WidgetsBindingObserver {
             child: SafeArea(
               bottom: false,
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 6, 10, 6),
+                padding: const EdgeInsets.fromLTRB(12, 6, 10, 6),
                 child: Row(
                   children: [
-                    const Expanded(
-                      child: SiteBrand(
-                        variant: SiteBrandVariant.mobile,
-                        showSlogan: true,
-                        showMark: true,
-                        markSize: 28,
+                    EditorialHeaderChip(
+                      icon: Icons.menu_rounded,
+                      onPressed: () => Scaffold.of(context).openDrawer(),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Container(
+                        height: 42,
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        decoration: BoxDecoration(
+                          color: isDark
+                              ? Colors.white.withValues(alpha: 0.05)
+                              : AppColors.homeTextDark.withValues(alpha: 0.05),
+                          borderRadius: AppRadius.pill,
+                          border: Border.all(color: borderColor),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(Icons.search_rounded, size: 18, color: muted),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: TextField(
+                                controller: _searchController,
+                                textInputAction: TextInputAction.search,
+                                onSubmitted: _submitSearch,
+                                style: GoogleFonts.inter(
+                                  fontSize: 15,
+                                  color: isDark
+                                      ? AppColors.darkForeground
+                                      : AppColors.homeTextDark,
+                                ),
+                                decoration: InputDecoration(
+                                  isDense: true,
+                                  border: InputBorder.none,
+                                  hintText: context.t(
+                                    'search.headerPlaceholder',
+                                  ),
+                                  hintStyle: GoogleFonts.inter(
+                                    fontSize: 14,
+                                    color: muted.withValues(alpha: 0.7),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                    EditorialHeaderChip(
-                      icon: Icons.people_outline_rounded,
-                      onPressed: _openFriends,
-                    ),
-                    const SizedBox(width: 6),
-                    EditorialHeaderChip(
-                      icon: Icons.chat_bubble_outline_rounded,
-                      onPressed: _openMessages,
-                      badge: chatUnread > 0
-                          ? _countBadge(chatBadgeLabel)
-                          : null,
-                    ),
+                    const SizedBox(width: 8),
+                    const StreakBadge(),
                     const SizedBox(width: 6),
                     BlocBuilder<NotificationsBloc, NotificationsState>(
                       buildWhen: (a, b) => a.unreadCount != b.unreadCount,
@@ -166,8 +178,6 @@ class MainAppBarState extends State<MainAppBar> with WidgetsBindingObserver {
                             : '${state.unreadCount}';
                         return EditorialHeaderChip(
                           icon: Icons.notifications_outlined,
-                          backgroundColor: AppColors.headerIconBg,
-                          iconColor: Colors.white,
                           onPressed: _openNotifications,
                           badge: state.unreadCount > 0
                               ? _countBadge(badgeLabel)
