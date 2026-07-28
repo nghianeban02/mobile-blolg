@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:mobile/core/brand/site_brand.dart';
 import 'package:mobile/core/constants/app_colors.dart';
+import 'package:mobile/core/theme/app_palette.dart';
+import 'package:mobile/core/theme/app_spacing.dart';
+import 'package:mobile/core/theme/app_typography.dart';
+import 'package:mobile/core/widgets/editorial_button.dart';
 import 'package:mobile/data/auth/auth_repository.dart';
 import 'package:mobile/data/auth/register_request.dart';
 import 'package:mobile/features/auth/screens/verify_email_screen.dart';
@@ -97,9 +100,9 @@ class _RegisterScreenState extends State<RegisterScreen>
             SnackBar(
               content: Text(
                 'Tài khoản đã được xác nhận. Đăng nhập ngay.',
-                style: GoogleFonts.inter(),
+                style: AppTypography.body(context, color: Colors.white),
               ),
-              backgroundColor: AppColors.success,
+              backgroundColor: context.palette.success,
               behavior: SnackBarBehavior.floating,
             ),
           );
@@ -111,9 +114,9 @@ class _RegisterScreenState extends State<RegisterScreen>
         SnackBar(
           content: Text(
             result.message ?? 'Đăng ký thành công. Đăng nhập ngay.',
-            style: GoogleFonts.inter(),
+            style: AppTypography.body(context, color: Colors.white),
           ),
-          backgroundColor: AppColors.success,
+          backgroundColor: context.palette.success,
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -125,15 +128,22 @@ class _RegisterScreenState extends State<RegisterScreen>
 
   @override
   Widget build(BuildContext context) {
+    final p = context.palette;
+
     return Scaffold(
-      backgroundColor: AppColors.homeBackground,
+      backgroundColor: p.background,
       body: SafeArea(
         child: FadeTransition(
           opacity: _fadeAnimation,
           child: SlideTransition(
             position: _slideAnimation,
             child: SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(20, 28, 20, 32),
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.xl,
+                AppSpacing.xxl + AppSpacing.xs,
+                AppSpacing.xl,
+                AppSpacing.section,
+              ),
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 440),
                 child: Column(
@@ -145,13 +155,18 @@ class _RegisterScreenState extends State<RegisterScreen>
                       showMark: true,
                       markSize: 36,
                     ),
-                    const SizedBox(height: 28),
+                    SizedBox(height: AppSpacing.xxl + AppSpacing.xs),
                     Container(
-                      padding: const EdgeInsets.fromLTRB(22, 28, 22, 28),
+                      padding: const EdgeInsets.fromLTRB(
+                        AppSpacing.xxl - AppSpacing.xxs,
+                        AppSpacing.xxl + AppSpacing.xs,
+                        AppSpacing.xxl - AppSpacing.xxs,
+                        AppSpacing.xxl + AppSpacing.xs,
+                      ),
                       decoration: BoxDecoration(
-                        color: AppColors.surface,
+                        color: p.surface,
                         borderRadius: AppRadius.card,
-                        border: Border.all(color: AppColors.border),
+                        border: Border.all(color: p.border),
                         boxShadow: AppShadows.soft,
                       ),
                       child: Form(
@@ -161,22 +176,16 @@ class _RegisterScreenState extends State<RegisterScreen>
                           children: [
                             Text(
                               'Tạo tài khoản',
-                              style: GoogleFonts.playfairDisplay(
-                                fontSize: 30,
-                                color: AppColors.homeTextDark,
-                                fontWeight: FontWeight.w500,
-                              ),
+                              style: AppTypography.pageTitle(context),
                             ),
-                            const SizedBox(height: 10),
+                            const SizedBox(
+                              height: AppSpacing.sm + AppSpacing.xxs,
+                            ),
                             Text(
                               'Tham gia cộng đồng đọc và viết trên Nook.',
-                              style: GoogleFonts.inter(
-                                fontSize: 14,
-                                color: AppColors.homeTextLight,
-                                height: 1.5,
-                              ),
+                              style: AppTypography.subtitle(context),
                             ),
-                            const SizedBox(height: 28),
+                            SizedBox(height: AppSpacing.xxl + AppSpacing.xs),
                             AuthFormField(
                               label: 'Tên đăng nhập',
                               hint: 'ten_dang_nhap',
@@ -190,7 +199,7 @@ class _RegisterScreenState extends State<RegisterScreen>
                                 return null;
                               },
                             ),
-                            const SizedBox(height: 20),
+                            const SizedBox(height: AppSpacing.xl),
                             AuthFormField(
                               label: 'Email',
                               hint: 'email@example.com',
@@ -207,7 +216,7 @@ class _RegisterScreenState extends State<RegisterScreen>
                                 return null;
                               },
                             ),
-                            const SizedBox(height: 20),
+                            const SizedBox(height: AppSpacing.xl),
                             AuthFormField(
                               label: 'Mật khẩu',
                               hint: '••••••••',
@@ -227,7 +236,7 @@ class _RegisterScreenState extends State<RegisterScreen>
                                 return null;
                               },
                             ),
-                            const SizedBox(height: 28),
+                            SizedBox(height: AppSpacing.xxl + AppSpacing.xs),
                             AuthFormField(
                               label: 'Xác nhận mật khẩu',
                               hint: '••••••••',
@@ -245,27 +254,24 @@ class _RegisterScreenState extends State<RegisterScreen>
                               },
                             ),
                             if (_errorMessage != null) ...[
-                              const SizedBox(height: 20),
+                              const SizedBox(height: AppSpacing.xl),
                               AuthErrorBanner(message: _errorMessage!),
                             ],
-                            const SizedBox(height: 28),
-                            FilledButton(
+                            SizedBox(height: AppSpacing.xxl + AppSpacing.xs),
+                            EditorialButton(
+                              label: _loading ? 'Đang tạo…' : 'Tạo tài khoản',
                               onPressed: _loading ? null : _register,
-                              child: Text(
-                                _loading ? 'Đang tạo…' : 'Tạo tài khoản',
-                              ),
+                              loading: _loading,
+                              expanded: true,
                             ),
                           ],
                         ),
                       ),
                     ),
-                    const SizedBox(height: 28),
+                    SizedBox(height: AppSpacing.xxl + AppSpacing.xs),
                     Text.rich(
                       TextSpan(
-                        style: GoogleFonts.inter(
-                          fontSize: 14,
-                          color: AppColors.homeTextLight,
-                        ),
+                        style: AppTypography.body(context),
                         children: [
                           const TextSpan(text: 'Đã có tài khoản? '),
                           WidgetSpan(
@@ -275,10 +281,9 @@ class _RegisterScreenState extends State<RegisterScreen>
                               onTap: () => Navigator.pop(context),
                               child: Text(
                                 'Đăng nhập',
-                                style: GoogleFonts.inter(
-                                  fontSize: 14,
+                                style: AppTypography.body(context).copyWith(
                                   fontWeight: FontWeight.w700,
-                                  color: AppColors.homeTextDark,
+                                  color: p.foreground,
                                   decoration: TextDecoration.underline,
                                 ),
                               ),

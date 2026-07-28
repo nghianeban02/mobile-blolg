@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mobile/core/constants/app_colors.dart';
+import 'package:mobile/core/widgets/editorial_button.dart';
 
 /// Shadow mềm 2 lớp cho surface editorial — web: --app-shadow-soft.
 List<BoxShadow> editorialSoftShadow({double opacity = 0.04}) => [
@@ -132,8 +133,8 @@ class EditorialAvatarInitial extends StatelessWidget {
       decoration: BoxDecoration(color: bg, shape: BoxShape.circle),
       child: Text(
         initial,
-        style: GoogleFonts.playfairDisplay(
-          fontSize: size * 0.45,
+        style: GoogleFonts.inter(
+          fontSize: size * 0.4,
           fontWeight: FontWeight.w600,
           color: AppColors.primaryBrown,
         ),
@@ -191,8 +192,7 @@ class EditorialStatusChip extends StatelessWidget {
   }
 }
 
-/// Nút pill primary — web EditorialButton variant "primary":
-/// nền nâu, chữ trắng, bo tròn hoàn toàn, shadow nâu nhẹ.
+/// Nút pill primary — delegate to [EditorialButton].
 class EditorialPillButton extends StatelessWidget {
   final String label;
   final VoidCallback? onPressed;
@@ -213,55 +213,16 @@ class EditorialPillButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bg = destructive
-        ? AppColors.error
-        : outline
-        ? Colors.transparent
-        : AppColors.primaryBrown;
-    final fg = outline ? AppColors.homeTextDark : Colors.white;
-
-    Widget button = Material(
-      color: bg,
-      shape: outline
-          ? const StadiumBorder(side: BorderSide(color: AppColors.borderStrong))
-          : const StadiumBorder(),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onPressed,
-        child: Container(
-          constraints: const BoxConstraints(minHeight: 44),
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-          child: Row(
-            mainAxisSize: expanded ? MainAxisSize.max : MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              if (icon != null) ...[
-                Icon(icon, size: 16, color: fg),
-                const SizedBox(width: 8),
-              ],
-              Text(
-                label,
-                style: GoogleFonts.inter(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                  color: fg,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
+    return EditorialButton(
+      label: label,
+      onPressed: onPressed,
+      icon: icon,
+      expanded: expanded,
+      variant: destructive
+          ? EditorialButtonVariant.dangerSolid
+          : outline
+          ? EditorialButtonVariant.outline
+          : EditorialButtonVariant.primary,
     );
-
-    if (!outline && !destructive && onPressed != null) {
-      button = DecoratedBox(
-        decoration: BoxDecoration(
-          borderRadius: AppRadius.pill,
-          boxShadow: AppShadows.primaryButton,
-        ),
-        child: button,
-      );
-    }
-    return button;
   }
 }

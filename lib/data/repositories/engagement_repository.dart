@@ -53,6 +53,12 @@ class BeBlogEngagementRepository {
     return BeBlogResponseParser.one(response, StreakSnapshotDto.fromJson);
   }
 
+  /// `GET /api/feed/trending` — Nổi bật tuần này trên Home.
+  Future<BeBlogRepoResult<List<TrendingItemDto>>> getTrendingPosts() async {
+    final response = await BeBlogHttp.get(ApiConstants.trendingFeed);
+    return BeBlogResponseParser.list(response, TrendingItemDto.fromJson);
+  }
+
   /// `POST /api/public/newsletter/subscribe` — trả về message từ server.
   Future<BeBlogRepoResult<String>> subscribeNewsletter(String email) async {
     final response = await BeBlogHttp.postJson(

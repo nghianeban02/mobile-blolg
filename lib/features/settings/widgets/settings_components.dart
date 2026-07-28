@@ -9,6 +9,7 @@ import 'package:mobile/core/i18n/locale_controller.dart';
 import 'package:mobile/core/messaging/chat_sounds.dart';
 import 'package:mobile/core/preferences/display_preferences.dart';
 import 'package:mobile/core/router/app_router.dart';
+import 'package:mobile/core/widgets/editorial_page_header.dart';
 import 'package:mobile/core/widgets/editorial_surface_card.dart';
 import 'package:mobile/core/widgets/editorial_ui.dart';
 import 'package:mobile/data/models/dtos.dart';

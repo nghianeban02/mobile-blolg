@@ -1,60 +1,25 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:mobile/core/brand/site_brand.dart';
-import 'package:mobile/core/constants/app_colors.dart';
+import 'package:mobile/core/i18n/locale_controller.dart';
+import 'package:mobile/core/theme/app_spacing.dart';
+import 'package:mobile/core/widgets/editorial_page_header.dart';
 
+/// Library page header — mirror web `/library` PageHeader.
 class ReadingHeader extends StatelessWidget {
   const ReadingHeader({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const SizedBox(height: 8),
-          const EditorialPageHeader(
-            title: 'Thư viện',
-            subtitle:
-                'Sách, danh sách đọc và hành trình văn chương của bạn trên Nook.',
-            padding: EdgeInsets.zero,
-          ),
-          const SizedBox(height: 24),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              _buildTab('Thư viện', isActive: true),
-              _buildTab('Muốn đọc'),
-              _buildTab('Đang đọc'),
-              _buildTab('Đã đọc'),
-            ],
-          ),
-          const SizedBox(height: 24),
-          Align(
-            alignment: Alignment.centerRight,
-            child: Text(
-              'Sắp xếp: Gần đây',
-              style: GoogleFonts.inter(
-                color: AppColors.homeTextDark,
-                fontSize: 11,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-          const SizedBox(height: 8),
-        ],
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.pageX,
+        8,
+        AppSpacing.pageX,
+        0,
       ),
-    );
-  }
-
-  Widget _buildTab(String label, {bool isActive = false}) {
-    return Text(
-      label,
-      style: GoogleFonts.inter(
-        color: isActive ? AppColors.primaryBrown : AppColors.homeTextLight,
-        fontSize: 13,
-        fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
+      child: EditorialPageHeader(
+        title: context.t('library.title'),
+        subtitle: context.t('library.mySubtitle'),
+        padding: EdgeInsets.zero,
       ),
     );
   }

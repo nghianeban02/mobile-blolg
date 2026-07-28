@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mobile/core/brand/site_brand.dart';
 import 'package:mobile/core/cache/session_cache.dart';
-import 'package:mobile/core/constants/app_colors.dart';
 import 'package:mobile/core/navigation/open_user_profile.dart';
+import 'package:mobile/core/theme/app_palette.dart';
 import 'package:mobile/core/widgets/editorial_ui.dart';
 import 'package:mobile/features/review/screens/create_book_review_screen.dart';
 
@@ -21,14 +21,17 @@ class _DetailAppBarContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final ink = isDark ? AppColors.darkForeground : AppColors.homeTextDark;
+    final p = context.palette;
 
     return Row(
       children: [
         IconButton(
           tooltip: 'Quay lại',
-          icon: Icon(Icons.arrow_back_ios_new_rounded, color: ink, size: 18),
+          icon: Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: p.foreground,
+            size: 18,
+          ),
           onPressed: () => Navigator.pop(context),
         ),
         Expanded(
@@ -41,7 +44,7 @@ class _DetailAppBarContent extends StatelessWidget {
                   style: GoogleFonts.playfairDisplay(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
-                    color: ink,
+                    color: p.foreground,
                   ),
                 )
               : const Center(
@@ -56,8 +59,8 @@ class _DetailAppBarContent extends StatelessWidget {
           padding: const EdgeInsets.only(right: 4),
           child: EditorialHeaderChip(
             icon: Icons.add_rounded,
-            backgroundColor: AppColors.primaryBrown.withValues(alpha: 0.12),
-            iconColor: AppColors.primaryBrown,
+            backgroundColor: p.accentSoft,
+            iconColor: p.accent,
             onPressed: () {
               Navigator.push(
                 context,

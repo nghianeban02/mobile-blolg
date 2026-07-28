@@ -30,7 +30,9 @@ class AppColors {
   static const Color darkMuted = Color(0xFFA3A09A);
   static const Color darkAccent = Color(0xFFC4886F);
   static const Color darkBorder = Color(0x1AFFFFFF); // rgb(255 255 255 / 0.1)
-  static const Color darkBorderStrong = Color(0x24FFFFFF); // rgb(255 255 255 / 0.14)
+  static const Color darkBorderStrong = Color(
+    0x24FFFFFF,
+  ); // rgb(255 255 255 / 0.14)
   static const Color darkHover = Color(0x0FFFFFFF); // rgb(255 255 255 / 0.06)
   static const Color darkCoverTeal = Color(0xFF3D5C56);
   static const Color darkCoverSand = Color(0xFF5C4A38);

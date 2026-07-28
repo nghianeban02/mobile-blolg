@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:mobile/core/brand/site_brand.dart';
 import 'package:mobile/core/constants/app_colors.dart';
 import 'package:mobile/core/i18n/locale_controller.dart';
 import 'package:mobile/core/router/app_router.dart';
+import 'package:mobile/core/theme/app_palette.dart';
+import 'package:mobile/core/theme/app_spacing.dart';
+import 'package:mobile/core/theme/app_typography.dart';
+import 'package:mobile/core/widgets/editorial_button.dart';
 import 'package:mobile/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:mobile/features/auth/widgets/auth_form_field.dart';
 
@@ -59,14 +62,21 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final p = context.palette;
+
     return BlocListener<AuthBloc, AuthState>(
       listener: _onAuthChanged,
       child: Scaffold(
-        backgroundColor: AppColors.homeBackground,
+        backgroundColor: p.background,
         body: SafeArea(
           child: Center(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(20, 28, 20, 32),
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.xl,
+                AppSpacing.xxl + AppSpacing.xs,
+                AppSpacing.xl,
+                AppSpacing.section,
+              ),
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 440),
                 child: Column(
@@ -76,16 +86,21 @@ class _LoginScreenState extends State<LoginScreen> {
                       variant: SiteBrandVariant.mobile,
                       showSlogan: true,
                     ),
-                    const SizedBox(height: 28),
+                    SizedBox(height: AppSpacing.xxl + AppSpacing.xs),
                     DecoratedBox(
                       decoration: BoxDecoration(
-                        color: AppColors.surface,
+                        color: p.surface,
                         borderRadius: AppRadius.card,
-                        border: Border.all(color: AppColors.border),
+                        border: Border.all(color: p.border),
                         boxShadow: AppShadows.soft,
                       ),
                       child: Padding(
-                        padding: const EdgeInsets.fromLTRB(22, 28, 22, 28),
+                        padding: const EdgeInsets.fromLTRB(
+                          AppSpacing.xxl - AppSpacing.xxs,
+                          AppSpacing.xxl + AppSpacing.xs,
+                          AppSpacing.xxl - AppSpacing.xxs,
+                          AppSpacing.xxl + AppSpacing.xs,
+                        ),
                         child: Form(
                           key: _formKey,
                           child: Column(
@@ -93,22 +108,16 @@ class _LoginScreenState extends State<LoginScreen> {
                             children: [
                               Text(
                                 context.t('auth.welcomeBack'),
-                                style: GoogleFonts.playfairDisplay(
-                                  fontSize: 30,
-                                  fontWeight: FontWeight.w500,
-                                  color: AppColors.homeTextDark,
-                                ),
+                                style: AppTypography.pageTitle(context),
                               ),
-                              const SizedBox(height: 10),
+                              const SizedBox(
+                                height: AppSpacing.sm + AppSpacing.xxs,
+                              ),
                               Text(
                                 context.t('auth.signInSubtitle'),
-                                style: GoogleFonts.inter(
-                                  fontSize: 14,
-                                  height: 1.5,
-                                  color: AppColors.homeTextLight,
-                                ),
+                                style: AppTypography.subtitle(context),
                               ),
-                              const SizedBox(height: 28),
+                              SizedBox(height: AppSpacing.xxl + AppSpacing.xs),
                               AuthFormField(
                                 label: context.t('auth.username'),
                                 hint: context.t('auth.usernamePlaceholder'),
@@ -123,7 +132,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                   return null;
                                 },
                               ),
-                              const SizedBox(height: 20),
+                              const SizedBox(height: AppSpacing.xl),
                               AuthFormField(
                                 label: context.t('auth.password'),
                                 hint: '••••••••',
@@ -138,11 +147,14 @@ class _LoginScreenState extends State<LoginScreen> {
                                       context.push(AppRoutes.forgotPassword),
                                   child: Text(
                                     context.t('auth.forgotPassword'),
-                                    style: GoogleFonts.inter(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w600,
-                                      color: AppColors.primaryBrown,
-                                    ),
+                                    style:
+                                        AppTypography.accentLabel(
+                                          context,
+                                          color: p.accent,
+                                        ).copyWith(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w600,
+                                        ),
                                   ),
                                 ),
                                 validator: (value) {
@@ -156,75 +168,77 @@ class _LoginScreenState extends State<LoginScreen> {
                                 },
                               ),
                               if (_errorMessage != null) ...[
-                                const SizedBox(height: 16),
+                                const SizedBox(height: AppSpacing.lg),
                                 AuthErrorBanner(message: _errorMessage!),
                               ],
-                              const SizedBox(height: 24),
-                              FilledButton(
+                              const SizedBox(height: AppSpacing.xxl),
+                              EditorialButton(
+                                label: _isLoading
+                                    ? context.t('auth.signingIn')
+                                    : context.t('auth.signIn'),
                                 onPressed: _isLoading ? null : _handleLogin,
-                                child: Text(
-                                  _isLoading
-                                      ? context.t('auth.signingIn')
-                                      : context.t('auth.signIn'),
-                                ),
+                                loading: _isLoading,
+                                expanded: true,
                               ),
-                              const SizedBox(height: 12),
-                              OutlinedButton(
+                              const SizedBox(height: AppSpacing.md),
+                              EditorialButton(
+                                label: context.t('auth.createAccountBtn'),
                                 onPressed: _isLoading
                                     ? null
                                     : () => context.push(AppRoutes.register),
-                                child: Text(context.t('auth.createAccountBtn')),
+                                variant: EditorialButtonVariant.outline,
+                                expanded: true,
                               ),
-                              const SizedBox(height: 28),
+                              SizedBox(height: AppSpacing.xxl + AppSpacing.xs),
                               Row(
                                 children: [
-                                  const Expanded(child: Divider()),
+                                  Expanded(child: Divider(color: p.border)),
                                   Padding(
                                     padding: const EdgeInsets.symmetric(
-                                      horizontal: 12,
+                                      horizontal: AppSpacing.md,
                                     ),
                                     child: Text(
                                       context.t('auth.or'),
-                                      style: GoogleFonts.inter(
-                                        fontSize: 11,
-                                        letterSpacing: 1.6,
-                                        color: AppColors.homeTextLight,
-                                        fontWeight: FontWeight.w600,
-                                      ),
+                                      style:
+                                          AppTypography.body(
+                                            context,
+                                            size: 11,
+                                            color: p.muted,
+                                          ).copyWith(
+                                            letterSpacing: 1.6,
+                                            fontWeight: FontWeight.w600,
+                                          ),
                                     ),
                                   ),
-                                  const Expanded(child: Divider()),
+                                  Expanded(child: Divider(color: p.border)),
                                 ],
                               ),
-                              const SizedBox(height: 20),
-                              OutlinedButton(
+                              const SizedBox(height: AppSpacing.xl),
+                              EditorialButton(
+                                label: context.t('auth.continueGuest'),
                                 onPressed: _isLoading
                                     ? null
                                     : _handleGuestLogin,
-                                child: Text(context.t('auth.continueGuest')),
+                                variant: EditorialButtonVariant.outline,
+                                expanded: true,
                               ),
-                              const SizedBox(height: 10),
+                              const SizedBox(
+                                height: AppSpacing.sm + AppSpacing.xxs,
+                              ),
                               Text(
                                 context.t('auth.guestHint'),
                                 textAlign: TextAlign.center,
-                                style: GoogleFonts.inter(
-                                  fontSize: 12,
-                                  height: 1.45,
-                                  color: AppColors.homeTextLight,
-                                ),
+                                style: AppTypography.body(context, size: 12),
                               ),
                             ],
                           ),
                         ),
                       ),
                     ),
-                    const SizedBox(height: 28),
+                    SizedBox(height: AppSpacing.xxl + AppSpacing.xs),
                     Text.rich(
                       TextSpan(
-                        style: GoogleFonts.inter(
-                          fontSize: 14,
-                          color: AppColors.homeTextLight,
-                        ),
+                        style: AppTypography.body(context),
                         children: [
                           TextSpan(text: '${context.t('auth.noAccount')} '),
                           WidgetSpan(
@@ -234,10 +248,9 @@ class _LoginScreenState extends State<LoginScreen> {
                               onTap: () => context.push(AppRoutes.register),
                               child: Text(
                                 context.t('auth.createAccount'),
-                                style: GoogleFonts.inter(
-                                  fontSize: 14,
+                                style: AppTypography.body(context).copyWith(
                                   fontWeight: FontWeight.w700,
-                                  color: AppColors.homeTextDark,
+                                  color: p.foreground,
                                   decoration: TextDecoration.underline,
                                 ),
                               ),

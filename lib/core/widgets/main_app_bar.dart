@@ -8,6 +8,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:mobile/core/constants/app_colors.dart';
 import 'package:mobile/core/i18n/locale_controller.dart';
 import 'package:mobile/core/router/app_router.dart';
+import 'package:mobile/core/theme/app_palette.dart';
 import 'package:mobile/core/widgets/editorial_ui.dart';
 import 'package:mobile/core/widgets/streak_badge.dart';
 import 'package:mobile/features/notifications/presentation/bloc/notifications_bloc.dart';
@@ -89,11 +90,8 @@ class MainAppBarState extends State<MainAppBar> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final barColor = (isDark ? AppColors.darkBackground : AppColors.surface)
-        .withValues(alpha: 0.88);
-    final borderColor = isDark ? AppColors.darkBorder : AppColors.border;
-    final muted = isDark ? AppColors.darkMuted : AppColors.homeTextLight;
+    final p = context.palette;
+    final barColor = p.background.withValues(alpha: 0.88);
 
     return SliverAppBar(
       backgroundColor: Colors.transparent,
@@ -111,7 +109,7 @@ class MainAppBarState extends State<MainAppBar> with WidgetsBindingObserver {
           child: DecoratedBox(
             decoration: BoxDecoration(
               color: barColor,
-              border: Border(bottom: BorderSide(color: borderColor)),
+              border: Border(bottom: BorderSide(color: p.border)),
             ),
             child: SafeArea(
               bottom: false,
@@ -129,15 +127,17 @@ class MainAppBarState extends State<MainAppBar> with WidgetsBindingObserver {
                         height: 42,
                         padding: const EdgeInsets.symmetric(horizontal: 12),
                         decoration: BoxDecoration(
-                          color: isDark
-                              ? Colors.white.withValues(alpha: 0.05)
-                              : AppColors.homeTextDark.withValues(alpha: 0.05),
+                          color: p.fieldFill,
                           borderRadius: AppRadius.pill,
-                          border: Border.all(color: borderColor),
+                          border: Border.all(color: p.border),
                         ),
                         child: Row(
                           children: [
-                            Icon(Icons.search_rounded, size: 18, color: muted),
+                            Icon(
+                              Icons.search_rounded,
+                              size: 18,
+                              color: p.muted,
+                            ),
                             const SizedBox(width: 8),
                             Expanded(
                               child: TextField(
@@ -146,9 +146,7 @@ class MainAppBarState extends State<MainAppBar> with WidgetsBindingObserver {
                                 onSubmitted: _submitSearch,
                                 style: GoogleFonts.inter(
                                   fontSize: 15,
-                                  color: isDark
-                                      ? AppColors.darkForeground
-                                      : AppColors.homeTextDark,
+                                  color: p.foreground,
                                 ),
                                 decoration: InputDecoration(
                                   isDense: true,
@@ -158,7 +156,7 @@ class MainAppBarState extends State<MainAppBar> with WidgetsBindingObserver {
                                   ),
                                   hintStyle: GoogleFonts.inter(
                                     fontSize: 14,
-                                    color: muted.withValues(alpha: 0.7),
+                                    color: p.muted.withValues(alpha: 0.7),
                                   ),
                                 ),
                               ),

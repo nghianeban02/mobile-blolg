@@ -651,6 +651,10 @@ class UserProfileDto {
 
   bool get isAdmin =>
       roles != null && roles!.split(',').any((r) => r.trim() == 'ROLE_ADMIN');
+
+  /// Mirror web `isGuestUser` — `ROLE_GUEST` trong chuỗi roles.
+  bool get isGuest =>
+      roles != null && roles!.split(',').any((r) => r.trim() == 'ROLE_GUEST');
 }
 
 class ReviewTagDto {

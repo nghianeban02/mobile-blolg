@@ -1,13 +1,15 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:mobile/core/constants/app_colors.dart';
+import 'package:mobile/core/i18n/locale_controller.dart';
 import 'package:mobile/core/search/archive_search_index.dart';
+import 'package:mobile/core/theme/app_palette.dart';
+import 'package:mobile/core/theme/app_spacing.dart';
+import 'package:mobile/core/theme/app_typography.dart';
+import 'package:mobile/core/widgets/editorial_filter_tabs.dart';
 import 'package:mobile/core/widgets/main_app_bar.dart';
 import 'package:mobile/data/models/dtos.dart';
 import 'package:mobile/data/repositories/search_repository.dart';
-import 'package:mobile/features/posts/widgets/post_section_label.dart';
 import 'package:mobile/features/search/widgets/search_archive_results.dart';
 import 'package:mobile/features/search/widgets/search_components.dart';
 
@@ -154,53 +156,68 @@ class _SearchScreenState extends State<SearchScreen> {
           const MainAppBar(),
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.pageX),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   const SizedBox(height: 16),
                   SearchHeader(controller: _queryController),
-                  const SizedBox(height: 32),
+                  const SizedBox(height: 24),
                   if (!_indexLoading && _indexError == null) ...[
                     TrendingCollections(
                       onCollectionTap: _applyCollectionFilter,
                     ),
-                    const SizedBox(height: 40),
-                    const LibrariansNote(),
                     const SizedBox(height: 32),
+                    const LibrariansNote(),
+                    const SizedBox(height: 24),
                   ],
                   if (showResults) ...[
-                    SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: SegmentedButton<ArchiveSearchFilter>(
-                        segments: [
-                          ButtonSegment(
-                            value: ArchiveSearchFilter.all,
-                            label: Text('Tất cả (${_counts.all})'),
-                          ),
-                          ButtonSegment(
-                            value: ArchiveSearchFilter.posts,
-                            label: Text('Bài (${_counts.posts})'),
-                          ),
-                          ButtonSegment(
-                            value: ArchiveSearchFilter.reviews,
-                            label: Text('Review (${_counts.reviews})'),
-                          ),
-                          ButtonSegment(
-                            value: ArchiveSearchFilter.books,
-                            label: Text('Sách (${_counts.books})'),
-                          ),
-                        ],
-                        selected: {_filter},
-                        showSelectedIcon: false,
-                        onSelectionChanged: (selected) {
-                          setState(() => _filter = selected.first);
-                          _runServerSearch();
-                        },
-                      ),
+                    EditorialFilterTabs(
+                      padding: const EdgeInsets.only(bottom: 24),
+                      tabs: [
+                        EditorialFilterTab(
+                          id: 'all',
+                          label: context.t('search.tabAll'),
+                          count: _counts.all,
+                        ),
+                        EditorialFilterTab(
+                          id: 'posts',
+                          label: context.t('search.tabPosts'),
+                          count: _counts.posts,
+                        ),
+                        EditorialFilterTab(
+                          id: 'reviews',
+                          label: context.t('search.tabReviews'),
+                          count: _counts.reviews,
+                        ),
+                        EditorialFilterTab(
+                          id: 'books',
+                          label: context.t('search.tabBooks'),
+                          count: _counts.books,
+                        ),
+                      ],
+                      activeId: switch (_filter) {
+                        ArchiveSearchFilter.all => 'all',
+                        ArchiveSearchFilter.posts => 'posts',
+                        ArchiveSearchFilter.reviews => 'reviews',
+                        ArchiveSearchFilter.books => 'books',
+                      },
+                      onChanged: (id) {
+                        setState(() {
+                          _filter = switch (id) {
+                            'posts' => ArchiveSearchFilter.posts,
+                            'reviews' => ArchiveSearchFilter.reviews,
+                            'books' => ArchiveSearchFilter.books,
+                            _ => ArchiveSearchFilter.all,
+                          };
+                        });
+                        _runServerSearch();
+                      },
                     ),
-                    const SizedBox(height: 20),
-                    const PostSectionLabel(text: 'Kết quả tìm kiếm'),
+                    Text(
+                      context.t('search.sectionContent'),
+                      style: AppTypography.sectionEyebrow(context),
+                    ),
                     const SizedBox(height: 16),
                     SearchArchiveResults(
                       hits: _hits,
@@ -210,11 +227,15 @@ class _SearchScreenState extends State<SearchScreen> {
                     ),
                   ] else if (!_indexLoading && _indexError == null) ...[
                     Text(
-                      '${_posts.length} posts · ${_reviews.length} reviews · ${_books.length} books indexed',
-                      style: GoogleFonts.inter(
-                        color: AppColors.homeTextLight,
-                        fontSize: 11,
-                        fontStyle: FontStyle.italic,
+                      context.t('search.stats', {
+                        'posts': _posts.length,
+                        'reviews': _reviews.length,
+                        'books': _books.length,
+                      }),
+                      style: AppTypography.body(
+                        context,
+                        size: 12,
+                        color: context.palette.muted,
                       ),
                     ),
                   ],

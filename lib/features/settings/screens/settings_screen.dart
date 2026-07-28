@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:mobile/core/widgets/app_drawer.dart';
 import 'package:mobile/core/widgets/main_app_bar.dart';
 import 'package:mobile/data/models/dtos.dart';
 import 'package:mobile/data/repositories/users_repository.dart';
@@ -70,53 +69,50 @@ class SettingsScreenState extends State<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      drawer: const AppDrawer(),
-      body: SafeArea(
-        bottom: false,
-        child: CustomScrollView(
-          physics: const BouncingScrollPhysics(),
-          slivers: [
-            const MainAppBar(),
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    const SizedBox(height: 16),
-                    const SettingsHeader(),
-                    const SizedBox(height: 40),
-                    const LanguageSettingsSection(),
-                    const SizedBox(height: 40),
-                    const ReadingExperienceSection(),
-                    const SizedBox(height: 40),
-                    const NotificationsSection(),
-                    const SizedBox(height: 40),
-                    const ChatSoundSettingsSection(),
-                    const SizedBox(height: 40),
-                    ProfileCard(
-                      profile: _profile,
-                      isLoading: _loading,
-                      onEdit: _openEdit,
-                      onViewPublic: _openPublicProfile,
-                    ),
-                    const SizedBox(height: 40),
-                    AccountSecuritySection(profile: _profile),
-                    const SizedBox(height: 40),
-                    const QuickLinksSection(),
-                    const SizedBox(height: 40),
-                    AdminToolsSection(profile: _profile),
-                    if (_profile?.isAdmin == true) const SizedBox(height: 40),
-                    const SizedBox(height: 24),
-                    const SettingsFooter(),
-                    const SizedBox(height: 48),
-                  ],
-                ),
+    return SafeArea(
+      bottom: false,
+      child: CustomScrollView(
+        physics: const BouncingScrollPhysics(),
+        slivers: [
+          const MainAppBar(),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const SizedBox(height: 16),
+                  const SettingsHeader(),
+                  const SizedBox(height: 40),
+                  const LanguageSettingsSection(),
+                  const SizedBox(height: 40),
+                  const ReadingExperienceSection(),
+                  const SizedBox(height: 40),
+                  const NotificationsSection(),
+                  const SizedBox(height: 40),
+                  const ChatSoundSettingsSection(),
+                  const SizedBox(height: 40),
+                  ProfileCard(
+                    profile: _profile,
+                    isLoading: _loading,
+                    onEdit: _openEdit,
+                    onViewPublic: _openPublicProfile,
+                  ),
+                  const SizedBox(height: 40),
+                  AccountSecuritySection(profile: _profile),
+                  const SizedBox(height: 40),
+                  const QuickLinksSection(),
+                  const SizedBox(height: 40),
+                  AdminToolsSection(profile: _profile),
+                  if (_profile?.isAdmin == true) const SizedBox(height: 40),
+                  const SizedBox(height: 24),
+                  const SettingsFooter(),
+                  const SizedBox(height: 48),
+                ],
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

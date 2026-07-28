@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:mobile/core/constants/app_colors.dart';
+import 'package:mobile/core/i18n/locale_controller.dart';
+import 'package:mobile/core/theme/app_palette.dart';
+import 'package:mobile/core/theme/app_spacing.dart';
+import 'package:mobile/core/theme/app_typography.dart';
 import 'package:mobile/core/utils/format_datetime.dart';
+import 'package:mobile/core/widgets/editorial_page_header.dart';
+import 'package:mobile/core/widgets/editorial_states.dart';
 import 'package:mobile/core/widgets/editorial_surface_card.dart';
 import 'package:mobile/data/models/engagement_dtos.dart';
 import 'package:mobile/data/repositories/engagement_repository.dart';
@@ -70,161 +74,105 @@ class _SavedScreenState extends State<SavedScreen> {
   }
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-    backgroundColor: AppColors.homeBackground,
-    appBar: AppBar(title: const Text('Đã lưu')),
-    body: RefreshIndicator(
-      onRefresh: _load,
-      child: ListView(
-        physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.fromLTRB(20, 12, 20, 48),
-        children: [
-          Text(
-            'Đọc lại sau',
-            style: GoogleFonts.playfairDisplay(
-              fontSize: 34,
-              fontWeight: FontWeight.w600,
+  Widget build(BuildContext context) {
+    final p = context.palette;
+    return Scaffold(
+      backgroundColor: p.background,
+      body: RefreshIndicator(
+        color: p.accent,
+        onRefresh: _load,
+        child: ListView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.fromLTRB(0, 12, 0, 48),
+          children: [
+            EditorialPageHeader(
+              title: context.t('bookmarks.pageTitle'),
+              subtitle: context.t('bookmarks.pageSubtitle'),
             ),
-          ),
-          const SizedBox(height: 8),
-          const Text(
-            'Bài viết và review bạn đã đánh dấu được đồng bộ với web-blog.',
-            style: TextStyle(color: AppColors.homeTextLight),
-          ),
-          const SizedBox(height: 24),
-          if (_loading)
-            const Padding(
-              padding: EdgeInsets.all(48),
-              child: Center(
-                child: CircularProgressIndicator(color: AppColors.primaryBrown),
-              ),
-            )
-          else if (_error != null)
-            Center(
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.pageX),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Text(_error!),
-                  const SizedBox(height: 12),
-                  OutlinedButton(
-                    onPressed: _load,
-                    child: const Text('Thử lại'),
-                  ),
-                ],
-              ),
-            )
-          else if (_items.isEmpty)
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 40),
-              child: _EmptySavedPanel(),
-            )
-          else
-            ..._items.map(
-              (item) => EditorialSurfaceCard(
-                onTap: () => _open(item),
-                margin: const EdgeInsets.only(bottom: 12),
-                padding: const EdgeInsets.fromLTRB(18, 16, 8, 16),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            item.entityType == BookmarkEntityType.post
-                                ? 'BÀI VIẾT'
-                                : 'REVIEW',
-                            style: const TextStyle(
-                              color: AppColors.primaryBrown,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 10,
-                              letterSpacing: 1.2,
-                            ),
-                          ),
-                          const SizedBox(height: 7),
-                          Text(
-                            item.title,
-                            style: GoogleFonts.playfairDisplay(
-                              fontSize: 19,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          if (item.excerpt.isNotEmpty) ...[
-                            const SizedBox(height: 6),
-                            Text(
-                              item.excerpt,
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                color: AppColors.homeTextLight,
-                                height: 1.4,
+                  if (_loading)
+                    Padding(
+                      padding: const EdgeInsets.all(48),
+                      child: Center(
+                        child: CircularProgressIndicator(color: p.accent),
+                      ),
+                    )
+                  else if (_error != null)
+                    EditorialErrorState(message: _error!, onRetry: _load)
+                  else if (_items.isEmpty)
+                    EditorialEmptyState(
+                      title: context.t('bookmarks.emptyTitle'),
+                      message: context.t('bookmarks.emptyMessage'),
+                      icon: EditorialEmptyIcon.books,
+                    )
+                  else
+                    ..._items.map(
+                      (item) => EditorialSurfaceCard(
+                        onTap: () => _open(item),
+                        margin: const EdgeInsets.only(bottom: 12),
+                        padding: const EdgeInsets.fromLTRB(18, 16, 8, 16),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    item.entityType == BookmarkEntityType.post
+                                        ? context
+                                              .t('public.postLabel')
+                                              .toUpperCase()
+                                        : context
+                                              .t('bookmarks.reviewLabel')
+                                              .toUpperCase(),
+                                    style: AppTypography.sectionEyebrow(
+                                      context,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 7),
+                                  Text(
+                                    item.title,
+                                    style: AppTypography.cardTitle(
+                                      context,
+                                      size: 19,
+                                    ),
+                                  ),
+                                  if (item.excerpt.isNotEmpty) ...[
+                                    const SizedBox(height: 6),
+                                    Text(
+                                      item.excerpt,
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: AppTypography.body(context),
+                                    ),
+                                  ],
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    context.t('bookmarks.savedAt', {
+                                      'date': formatCommentDateTime(
+                                        item.savedAt,
+                                      ),
+                                    }),
+                                    style: AppTypography.meta(context),
+                                  ),
+                                ],
                               ),
                             ),
-                          ],
-                          const SizedBox(height: 8),
-                          Text(
-                            'Đã lưu ${formatCommentDateTime(item.savedAt)}',
-                            style: const TextStyle(
-                              fontSize: 10,
-                              color: AppColors.homeTextLight,
+                            IconButton(
+                              tooltip: context.t('bookmarks.remove'),
+                              onPressed: () => _remove(item),
+                              icon: Icon(Icons.bookmark, color: p.accent),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
-                    IconButton(
-                      tooltip: 'Bỏ lưu',
-                      onPressed: () => _remove(item),
-                      icon: const Icon(
-                        Icons.bookmark,
-                        color: AppColors.primaryBrown,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-        ],
-      ),
-    ),
-  );
-}
-
-/// Empty state kiểu web: panel bo 22, viền đứt, icon tròn nền nâu/10.
-class _EmptySavedPanel extends StatelessWidget {
-  const _EmptySavedPanel();
-
-  @override
-  Widget build(BuildContext context) {
-    return CustomPaint(
-      painter: _DashedBorderPainter(
-        color: AppColors.borderStrong,
-        radius: AppRadius.xl,
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 24),
-        child: Column(
-          children: [
-            Container(
-              width: 48,
-              height: 48,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                color: AppColors.primaryBrown.withValues(alpha: 0.1),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.bookmark_border,
-                size: 22,
-                color: AppColors.primaryBrown,
-              ),
-            ),
-            const SizedBox(height: 14),
-            Text(
-              'Bạn chưa lưu nội dung nào.',
-              style: GoogleFonts.inter(
-                fontSize: 13,
-                color: AppColors.homeTextLight,
+                ],
               ),
             ),
           ],
@@ -232,40 +180,4 @@ class _EmptySavedPanel extends StatelessWidget {
       ),
     );
   }
-}
-
-/// Vẽ viền đứt (dashed) quanh RRect — Flutter chưa hỗ trợ border dashed sẵn.
-class _DashedBorderPainter extends CustomPainter {
-  final Color color;
-  final double radius;
-
-  const _DashedBorderPainter({required this.color, required this.radius});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = color
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1;
-    final path = Path()
-      ..addRRect(
-        RRect.fromRectAndRadius(Offset.zero & size, Radius.circular(radius)),
-      );
-    const dashWidth = 6.0;
-    const dashSpace = 5.0;
-    for (final metric in path.computeMetrics()) {
-      var distance = 0.0;
-      while (distance < metric.length) {
-        canvas.drawPath(
-          metric.extractPath(distance, distance + dashWidth),
-          paint,
-        );
-        distance += dashWidth + dashSpace;
-      }
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant _DashedBorderPainter oldDelegate) =>
-      oldDelegate.color != color || oldDelegate.radius != radius;
 }

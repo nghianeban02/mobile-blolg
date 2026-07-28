@@ -1,10 +1,16 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:mobile/core/constants/app_colors.dart';
+import 'package:mobile/core/i18n/locale_controller.dart';
 import 'package:mobile/core/pomodoro/pomodoro_timer_controller.dart';
+import 'package:mobile/core/theme/app_palette.dart';
+import 'package:mobile/core/theme/app_spacing.dart';
+import 'package:mobile/core/theme/app_typography.dart';
 import 'package:mobile/core/widgets/editorial_confirm_dialog.dart';
+import 'package:mobile/core/widgets/editorial_page_header.dart';
+import 'package:mobile/core/widgets/editorial_states.dart';
+import 'package:mobile/core/widgets/editorial_surface_card.dart';
 import 'package:mobile/data/models/productivity_dtos.dart';
 import 'package:mobile/data/repositories/calendar_repository.dart';
 
@@ -147,110 +153,114 @@ class _CalendarScreenState extends State<CalendarScreen> {
   }
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-    backgroundColor: AppColors.homeBackground,
-    appBar: AppBar(
-      title: const Text('Lịch & tập trung'),
-      actions: [
-        IconButton(
-          tooltip: 'Hôm nay',
-          onPressed: () {
-            final today = _day(DateTime.now());
-            setState(() {
-              _selected = today;
-              _displayedMonth = DateTime(today.year, today.month);
-            });
-            _loadMonth();
-          },
-          icon: const Icon(Icons.today_outlined),
-        ),
-      ],
-    ),
-    floatingActionButton: FloatingActionButton.extended(
-      onPressed: _edit,
-      backgroundColor: AppColors.primaryBrown,
-      foregroundColor: Colors.white,
-      shape: const StadiumBorder(),
-      icon: const Icon(Icons.add),
-      label: const Text('Công việc'),
-    ),
-    body: RefreshIndicator(
-      onRefresh: _loadMonth,
-      child: ListView(
-        physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
-        children: [
-          if (_pomodoro.isActive) ...[
-            _ActivePomodoroCard(timer: _pomodoro),
-            const SizedBox(height: 14),
-          ],
-          Card(
-            elevation: 0,
-            child: CalendarDatePicker(
-              initialDate: _selected,
-              firstDate: DateTime(2020),
-              lastDate: DateTime(2100),
-              onDateChanged: (date) {
-                final monthChanged =
-                    date.month != _displayedMonth.month ||
-                    date.year != _displayedMonth.year;
-                setState(() {
-                  _selected = _day(date);
-                  _displayedMonth = DateTime(date.year, date.month);
-                });
-                if (monthChanged) _loadMonth();
-              },
-            ),
-          ),
-          const SizedBox(height: 18),
-          Text(
-            '${_weekday(_selected.weekday)}, ${_selected.day}/${_selected.month}/${_selected.year}',
-            style: GoogleFonts.playfairDisplay(
-              fontSize: 25,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          const SizedBox(height: 14),
-          if (_loading)
-            const Padding(
-              padding: EdgeInsets.all(32),
-              child: Center(
-                child: CircularProgressIndicator(color: AppColors.primaryBrown),
-              ),
-            )
-          else if (_error != null)
-            Card(
-              color: AppColors.error.withValues(alpha: 0.08),
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Text(_error!),
-              ),
-            )
-          else if (_selectedEntries.isEmpty)
-            const Card(
-              elevation: 0,
-              child: Padding(
-                padding: EdgeInsets.all(24),
-                child: Text('Ngày này chưa có công việc.'),
-              ),
-            )
-          else
-            ..._selectedEntries.map(
-              (entry) => _EntryCard(
-                entry: entry,
-                isActiveFocus: _pomodoro.activeEntryId == entry.id,
-                isPaused:
-                    _pomodoro.isPaused && _pomodoro.activeEntryId == entry.id,
-                onChanged: (value) => _toggle(entry, value),
-                onEdit: () => _edit(entry),
-                onDelete: () => _delete(entry),
-                onStartFocus: () => _startTimer(entry),
-              ),
-            ),
-        ],
+  Widget build(BuildContext context) {
+    final p = context.palette;
+    return Scaffold(
+      backgroundColor: p.background,
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: _edit,
+        backgroundColor: p.accent,
+        foregroundColor: Colors.white,
+        shape: const StadiumBorder(),
+        icon: const Icon(Icons.add),
+        label: Text(context.t('calendar.addTask')),
       ),
-    ),
-  );
+      body: RefreshIndicator(
+        color: p.accent,
+        onRefresh: _loadMonth,
+        child: ListView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.fromLTRB(0, 8, 0, 100),
+          children: [
+            EditorialPageHeader(
+              title: context.t('calendar.title'),
+              subtitle: context.t('calendar.subtitle'),
+              action: Align(
+                alignment: Alignment.centerLeft,
+                child: TextButton.icon(
+                  onPressed: () {
+                    final today = _day(DateTime.now());
+                    setState(() {
+                      _selected = today;
+                      _displayedMonth = DateTime(today.year, today.month);
+                    });
+                    _loadMonth();
+                  },
+                  icon: Icon(Icons.today_outlined, size: 18, color: p.accent),
+                  label: Text(
+                    context.t('calendar.today'),
+                    style: AppTypography.accentLabel(context),
+                  ),
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.pageX),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (_pomodoro.isActive) ...[
+                    _ActivePomodoroCard(timer: _pomodoro),
+                    const SizedBox(height: 14),
+                  ],
+                  EditorialSurfaceCard(
+                    elevated: false,
+                    padding: EdgeInsets.zero,
+                    child: CalendarDatePicker(
+                      initialDate: _selected,
+                      firstDate: DateTime(2020),
+                      lastDate: DateTime(2100),
+                      onDateChanged: (date) {
+                        final monthChanged =
+                            date.month != _displayedMonth.month ||
+                            date.year != _displayedMonth.year;
+                        setState(() {
+                          _selected = _day(date);
+                          _displayedMonth = DateTime(date.year, date.month);
+                        });
+                        if (monthChanged) _loadMonth();
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 18),
+                  Text(
+                    '${_weekday(_selected.weekday)}, ${_selected.day}/${_selected.month}/${_selected.year}',
+                    style: AppTypography.sectionTitle(context),
+                  ),
+                  const SizedBox(height: 14),
+                  if (_loading)
+                    Padding(
+                      padding: const EdgeInsets.all(32),
+                      child: Center(
+                        child: CircularProgressIndicator(color: p.accent),
+                      ),
+                    )
+                  else if (_error != null)
+                    EditorialErrorState(message: _error!, onRetry: _loadMonth)
+                  else if (_selectedEntries.isEmpty)
+                    EditorialEmptyState(message: context.t('calendar.emptyDay'))
+                  else
+                    ..._selectedEntries.map(
+                      (entry) => _EntryCard(
+                        entry: entry,
+                        isActiveFocus: _pomodoro.activeEntryId == entry.id,
+                        isPaused:
+                            _pomodoro.isPaused &&
+                            _pomodoro.activeEntryId == entry.id,
+                        onChanged: (value) => _toggle(entry, value),
+                        onEdit: () => _edit(entry),
+                        onDelete: () => _delete(entry),
+                        onStartFocus: () => _startTimer(entry),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
   String _weekday(int weekday) => const [
     'Thứ Hai',
@@ -276,93 +286,82 @@ class _ActivePomodoroCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final accent = timer.isRunning
-        ? AppColors.primaryBrown
-        : const Color(0xFFD97706);
-    return Card(
-      elevation: 0,
-      color: accent.withValues(alpha: 0.08),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppRadius.xl),
-        side: BorderSide(color: accent.withValues(alpha: 0.25)),
+    final p = context.palette;
+    final accent = timer.isRunning ? p.accent : p.warning;
+    return Container(
+      decoration: BoxDecoration(
+        color: accent.withValues(alpha: 0.08),
+        borderRadius: AppRadius.card,
+        border: Border.all(color: accent.withValues(alpha: 0.25)),
       ),
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 14, 8, 14),
-        child: Row(
-          children: [
-            SizedBox(
-              width: 56,
-              height: 56,
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  CircularProgressIndicator(
-                    value: timer.progress,
-                    strokeWidth: 3.5,
-                    backgroundColor: accent.withValues(alpha: 0.15),
-                    color: accent,
-                  ),
-                  Text(
-                    _format(timer.remainingSeconds),
-                    style: TextStyle(
-                      fontWeight: FontWeight.w700,
-                      fontSize: 12,
-                      color: accent,
-                      fontFeatures: const [FontFeature.tabularFigures()],
-                    ),
-                  ),
-                ],
-              ),
+      padding: const EdgeInsets.fromLTRB(16, 14, 8, 14),
+      child: Row(
+        children: [
+          SizedBox(
+            width: 56,
+            height: 56,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                CircularProgressIndicator(
+                  value: timer.progress,
+                  strokeWidth: 3.5,
+                  backgroundColor: accent.withValues(alpha: 0.15),
+                  color: accent,
+                ),
+                Text(
+                  _format(timer.remainingSeconds),
+                  style: AppTypography.button(context, size: 12, color: accent)
+                      .copyWith(
+                        fontWeight: FontWeight.w700,
+                        fontFeatures: const [FontFeature.tabularFigures()],
+                      ),
+                ),
+              ],
             ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    timer.isPaused ? 'Đã tạm dừng' : 'Đang tập trung',
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 0.8,
-                      color: accent,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    timer.entryMeta?.title ?? 'Pomodoro',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 15,
-                    ),
-                  ),
-                ],
-              ),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  timer.isPaused
+                      ? context.t('calendar.paused')
+                      : context.t('calendar.timerActive'),
+                  style: AppTypography.meta(context, color: accent),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  timer.entryMeta?.title ?? context.t('calendar.pomodoro'),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTypography.cardTitle(context, size: 15),
+                ),
+              ],
             ),
-            if (timer.isRunning)
-              IconButton(
-                tooltip: 'Tạm dừng',
-                onPressed: timer.pauseTimer,
-                icon: const Icon(Icons.pause_rounded),
-                color: accent,
-              )
-            else
-              IconButton(
-                tooltip: 'Tiếp tục',
-                onPressed: timer.resumeTimer,
-                icon: const Icon(Icons.play_arrow_rounded),
-                color: accent,
-              ),
+          ),
+          if (timer.isRunning)
             IconButton(
-              tooltip: 'Kết thúc',
-              onPressed: timer.stopTimer,
-              icon: const Icon(Icons.stop_rounded),
-              color: AppColors.homeTextLight,
+              tooltip: context.t('calendar.pauseTimer'),
+              onPressed: timer.pauseTimer,
+              icon: const Icon(Icons.pause_rounded),
+              color: accent,
+            )
+          else
+            IconButton(
+              tooltip: context.t('calendar.resumeTimer'),
+              onPressed: timer.resumeTimer,
+              icon: const Icon(Icons.play_arrow_rounded),
+              color: accent,
             ),
-          ],
-        ),
+          IconButton(
+            tooltip: context.t('calendar.stopTimer'),
+            onPressed: timer.stopTimer,
+            icon: const Icon(Icons.stop_rounded),
+            color: p.muted,
+          ),
+        ],
       ),
     );
   }
@@ -388,27 +387,20 @@ class _EntryCard extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) => Card(
-    margin: const EdgeInsets.only(bottom: 10),
-    elevation: 0,
-    color: isActiveFocus
-        ? AppColors.primaryBrown.withValues(alpha: 0.06)
-        : null,
-    shape: isActiveFocus
-        ? RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppRadius.md),
-            side: BorderSide(
-              color: AppColors.primaryBrown.withValues(alpha: 0.3),
-            ),
-          )
-        : null,
-    child: Padding(
+  Widget build(BuildContext context) {
+    final p = context.palette;
+    return EditorialSurfaceCard(
+      margin: const EdgeInsets.only(bottom: 10),
+      elevated: false,
+      showAccentBar: isActiveFocus,
+      accentColor: p.accent,
       padding: const EdgeInsets.fromLTRB(8, 10, 8, 10),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Checkbox.adaptive(
             value: entry.completed,
+            activeColor: p.accent,
             onChanged: (value) => onChanged(value ?? false),
           ),
           Expanded(
@@ -419,21 +411,18 @@ class _EntryCard extends StatelessWidget {
                 children: [
                   Text(
                     entry.title,
-                    style: TextStyle(
-                      fontWeight: FontWeight.w600,
+                    style: AppTypography.cardTitle(context, size: 16).copyWith(
                       decoration: entry.completed
                           ? TextDecoration.lineThrough
                           : null,
+                      color: isActiveFocus ? p.accent : p.foreground,
                     ),
                   ),
                   if (entry.note?.isNotEmpty == true) ...[
                     const SizedBox(height: 5),
                     Text(
                       entry.note!,
-                      style: const TextStyle(
-                        color: AppColors.homeTextLight,
-                        fontSize: 12,
-                      ),
+                      style: AppTypography.body(context, size: 12),
                     ),
                   ],
                   const SizedBox(height: 8),
@@ -443,15 +432,15 @@ class _EntryCard extends StatelessWidget {
                               ? 'Pomodoro đang tạm dừng'
                               : 'Đang chạy Pomodoro')
                         : '${entry.pomodoroMinutes} phút · ${entry.pomodoroCompleted} phiên · ${_focusTime(entry.totalFocusSeconds)} tập trung',
-                    style: TextStyle(
-                      fontSize: 10,
-                      color: isActiveFocus
-                          ? AppColors.primaryBrown
-                          : AppColors.homeTextLight,
-                      fontWeight: isActiveFocus
-                          ? FontWeight.w600
-                          : FontWeight.w400,
-                    ),
+                    style:
+                        AppTypography.meta(
+                          context,
+                          color: isActiveFocus ? p.accent : p.muted,
+                        ).copyWith(
+                          fontWeight: isActiveFocus
+                              ? FontWeight.w600
+                              : FontWeight.w500,
+                        ),
                   ),
                 ],
               ),
@@ -459,27 +448,36 @@ class _EntryCard extends StatelessWidget {
           ),
           IconButton(
             tooltip: isActiveFocus
-                ? (isPaused ? 'Tiếp tục' : 'Đang tập trung')
-                : 'Bắt đầu tập trung',
+                ? (isPaused
+                      ? context.t('calendar.resumeTimer')
+                      : context.t('calendar.timerActive'))
+                : context.t('calendar.startTimer'),
             onPressed: entry.completed ? null : onStartFocus,
             icon: Icon(
               isActiveFocus
                   ? (isPaused ? Icons.play_arrow_rounded : Icons.timelapse)
                   : Icons.timer_outlined,
-              color: isActiveFocus ? AppColors.primaryBrown : null,
+              color: isActiveFocus ? p.accent : p.muted,
             ),
           ),
           PopupMenuButton<String>(
+            icon: Icon(Icons.more_vert, color: p.muted),
             onSelected: (value) => value == 'edit' ? onEdit() : onDelete(),
-            itemBuilder: (context) => const [
-              PopupMenuItem(value: 'edit', child: Text('Chỉnh sửa')),
-              PopupMenuItem(value: 'delete', child: Text('Xóa')),
+            itemBuilder: (context) => [
+              PopupMenuItem(
+                value: 'edit',
+                child: Text(context.t('common.edit')),
+              ),
+              PopupMenuItem(
+                value: 'delete',
+                child: Text(context.t('common.delete')),
+              ),
             ],
           ),
         ],
       ),
-    ),
-  );
+    );
+  }
 
   static String _focusTime(int seconds) {
     if (seconds < 60) return '${seconds}s';

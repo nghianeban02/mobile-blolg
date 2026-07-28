@@ -221,22 +221,22 @@ class AppTheme {
     );
   }
 
-  /// Playfair Display italic cho display / brand, Inter cho phần còn lại —
-  /// giống web (--font-playfair chỉ dùng cho brand & page titles).
+  /// Page/section titles dùng Inter semibold (web `.font-vi-title`).
+  /// Playfair italic chỉ dành cho brand wordmark (`SiteBrand`), không gắn vào textTheme.
   static TextTheme _editorialTextTheme(TextTheme inter, Color color) {
     return inter.copyWith(
-      headlineLarge: GoogleFonts.playfairDisplay(
+      headlineLarge: GoogleFonts.inter(
         textStyle: inter.headlineLarge,
-        fontWeight: FontWeight.w700,
-        fontStyle: FontStyle.italic,
+        fontWeight: FontWeight.w600,
+        letterSpacing: -0.4,
         color: color,
       ),
-      headlineMedium: GoogleFonts.playfairDisplay(
+      headlineMedium: GoogleFonts.inter(
         textStyle: inter.headlineMedium,
         fontWeight: FontWeight.w600,
         color: color,
       ),
-      titleLarge: GoogleFonts.playfairDisplay(
+      titleLarge: GoogleFonts.inter(
         textStyle: inter.titleLarge,
         fontWeight: FontWeight.w600,
         color: color,

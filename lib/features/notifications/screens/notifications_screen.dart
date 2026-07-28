@@ -1,16 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:mobile/core/constants/app_colors.dart';
+import 'package:mobile/core/i18n/locale_controller.dart';
 import 'package:mobile/core/navigation/open_user_profile.dart';
+import 'package:mobile/core/theme/app_palette.dart';
+import 'package:mobile/core/theme/app_spacing.dart';
 import 'package:mobile/core/widgets/async_loading_view.dart';
 import 'package:mobile/core/widgets/detail_app_bar.dart';
+import 'package:mobile/core/widgets/editorial_button.dart';
+import 'package:mobile/core/widgets/editorial_page_header.dart';
+import 'package:mobile/core/widgets/editorial_states.dart';
 import 'package:mobile/data/models/dtos.dart';
 import 'package:mobile/features/friends/screens/friends_screen.dart';
 import 'package:mobile/features/notifications/presentation/bloc/notifications_bloc.dart';
 import 'package:mobile/features/notifications/widgets/notification_tile.dart';
 import 'package:mobile/features/posts/screens/post_detail_screen.dart';
-import 'package:mobile/features/posts/widgets/post_section_label.dart';
 import 'package:mobile/features/review/screens/book_detail_screen.dart';
 
 /// Danh sách thông báo — `GET /api/notifications`.
@@ -93,15 +96,16 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final p = context.palette;
     return Scaffold(
-      backgroundColor: AppColors.homeBackground,
+      backgroundColor: p.background,
       body: SafeArea(
         bottom: false,
         child: BlocBuilder<NotificationsBloc, NotificationsState>(
           builder: (context, state) {
             final unreadCount = state.items.where((n) => !n.read).length;
             return RefreshIndicator(
-              color: AppColors.primaryBrown,
+              color: p.accent,
               onRefresh: () async {
                 context.read<NotificationsBloc>().add(
                   const NotificationsListRequested(),
@@ -117,55 +121,33 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                   parent: BouncingScrollPhysics(),
                 ),
                 slivers: [
-                  const DetailSliverAppBar(title: 'THÔNG BÁO'),
+                  const DetailSliverAppBar(),
                   SliverToBoxAdapter(
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(24, 8, 24, 0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const PostSectionLabel(text: 'HOẠT ĐỘNG'),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Like, bình luận và lời mời kết bạn từ vòng đọc của bạn.',
-                            style: GoogleFonts.inter(
-                              color: AppColors.homeTextLight,
-                              fontSize: 12,
-                              height: 1.45,
-                            ),
-                          ),
-                          if (unreadCount > 0) ...[
-                            const SizedBox(height: 16),
-                            Align(
-                              alignment: Alignment.centerRight,
-                              child: TextButton(
+                    child: EditorialPageHeader(
+                      title: context.t('notifications.title'),
+                      subtitle: context.t('notifications.defaultSubtitle'),
+                      action: unreadCount > 0
+                          ? Align(
+                              alignment: Alignment.centerLeft,
+                              child: EditorialButton(
+                                label: context.t('notifications.markAllRead'),
+                                variant: EditorialButtonVariant.ghost,
+                                size: EditorialButtonSize.sm,
                                 onPressed: () =>
                                     context.read<NotificationsBloc>().add(
                                       const NotificationsMarkAllReadRequested(),
                                     ),
-                                child: Text(
-                                  'Đánh dấu tất cả đã đọc',
-                                  style: GoogleFonts.inter(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w600,
-                                    color: AppColors.primaryBrown,
-                                  ),
-                                ),
                               ),
-                            ),
-                          ],
-                        ],
-                      ),
+                            )
+                          : null,
                     ),
                   ),
                   if (state.status == NotificationsStatus.loading &&
                       state.items.isEmpty)
-                    const SliverFillRemaining(
+                    SliverFillRemaining(
                       hasScrollBody: false,
                       child: Center(
-                        child: CircularProgressIndicator(
-                          color: AppColors.primaryBrown,
-                        ),
+                        child: CircularProgressIndicator(color: p.accent),
                       ),
                     )
                   else if (state.status == NotificationsStatus.failure)
@@ -182,22 +164,19 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                   else if (state.items.isEmpty)
                     SliverFillRemaining(
                       hasScrollBody: false,
-                      child: Padding(
-                        padding: const EdgeInsets.all(24),
-                        child: Text(
-                          'Chưa có thông báo nào.',
-                          textAlign: TextAlign.center,
-                          style: GoogleFonts.inter(
-                            color: AppColors.homeTextLight,
-                            fontSize: 13,
-                            fontStyle: FontStyle.italic,
-                          ),
-                        ),
+                      child: EditorialEmptyState(
+                        message: context.t('notifications.empty'),
+                        icon: EditorialEmptyIcon.notifications,
                       ),
                     )
                   else
                     SliverPadding(
-                      padding: const EdgeInsets.fromLTRB(24, 16, 24, 48),
+                      padding: const EdgeInsets.fromLTRB(
+                        AppSpacing.pageX,
+                        0,
+                        AppSpacing.pageX,
+                        48,
+                      ),
                       sliver: SliverList(
                         delegate: SliverChildBuilderDelegate((context, index) {
                           final n = state.items[index];

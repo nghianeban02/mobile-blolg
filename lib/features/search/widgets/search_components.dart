@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:mobile/core/brand/site_brand.dart';
 import 'package:mobile/core/constants/app_colors.dart';
+import 'package:mobile/core/i18n/locale_controller.dart';
+import 'package:mobile/core/theme/app_palette.dart';
+import 'package:mobile/core/widgets/editorial_page_header.dart';
 
 // ----------------------------------------------------------------------
 // SEARCH HEADER
@@ -13,35 +15,32 @@ class SearchHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final p = context.palette;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const EditorialPageHeader(
-          title: 'Tìm kiếm',
-          subtitle: 'Bài viết, review và sách trong kho lưu trữ Nook.',
+        EditorialPageHeader(
+          title: context.t('search.title'),
+          subtitle: context.t('search.subtitle'),
           padding: EdgeInsets.zero,
         ),
         const SizedBox(height: 16),
         TextField(
           controller: controller,
-          style: GoogleFonts.inter(color: AppColors.homeTextDark, fontSize: 16),
+          style: GoogleFonts.inter(color: p.foreground, fontSize: 16),
           decoration: InputDecoration(
-            hintText: 'Tìm trong kho lưu trữ…',
+            hintText: context.t('search.headerPlaceholder'),
             hintStyle: GoogleFonts.inter(
-              color: AppColors.homeTextLight.withValues(alpha: 0.7),
+              color: p.muted.withValues(alpha: 0.7),
               fontSize: 16,
             ),
-            prefixIcon: const Padding(
-              padding: EdgeInsets.only(left: 12.0, right: 12.0),
-              child: Icon(
-                Icons.search_rounded,
-                color: AppColors.homeTextLight,
-                size: 24,
-              ),
+            prefixIcon: Padding(
+              padding: const EdgeInsets.only(left: 12.0, right: 12.0),
+              child: Icon(Icons.search_rounded, color: p.muted, size: 24),
             ),
             prefixIconConstraints: const BoxConstraints(minWidth: 24),
             filled: true,
-            fillColor: AppColors.homeTextDark.withValues(alpha: 0.04),
+            fillColor: p.fieldFill,
             border: OutlineInputBorder(
               borderRadius: AppRadius.input,
               borderSide: BorderSide.none,
@@ -53,25 +52,14 @@ class SearchHeader extends StatelessWidget {
             focusedBorder: OutlineInputBorder(
               borderRadius: AppRadius.input,
               borderSide: BorderSide(
-                color: AppColors.primaryBrown.withValues(alpha: 0.45),
+                color: p.accent.withValues(alpha: 0.45),
                 width: 1.5,
               ),
             ),
-            isDense: true,
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 16,
-              vertical: 12,
+              vertical: 14,
             ),
-          ),
-        ),
-        const SizedBox(height: 12),
-        Text(
-          'CHỈ MỤC LƯU TRỮ',
-          style: GoogleFonts.inter(
-            color: AppColors.homeTextLight,
-            fontSize: 8,
-            fontWeight: FontWeight.bold,
-            letterSpacing: 1.5,
           ),
         ),
       ],

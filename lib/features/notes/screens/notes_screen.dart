@@ -1,10 +1,16 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:mobile/core/constants/app_colors.dart';
+import 'package:mobile/core/i18n/locale_controller.dart';
+import 'package:mobile/core/theme/app_palette.dart';
+import 'package:mobile/core/theme/app_spacing.dart';
+import 'package:mobile/core/theme/app_typography.dart';
 import 'package:mobile/core/utils/format_datetime.dart';
 import 'package:mobile/core/widgets/editorial_confirm_dialog.dart';
+import 'package:mobile/core/widgets/editorial_filter_tabs.dart';
+import 'package:mobile/core/widgets/editorial_page_header.dart';
+import 'package:mobile/core/widgets/editorial_states.dart';
 import 'package:mobile/data/models/productivity_dtos.dart';
 import 'package:mobile/data/repositories/notes_repository.dart';
 import 'package:mobile/features/notes/screens/note_editor_screen.dart';
@@ -150,154 +156,230 @@ class _NotesScreenState extends State<NotesScreen> {
     unawaited(_load());
   }
 
+  String _tabId(_NotesTab tab) => switch (tab) {
+    _NotesTab.active => 'active',
+    _NotesTab.archived => 'archived',
+    _NotesTab.trash => 'trash',
+  };
+
+  _NotesTab _tabFromId(String id) => switch (id) {
+    'archived' => _NotesTab.archived,
+    'trash' => _NotesTab.trash,
+    _ => _NotesTab.active,
+  };
+
+  String _emptyMessage(BuildContext context) => switch (_tab) {
+    _NotesTab.active => context.t('notes.empty'),
+    _NotesTab.archived => context.t('notes.emptyArchived'),
+    _NotesTab.trash => context.t('notes.emptyTrash'),
+  };
+
   @override
-  Widget build(BuildContext context) => Scaffold(
-    backgroundColor: AppColors.homeBackground,
-    appBar: AppBar(
-      title: const Text('Ghi chú'),
-      actions: [
-        IconButton(
-          tooltip: 'Thư mục & nhãn',
-          onPressed: _manageCollections,
-          icon: const Icon(Icons.folder_copy_outlined),
-        ),
-        if (_tab == _NotesTab.trash && _notes.isNotEmpty)
-          IconButton(
-            tooltip: 'Dọn sạch thùng rác',
-            onPressed: _emptyTrash,
-            icon: const Icon(Icons.delete_sweep_outlined),
-          ),
-      ],
-    ),
-    floatingActionButton: _tab == _NotesTab.active
-        ? FloatingActionButton(
-            onPressed: _openEditor,
-            backgroundColor: AppColors.primaryBrown,
-            foregroundColor: Colors.white,
-            shape: const CircleBorder(),
-            child: const Icon(Icons.add),
-          )
-        : null,
-    body: RefreshIndicator(
-      onRefresh: _load,
-      child: ListView(
-        physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.fromLTRB(20, 12, 20, 100),
-        children: [
-          TextField(
-            controller: _search,
-            decoration: InputDecoration(
-              hintText: 'Tìm trong ghi chú…',
-              prefixIcon: const Icon(Icons.search),
-              suffixIcon: _search.text.isEmpty
-                  ? null
-                  : IconButton(
-                      onPressed: _search.clear,
-                      icon: const Icon(Icons.close),
-                    ),
-            ),
-          ),
-          const SizedBox(height: 16),
-          SegmentedButton<_NotesTab>(
-            segments: [
-              ButtonSegment(
-                value: _NotesTab.active,
-                label: Text('Tất cả (${_stats.active})'),
-                icon: const Icon(Icons.notes),
-              ),
-              ButtonSegment(
-                value: _NotesTab.archived,
-                label: Text('Lưu trữ (${_stats.archived})'),
-                icon: const Icon(Icons.archive_outlined),
-              ),
-              ButtonSegment(
-                value: _NotesTab.trash,
-                label: Text('Rác (${_stats.trashed})'),
-                icon: const Icon(Icons.delete_outline),
-              ),
-            ],
-            selected: {_tab},
-            showSelectedIcon: false,
-            style: const ButtonStyle(
-              shape: WidgetStatePropertyAll(StadiumBorder()),
-            ),
-            onSelectionChanged: (value) {
-              setState(() => _tab = value.first);
-              _load();
-            },
-          ),
-          if (_tab == _NotesTab.active && _folders.isNotEmpty) ...[
-            const SizedBox(height: 16),
-            SizedBox(
-              height: 38,
-              child: ListView(
-                scrollDirection: Axis.horizontal,
+  Widget build(BuildContext context) {
+    final p = context.palette;
+    return Scaffold(
+      backgroundColor: p.background,
+      floatingActionButton: _tab == _NotesTab.active
+          ? FloatingActionButton(
+              onPressed: _openEditor,
+              backgroundColor: p.accent,
+              foregroundColor: Colors.white,
+              shape: const CircleBorder(),
+              child: const Icon(Icons.add),
+            )
+          : null,
+      body: RefreshIndicator(
+        color: p.accent,
+        onRefresh: _load,
+        child: ListView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.fromLTRB(0, 12, 0, 100),
+          children: [
+            EditorialPageHeader(
+              title: context.t('notes.title'),
+              subtitle: context.t('notes.subtitle'),
+              action: Row(
                 children: [
-                  ChoiceChip(
-                    label: const Text('Tất cả thư mục'),
-                    shape: const StadiumBorder(),
-                    selected: _folderId == null,
-                    onSelected: (_) {
-                      setState(() => _folderId = null);
-                      _load();
-                    },
+                  IconButton(
+                    tooltip: context.t('notes.folders'),
+                    onPressed: _manageCollections,
+                    icon: Icon(Icons.folder_copy_outlined, color: p.foreground),
                   ),
-                  const SizedBox(width: 8),
-                  ..._folders.map(
-                    (folder) => Padding(
-                      padding: const EdgeInsets.only(right: 8),
-                      child: ChoiceChip(
-                        label: Text('${folder.icon ?? '📁'} ${folder.name}'),
-                        shape: const StadiumBorder(),
-                        selected: _folderId == folder.id,
-                        onSelected: (_) {
-                          setState(() => _folderId = folder.id);
-                          _load();
-                        },
+                  if (_tab == _NotesTab.trash && _notes.isNotEmpty)
+                    IconButton(
+                      tooltip: context.t('notes.emptyTrashBtn'),
+                      onPressed: _emptyTrash,
+                      icon: Icon(
+                        Icons.delete_sweep_outlined,
+                        color: p.foreground,
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.pageX),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  TextField(
+                    controller: _search,
+                    style: AppTypography.body(
+                      context,
+                      color: p.foreground,
+                      size: 16,
+                    ),
+                    decoration: InputDecoration(
+                      hintText: context.t('notes.search'),
+                      hintStyle: AppTypography.body(
+                        context,
+                        color: p.muted.withValues(alpha: 0.7),
+                        size: 16,
+                      ),
+                      prefixIcon: Icon(Icons.search_rounded, color: p.muted),
+                      suffixIcon: _search.text.isEmpty
+                          ? null
+                          : IconButton(
+                              onPressed: _search.clear,
+                              icon: Icon(Icons.close, color: p.muted),
+                            ),
+                      filled: true,
+                      fillColor: p.fieldFill,
+                      border: OutlineInputBorder(
+                        borderRadius: AppRadius.input,
+                        borderSide: BorderSide.none,
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: AppRadius.input,
+                        borderSide: BorderSide.none,
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: AppRadius.input,
+                        borderSide: BorderSide(
+                          color: p.accent.withValues(alpha: 0.45),
+                          width: 1.5,
+                        ),
                       ),
                     ),
                   ),
+                  EditorialFilterTabs(
+                    padding: const EdgeInsets.only(top: 16, bottom: 16),
+                    tabs: [
+                      EditorialFilterTab(
+                        id: 'active',
+                        label: context.t('notes.tabAll'),
+                        count: _stats.active,
+                      ),
+                      EditorialFilterTab(
+                        id: 'archived',
+                        label: context.t('notes.tabArchived'),
+                        count: _stats.archived,
+                      ),
+                      EditorialFilterTab(
+                        id: 'trash',
+                        label: context.t('notes.tabTrash'),
+                        count: _stats.trashed,
+                      ),
+                    ],
+                    activeId: _tabId(_tab),
+                    onChanged: (id) {
+                      setState(() => _tab = _tabFromId(id));
+                      _load();
+                    },
+                  ),
+                  if (_tab == _NotesTab.active && _folders.isNotEmpty) ...[
+                    SizedBox(
+                      height: 38,
+                      child: ListView(
+                        scrollDirection: Axis.horizontal,
+                        children: [
+                          ChoiceChip(
+                            label: Text(context.t('notes.tabAll')),
+                            shape: const StadiumBorder(),
+                            selected: _folderId == null,
+                            selectedColor: p.accentSoft,
+                            labelStyle: AppTypography.accentLabel(
+                              context,
+                              color: _folderId == null ? p.accent : p.muted,
+                            ),
+                            onSelected: (_) {
+                              setState(() => _folderId = null);
+                              _load();
+                            },
+                          ),
+                          const SizedBox(width: 8),
+                          ..._folders.map(
+                            (folder) => Padding(
+                              padding: const EdgeInsets.only(right: 8),
+                              child: ChoiceChip(
+                                label: Text(
+                                  '${folder.icon ?? '📁'} ${folder.name}',
+                                ),
+                                shape: const StadiumBorder(),
+                                selected: _folderId == folder.id,
+                                selectedColor: p.accentSoft,
+                                labelStyle: AppTypography.accentLabel(
+                                  context,
+                                  color: _folderId == folder.id
+                                      ? p.accent
+                                      : p.muted,
+                                ),
+                                onSelected: (_) {
+                                  setState(() => _folderId = folder.id);
+                                  _load();
+                                },
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+                  if (_loading)
+                    Padding(
+                      padding: const EdgeInsets.all(48),
+                      child: Center(
+                        child: CircularProgressIndicator(color: p.accent),
+                      ),
+                    )
+                  else if (_error != null)
+                    EditorialErrorState(message: _error!, onRetry: _load)
+                  else if (_notes.isEmpty)
+                    EditorialEmptyState(message: _emptyMessage(context))
+                  else
+                    ..._notes.map(
+                      (note) => _NoteCard(
+                        note: note,
+                        tab: _tab,
+                        onOpen: () => _openEditor(note),
+                        onPin: () =>
+                            _runAction(() => _repository.togglePin(note.id)),
+                        onArchive: () => _runAction(
+                          () => note.archived
+                              ? _repository.unarchive(note.id)
+                              : _repository.archive(note.id),
+                        ),
+                        onDuplicate: () => _runAction(
+                          () => _repository.duplicate(note.id),
+                          success: 'Đã nhân bản ghi chú.',
+                        ),
+                        onRestore: () =>
+                            _runAction(() => _repository.restore(note.id)),
+                        onDelete: () => _deleteNote(
+                          note,
+                          permanent: _tab == _NotesTab.trash,
+                        ),
+                      ),
+                    ),
                 ],
               ),
             ),
           ],
-          const SizedBox(height: 20),
-          if (_loading)
-            const Padding(
-              padding: EdgeInsets.all(48),
-              child: Center(
-                child: CircularProgressIndicator(color: AppColors.primaryBrown),
-              ),
-            )
-          else if (_error != null)
-            _ErrorState(message: _error!, onRetry: _load)
-          else if (_notes.isEmpty)
-            const _EmptyState()
-          else
-            ..._notes.map(
-              (note) => _NoteCard(
-                note: note,
-                tab: _tab,
-                onOpen: () => _openEditor(note),
-                onPin: () => _runAction(() => _repository.togglePin(note.id)),
-                onArchive: () => _runAction(
-                  () => note.archived
-                      ? _repository.unarchive(note.id)
-                      : _repository.archive(note.id),
-                ),
-                onDuplicate: () => _runAction(
-                  () => _repository.duplicate(note.id),
-                  success: 'Đã nhân bản ghi chú.',
-                ),
-                onRestore: () => _runAction(() => _repository.restore(note.id)),
-                onDelete: () =>
-                    _deleteNote(note, permanent: _tab == _NotesTab.trash),
-              ),
-            ),
-        ],
+        ),
       ),
-    ),
-  );
+    );
+  }
 }
 
 class _NoteCard extends StatelessWidget {
@@ -322,150 +404,159 @@ class _NoteCard extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) => Card(
-    margin: const EdgeInsets.only(bottom: 12),
-    color: _noteColor(note.color),
-    elevation: note.pinned ? 2 : 0,
-    child: InkWell(
-      onTap: tab == _NotesTab.trash ? null : onOpen,
-      borderRadius: AppRadius.card,
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(18, 16, 8, 16),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (note.icon != null && note.icon!.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.only(right: 10),
-                child: Text(note.icon!, style: const TextStyle(fontSize: 22)),
-              ),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
+  Widget build(BuildContext context) {
+    final p = context.palette;
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: _noteColor(note.color, p),
+        borderRadius: AppRadius.card,
+        border: Border.all(color: p.border),
+        boxShadow: note.pinned && !p.isDark ? AppShadows.soft : null,
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: tab == _NotesTab.trash ? null : onOpen,
+          borderRadius: AppRadius.card,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(18, 16, 8, 16),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (note.icon != null && note.icon!.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(right: 10),
+                    child: Text(
+                      note.icon!,
+                      style: const TextStyle(fontSize: 22),
+                    ),
+                  ),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      if (note.pinned) ...[
-                        const Icon(
-                          Icons.push_pin,
-                          size: 14,
-                          color: AppColors.primaryBrown,
-                        ),
-                        const SizedBox(width: 5),
-                      ],
-                      Expanded(
-                        child: Text(
-                          note.title.isEmpty
-                              ? 'Ghi chú không tiêu đề'
-                              : note.title,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: GoogleFonts.playfairDisplay(
-                            fontSize: 19,
-                            fontWeight: FontWeight.w600,
+                      Row(
+                        children: [
+                          if (note.pinned) ...[
+                            Icon(Icons.push_pin, size: 14, color: p.accent),
+                            const SizedBox(width: 5),
+                          ],
+                          Expanded(
+                            child: Text(
+                              note.title.isEmpty
+                                  ? context.t('notes.untitled')
+                                  : note.title,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: AppTypography.cardTitle(context, size: 19),
+                            ),
                           ),
+                        ],
+                      ),
+                      if (note.preview.isNotEmpty) ...[
+                        const SizedBox(height: 8),
+                        Text(
+                          note.preview,
+                          maxLines: 3,
+                          overflow: TextOverflow.ellipsis,
+                          style: AppTypography.body(context, size: 13),
                         ),
+                      ],
+                      if (note.labels.isNotEmpty) ...[
+                        const SizedBox(height: 10),
+                        Wrap(
+                          spacing: 6,
+                          children: note.labels
+                              .map(
+                                (label) => Chip(
+                                  visualDensity: VisualDensity.compact,
+                                  backgroundColor: p.surface,
+                                  shape: StadiumBorder(
+                                    side: BorderSide(color: p.border),
+                                  ),
+                                  label: Text(
+                                    label.name,
+                                    style: AppTypography.meta(context),
+                                  ),
+                                ),
+                              )
+                              .toList(),
+                        ),
+                      ],
+                      const SizedBox(height: 10),
+                      Text(
+                        '${note.wordCount} ${context.t('notes.words')} · ${formatCommentDateTime(note.lastEditedAt ?? note.updatedAt ?? note.createdAt)}',
+                        style: AppTypography.meta(context),
                       ),
                     ],
                   ),
-                  if (note.preview.isNotEmpty) ...[
-                    const SizedBox(height: 8),
-                    Text(
-                      note.preview,
-                      maxLines: 3,
-                      overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.inter(
-                        fontSize: 13,
-                        height: 1.45,
-                        color: AppColors.homeTextLight,
+                ),
+                PopupMenuButton<String>(
+                  icon: Icon(Icons.more_vert, color: p.muted),
+                  onSelected: (value) {
+                    switch (value) {
+                      case 'pin':
+                        onPin();
+                      case 'archive':
+                        onArchive();
+                      case 'duplicate':
+                        onDuplicate();
+                      case 'restore':
+                        onRestore();
+                      case 'delete':
+                        onDelete();
+                    }
+                  },
+                  itemBuilder: (context) => [
+                    if (tab == _NotesTab.active) ...[
+                      PopupMenuItem(
+                        value: 'pin',
+                        child: Text(
+                          note.pinned
+                              ? context.t('notes.unpin')
+                              : context.t('notes.pin'),
+                        ),
+                      ),
+                      PopupMenuItem(
+                        value: 'archive',
+                        child: Text(context.t('notes.archive')),
+                      ),
+                      PopupMenuItem(
+                        value: 'duplicate',
+                        child: Text(context.t('notes.duplicate')),
+                      ),
+                    ],
+                    if (tab == _NotesTab.archived)
+                      PopupMenuItem(
+                        value: 'archive',
+                        child: Text(context.t('notes.unarchive')),
+                      ),
+                    if (tab == _NotesTab.trash)
+                      PopupMenuItem(
+                        value: 'restore',
+                        child: Text(context.t('notes.restore')),
+                      ),
+                    PopupMenuItem(
+                      value: 'delete',
+                      child: Text(
+                        tab == _NotesTab.trash
+                            ? context.t('notes.permanentDelete')
+                            : context.t('notes.delete'),
                       ),
                     ),
                   ],
-                  if (note.labels.isNotEmpty) ...[
-                    const SizedBox(height: 10),
-                    Wrap(
-                      spacing: 6,
-                      children: note.labels
-                          .map(
-                            (label) => Chip(
-                              visualDensity: VisualDensity.compact,
-                              shape: const StadiumBorder(
-                                side: BorderSide(color: AppColors.border),
-                              ),
-                              label: Text(
-                                label.name,
-                                style: const TextStyle(fontSize: 10),
-                              ),
-                            ),
-                          )
-                          .toList(),
-                    ),
-                  ],
-                  const SizedBox(height: 10),
-                  Text(
-                    '${note.wordCount} từ · ${formatCommentDateTime(note.lastEditedAt ?? note.updatedAt ?? note.createdAt)}',
-                    style: GoogleFonts.inter(
-                      fontSize: 10,
-                      color: AppColors.homeTextLight,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            PopupMenuButton<String>(
-              onSelected: (value) {
-                switch (value) {
-                  case 'pin':
-                    onPin();
-                  case 'archive':
-                    onArchive();
-                  case 'duplicate':
-                    onDuplicate();
-                  case 'restore':
-                    onRestore();
-                  case 'delete':
-                    onDelete();
-                }
-              },
-              itemBuilder: (context) => [
-                if (tab == _NotesTab.active) ...[
-                  PopupMenuItem(
-                    value: 'pin',
-                    child: Text(note.pinned ? 'Bỏ ghim' : 'Ghim'),
-                  ),
-                  const PopupMenuItem(value: 'archive', child: Text('Lưu trữ')),
-                  const PopupMenuItem(
-                    value: 'duplicate',
-                    child: Text('Nhân bản'),
-                  ),
-                ],
-                if (tab == _NotesTab.archived)
-                  const PopupMenuItem(
-                    value: 'archive',
-                    child: Text('Bỏ lưu trữ'),
-                  ),
-                if (tab == _NotesTab.trash)
-                  const PopupMenuItem(
-                    value: 'restore',
-                    child: Text('Khôi phục'),
-                  ),
-                PopupMenuItem(
-                  value: 'delete',
-                  child: Text(
-                    tab == _NotesTab.trash
-                        ? 'Xóa vĩnh viễn'
-                        : 'Chuyển vào thùng rác',
-                  ),
                 ),
               ],
             ),
-          ],
+          ),
         ),
       ),
-    ),
-  );
+    );
+  }
 
-  Color _noteColor(String name) => switch (name) {
+  Color _noteColor(String name, AppPalette p) => switch (name) {
     'red' => const Color(0xFFFFE8E5),
     'orange' => const Color(0xFFFFEBD9),
     'yellow' => const Color(0xFFFFF5CC),
@@ -475,7 +566,7 @@ class _NoteCard extends StatelessWidget {
     'pink' => const Color(0xFFFFE7F0),
     'brown' => const Color(0xFFF1E7E2),
     'gray' => const Color(0xFFEDEDED),
-    _ => Colors.white,
+    _ => p.surface,
   };
 }
 
@@ -551,105 +642,101 @@ class _CollectionsSheetState extends State<_CollectionsSheet> {
   }
 
   @override
-  Widget build(BuildContext context) => SafeArea(
-    child: Padding(
-      padding: EdgeInsets.fromLTRB(
-        20,
-        0,
-        20,
-        20 + MediaQuery.viewInsetsOf(context).bottom,
-      ),
-      child: ListView(
-        shrinkWrap: true,
-        children: [
-          Row(
-            children: [
-              Text('Thư mục', style: Theme.of(context).textTheme.titleLarge),
-              const Spacer(),
-              IconButton(onPressed: _addFolder, icon: const Icon(Icons.add)),
-            ],
-          ),
-          if (_folders.isEmpty) const Text('Chưa có thư mục.'),
-          ..._folders.map(
-            (folder) => ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: const Icon(Icons.folder_outlined),
-              title: Text(folder.name),
-              trailing: IconButton(
-                icon: const Icon(Icons.delete_outline),
-                onPressed: () async {
-                  final result = await widget.repository.deleteFolder(
-                    folder.id,
-                  );
-                  if (result.success && mounted) {
-                    setState(() => _folders.remove(folder));
-                  }
-                },
+  Widget build(BuildContext context) {
+    final p = context.palette;
+    return SafeArea(
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(
+          AppSpacing.pageX,
+          0,
+          AppSpacing.pageX,
+          20 + MediaQuery.viewInsetsOf(context).bottom,
+        ),
+        child: ListView(
+          shrinkWrap: true,
+          children: [
+            Row(
+              children: [
+                Text(
+                  context.t('notes.folders'),
+                  style: AppTypography.sectionTitle(context),
+                ),
+                const Spacer(),
+                IconButton(
+                  onPressed: _addFolder,
+                  icon: Icon(Icons.add, color: p.foreground),
+                ),
+              ],
+            ),
+            if (_folders.isEmpty)
+              Text(
+                context.t('notes.noFolder'),
+                style: AppTypography.body(context),
+              ),
+            ..._folders.map(
+              (folder) => ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: Icon(Icons.folder_outlined, color: p.muted),
+                title: Text(
+                  folder.name,
+                  style: AppTypography.body(context, color: p.foreground),
+                ),
+                trailing: IconButton(
+                  icon: Icon(Icons.delete_outline, color: p.muted),
+                  onPressed: () async {
+                    final result = await widget.repository.deleteFolder(
+                      folder.id,
+                    );
+                    if (result.success && mounted) {
+                      setState(() => _folders.remove(folder));
+                    }
+                  },
+                ),
               ),
             ),
-          ),
-          const Divider(height: 32),
-          Row(
-            children: [
-              Text('Nhãn', style: Theme.of(context).textTheme.titleLarge),
-              const Spacer(),
-              IconButton(onPressed: _addLabel, icon: const Icon(Icons.add)),
-            ],
-          ),
-          if (_labels.isEmpty) const Text('Chưa có nhãn.'),
-          ..._labels.map(
-            (label) => ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: const Icon(Icons.label_outline),
-              title: Text(label.name),
-              trailing: IconButton(
-                icon: const Icon(Icons.delete_outline),
-                onPressed: () async {
-                  final result = await widget.repository.deleteLabel(label.id);
-                  if (result.success && mounted) {
-                    setState(() => _labels.remove(label));
-                  }
-                },
+            Divider(height: 32, color: p.border),
+            Row(
+              children: [
+                Text(
+                  context.t('notes.labels'),
+                  style: AppTypography.sectionTitle(context),
+                ),
+                const Spacer(),
+                IconButton(
+                  onPressed: _addLabel,
+                  icon: Icon(Icons.add, color: p.foreground),
+                ),
+              ],
+            ),
+            if (_labels.isEmpty)
+              Text(
+                context.t('notes.noLabels'),
+                style: AppTypography.body(context),
+              ),
+            ..._labels.map(
+              (label) => ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: Icon(Icons.label_outline, color: p.muted),
+                title: Text(
+                  label.name,
+                  style: AppTypography.body(context, color: p.foreground),
+                ),
+                trailing: IconButton(
+                  icon: Icon(Icons.delete_outline, color: p.muted),
+                  onPressed: () async {
+                    final result = await widget.repository.deleteLabel(
+                      label.id,
+                    );
+                    if (result.success && mounted) {
+                      setState(() => _labels.remove(label));
+                    }
+                  },
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
-    ),
-  );
-}
-
-class _EmptyState extends StatelessWidget {
-  const _EmptyState();
-
-  @override
-  Widget build(BuildContext context) => const Padding(
-    padding: EdgeInsets.symmetric(vertical: 64),
-    child: Column(
-      children: [
-        Icon(Icons.note_alt_outlined, size: 48, color: AppColors.homeTextLight),
-        SizedBox(height: 12),
-        Text('Chưa có ghi chú trong mục này.'),
-      ],
-    ),
-  );
-}
-
-class _ErrorState extends StatelessWidget {
-  final String message;
-  final VoidCallback onRetry;
-
-  const _ErrorState({required this.message, required this.onRetry});
-
-  @override
-  Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.symmetric(vertical: 48),
-    child: Column(
-      children: [
-        Text(message, textAlign: TextAlign.center),
-        const SizedBox(height: 12),
-        OutlinedButton(onPressed: onRetry, child: const Text('Thử lại')),
-      ],
-    ),
-  );
+    );
+  }
 }

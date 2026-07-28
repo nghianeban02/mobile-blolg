@@ -13,14 +13,13 @@ import 'package:mobile/features/auth/screens/register_screen.dart';
 import 'package:mobile/features/auth/screens/reset_password_screen.dart';
 import 'package:mobile/features/calendar/screens/calendar_screen.dart';
 import 'package:mobile/features/friends/screens/friends_screen.dart';
-import 'package:mobile/features/messages/screens/conversations_screen.dart';
 import 'package:mobile/features/notes/screens/notes_screen.dart';
 import 'package:mobile/features/notifications/screens/notifications_screen.dart';
 import 'package:mobile/features/posts/screens/post_detail_screen.dart';
 import 'package:mobile/features/profile/screens/user_profile_screen.dart';
 import 'package:mobile/features/review/screens/book_detail_screen.dart';
 import 'package:mobile/features/saved/screens/saved_screen.dart';
-import 'package:mobile/features/settings/screens/settings_screen.dart';
+import 'package:mobile/features/search/screens/search_screen.dart';
 
 /// Route paths dùng chung (đường dẫn GoRouter).
 abstract final class AppRoutes {
@@ -131,10 +130,8 @@ GoRouter createAppRouter(AuthBloc authBloc) {
       ),
       GoRoute(
         path: AppRoutes.search,
-        builder: (context, state) => MainShell(
-          initialIndex: 1,
-          initialSearchQuery: state.uri.queryParameters['q'],
-        ),
+        builder: (context, state) =>
+            SearchScreen(initialQuery: state.uri.queryParameters['q']),
       ),
       GoRoute(
         path: AppRoutes.library,
@@ -146,7 +143,7 @@ GoRouter createAppRouter(AuthBloc authBloc) {
       ),
       GoRoute(
         path: AppRoutes.settings,
-        builder: (context, state) => const SettingsScreen(),
+        builder: (context, state) => const MainShell(initialIndex: 3),
       ),
       GoRoute(
         path: '/posts/:id',
@@ -165,7 +162,7 @@ GoRouter createAppRouter(AuthBloc authBloc) {
       ),
       GoRoute(
         path: AppRoutes.messages,
-        builder: (context, state) => const ConversationsScreen(),
+        builder: (context, state) => const MainShell(initialIndex: 1),
       ),
       GoRoute(
         path: AppRoutes.notifications,

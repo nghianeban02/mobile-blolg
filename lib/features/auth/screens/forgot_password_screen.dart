@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:mobile/core/brand/site_brand.dart';
 import 'package:mobile/core/constants/app_colors.dart';
 import 'package:mobile/core/router/app_router.dart';
+import 'package:mobile/core/theme/app_palette.dart';
+import 'package:mobile/core/theme/app_spacing.dart';
+import 'package:mobile/core/theme/app_typography.dart';
+import 'package:mobile/core/widgets/editorial_button.dart';
 import 'package:mobile/data/auth/auth_repository.dart';
 import 'package:mobile/features/auth/widgets/auth_form_field.dart';
 
@@ -42,87 +45,71 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   }
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-    backgroundColor: AppColors.homeBackground,
-    appBar: AppBar(title: const Text('Khôi phục mật khẩu')),
-    body: SafeArea(
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const SiteBrand(
-                variant: SiteBrandVariant.mobile,
-                showMark: true,
-                markSize: 32,
-              ),
-              const SizedBox(height: 28),
-              Text(
-                'Quên mật khẩu?',
-                style: GoogleFonts.playfairDisplay(
-                  fontSize: 32,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.homeTextDark,
+  Widget build(BuildContext context) {
+    final p = context.palette;
+
+    return Scaffold(
+      backgroundColor: p.background,
+      appBar: AppBar(title: const Text('Khôi phục mật khẩu')),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(AppSpacing.xxl),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const SiteBrand(
+                  variant: SiteBrandVariant.mobile,
+                  showMark: true,
+                  markSize: 32,
                 ),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                'Nhập email tài khoản. Nếu email tồn tại, hệ thống sẽ gửi một liên kết đặt lại mật khẩu.',
-                style: GoogleFonts.inter(
-                  height: 1.55,
-                  color: AppColors.homeTextLight,
+                SizedBox(height: AppSpacing.xxl + AppSpacing.xs),
+                Text('Quên mật khẩu?', style: AppTypography.pageTitle(context)),
+                const SizedBox(height: AppSpacing.md),
+                Text(
+                  'Nhập email tài khoản. Nếu email tồn tại, hệ thống sẽ gửi một liên kết đặt lại mật khẩu.',
+                  style: AppTypography.subtitle(context),
                 ),
-              ),
-              const SizedBox(height: 36),
-              AuthFormField(
-                label: 'Email',
-                hint: 'email@example.com',
-                controller: _email,
-                keyboardType: TextInputType.emailAddress,
-                validator: (value) {
-                  final text = value?.trim() ?? '';
-                  if (text.isEmpty || !text.contains('@')) {
-                    return 'Vui lòng nhập email hợp lệ';
-                  }
-                  return null;
-                },
-              ),
-              if (_result != null) ...[
-                const SizedBox(height: 20),
-                _MessageBanner(result: _result!),
+                SizedBox(height: AppSpacing.section + AppSpacing.xs),
+                AuthFormField(
+                  label: 'Email',
+                  hint: 'email@example.com',
+                  controller: _email,
+                  keyboardType: TextInputType.emailAddress,
+                  validator: (value) {
+                    final text = value?.trim() ?? '';
+                    if (text.isEmpty || !text.contains('@')) {
+                      return 'Vui lòng nhập email hợp lệ';
+                    }
+                    return null;
+                  },
+                ),
+                if (_result != null) ...[
+                  const SizedBox(height: AppSpacing.xl),
+                  _MessageBanner(result: _result!),
+                ],
+                SizedBox(height: AppSpacing.xxl + AppSpacing.xs),
+                EditorialButton(
+                  label: 'GỬI EMAIL ĐẶT LẠI',
+                  onPressed: _loading ? null : _submit,
+                  loading: _loading,
+                  expanded: true,
+                ),
+                const SizedBox(height: AppSpacing.md),
+                EditorialButton(
+                  label: 'Tôi đã có mã đặt lại',
+                  onPressed: () => context.push(AppRoutes.resetPassword),
+                  variant: EditorialButtonVariant.ghost,
+                  expanded: true,
+                ),
               ],
-              const SizedBox(height: 28),
-              ElevatedButton(
-                onPressed: _loading ? null : _submit,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primaryBrown,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 17),
-                  shape: const StadiumBorder(),
-                ),
-                child: _loading
-                    ? const SizedBox.square(
-                        dimension: 20,
-                        child: CircularProgressIndicator(
-                          color: Colors.white,
-                          strokeWidth: 2,
-                        ),
-                      )
-                    : const Text('GỬI EMAIL ĐẶT LẠI'),
-              ),
-              const SizedBox(height: 12),
-              TextButton(
-                onPressed: () => context.push(AppRoutes.resetPassword),
-                child: const Text('Tôi đã có mã đặt lại'),
-              ),
-            ],
+            ),
           ),
         ),
       ),
-    ),
-  );
+    );
+  }
 }
 
 class _MessageBanner extends StatelessWidget {
@@ -131,19 +118,20 @@ class _MessageBanner extends StatelessWidget {
   const _MessageBanner({required this.result});
 
   @override
-  Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.all(14),
-    decoration: BoxDecoration(
-      color: (result.success ? AppColors.success : AppColors.error).withValues(
-        alpha: 0.1,
+  Widget build(BuildContext context) {
+    final p = context.palette;
+    final color = result.success ? p.success : p.danger;
+
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.md + AppSpacing.xxs),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: AppRadius.input,
       ),
-      borderRadius: AppRadius.input,
-    ),
-    child: Text(
-      result.message,
-      style: TextStyle(
-        color: result.success ? AppColors.success : AppColors.error,
+      child: Text(
+        result.message,
+        style: AppTypography.body(context, color: color),
       ),
-    ),
-  );
+    );
+  }
 }

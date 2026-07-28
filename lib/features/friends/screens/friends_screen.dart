@@ -1,17 +1,20 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:mobile/core/constants/app_colors.dart';
+import 'package:mobile/core/i18n/locale_controller.dart';
 import 'package:mobile/core/navigation/open_user_profile.dart';
 import 'package:mobile/core/network/be_blog_http.dart';
+import 'package:mobile/core/theme/app_palette.dart';
+import 'package:mobile/core/theme/app_spacing.dart';
+import 'package:mobile/core/theme/app_typography.dart';
 import 'package:mobile/core/widgets/async_loading_view.dart';
 import 'package:mobile/core/widgets/detail_app_bar.dart';
 import 'package:mobile/core/widgets/editorial_form_field.dart';
+import 'package:mobile/core/widgets/editorial_page_header.dart';
+import 'package:mobile/core/widgets/editorial_states.dart';
 import 'package:mobile/data/models/dtos.dart';
 import 'package:mobile/data/repositories/friends_repository.dart';
 import 'package:mobile/data/repositories/users_repository.dart';
 import 'package:mobile/features/friends/widgets/friend_user_tile.dart';
 import 'package:mobile/features/friends/widgets/incoming_request_tile.dart';
-import 'package:mobile/features/posts/widgets/post_section_label.dart';
 
 /// Kết bạn: danh sách bạn, lời mời đến/đi, tìm user (`/api/friends`, `/api/users/search`).
 class FriendsScreen extends StatefulWidget {
@@ -129,12 +132,13 @@ class _FriendsScreenState extends State<FriendsScreen>
 
   @override
   Widget build(BuildContext context) {
+    final p = context.palette;
     return Scaffold(
-      backgroundColor: AppColors.homeBackground,
+      backgroundColor: p.background,
       body: SafeArea(
         bottom: false,
         child: RefreshIndicator(
-          color: AppColors.primaryBrown,
+          color: p.accent,
           onRefresh: _load,
           child: NestedScrollView(
             physics: const AlwaysScrollableScrollPhysics(
@@ -142,7 +146,7 @@ class _FriendsScreenState extends State<FriendsScreen>
             ),
             headerSliverBuilder: (context, _) => [
               const DetailSliverAppBar(),
-              SliverToBoxAdapter(child: _buildHeaderSection()),
+              SliverToBoxAdapter(child: _buildHeaderSection(context)),
               if (_loading || _error != null)
                 SliverFillRemaining(
                   hasScrollBody: false,
@@ -158,18 +162,29 @@ class _FriendsScreenState extends State<FriendsScreen>
                   delegate: _FriendsTabBarDelegate(
                     tabBar: TabBar(
                       controller: _tabs,
-                      labelColor: AppColors.primaryBrown,
-                      unselectedLabelColor: AppColors.homeTextLight,
-                      indicatorColor: AppColors.primaryBrown,
-                      labelStyle: GoogleFonts.inter(
+                      labelColor: p.accent,
+                      unselectedLabelColor: p.muted,
+                      indicatorColor: p.accent,
+                      labelStyle: AppTypography.meta(context).copyWith(
                         fontSize: 10,
                         fontWeight: FontWeight.bold,
                         letterSpacing: 1,
+                        color: p.accent,
                       ),
+                      unselectedLabelStyle: AppTypography.meta(context),
                       tabs: [
-                        Tab(text: 'BẠN (${_friends.length})'),
-                        Tab(text: 'ĐẾN (${_incoming.length})'),
-                        Tab(text: 'ĐI (${_outgoing.length})'),
+                        Tab(
+                          text:
+                              '${context.t('friends.tabFriends').toUpperCase()} (${_friends.length})',
+                        ),
+                        Tab(
+                          text:
+                              '${context.t('friends.tabIncoming').toUpperCase()} (${_incoming.length})',
+                        ),
+                        Tab(
+                          text:
+                              '${context.t('friends.tabOutgoing').toUpperCase()} (${_outgoing.length})',
+                        ),
                       ],
                     ),
                   ),
@@ -199,39 +214,34 @@ class _FriendsScreenState extends State<FriendsScreen>
     );
   }
 
-  Widget _buildHeaderSection() {
+  Widget _buildHeaderSection(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(24, 8, 24, 0),
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.pageX,
+        8,
+        AppSpacing.pageX,
+        0,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Editorial\ncircle',
-            style: GoogleFonts.playfairDisplay(
-              fontSize: 36,
-              fontWeight: FontWeight.w600,
-              height: 1.1,
-            ),
+          EditorialPageHeader(
+            title: context.t('friends.title'),
+            subtitle: context.t('friends.searchPrompt'),
+            padding: EdgeInsets.zero,
           ),
-          const SizedBox(height: 8),
-          Text(
-            'Quản lý bạn bè và lời mời. Chạm vào tên để mở trang độc giả.',
-            style: GoogleFonts.inter(
-              color: AppColors.homeTextLight,
-              fontSize: 13,
-              height: 1.5,
-            ),
-          ),
-          const SizedBox(height: 20),
           EditorialFormField(
-            label: 'Find readers',
-            hint: 'Tìm độc giả (từ 2 ký tự)…',
+            label: context.t('friends.findReadersBtn'),
+            hint: context.t('friends.searchUsernamePlaceholder'),
             controller: _searchCtrl,
           ),
           if (_searchCtrl.text.trim().length >= 2) ...[
             const SizedBox(height: 16),
-            PostSectionLabel(
-              text: _searching ? 'Đang tìm…' : '${_searchHits.length} kết quả',
+            Text(
+              _searching
+                  ? context.t('friends.searching')
+                  : '${_searchHits.length} kết quả',
+              style: AppTypography.sectionEyebrow(context),
             ),
             const SizedBox(height: 8),
             if (!_searching)
@@ -263,7 +273,7 @@ class _FriendsTabBarDelegate extends SliverPersistentHeaderDelegate {
     double shrinkOffset,
     bool overlapsContent,
   ) {
-    return Material(color: AppColors.homeBackground, child: tabBar);
+    return Material(color: context.palette.background, child: tabBar);
   }
 
   @override
@@ -283,23 +293,18 @@ class _FriendsListTab extends StatelessWidget {
       return ListView(
         physics: const BouncingScrollPhysics(),
         children: [
-          const SizedBox(height: 48),
-          Center(
-            child: Text(
-              'Chưa có bạn bè. Dùng ô tìm kiếm phía trên để kết bạn.',
-              textAlign: TextAlign.center,
-              style: GoogleFonts.inter(
-                color: AppColors.homeTextLight,
-                fontSize: 13,
-              ),
-            ),
+          const SizedBox(height: 24),
+          EditorialEmptyState(
+            title: context.t('friends.emptyFriendsTitle'),
+            message: context.t('friends.emptyFriendsMessage'),
+            icon: EditorialEmptyIcon.friends,
           ),
         ],
       );
     }
     return ListView.builder(
       physics: const BouncingScrollPhysics(),
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(AppSpacing.pageX),
       itemCount: friends.length,
       itemBuilder: (_, i) => Padding(
         padding: EdgeInsets.only(bottom: i < friends.length - 1 ? 12 : 0),
@@ -329,22 +334,22 @@ class _IncomingTab extends StatelessWidget {
       return ListView(
         physics: const BouncingScrollPhysics(),
         children: [
-          const SizedBox(height: 48),
-          Center(
-            child: Text(
-              'Không có lời mời đến.',
-              style: GoogleFonts.inter(
-                color: AppColors.homeTextLight,
-                fontSize: 13,
-              ),
-            ),
+          const SizedBox(height: 24),
+          EditorialEmptyState(
+            message: context.t('friends.emptyIncoming'),
+            icon: EditorialEmptyIcon.friends,
           ),
         ],
       );
     }
     return ListView.builder(
       physics: const BouncingScrollPhysics(),
-      padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.pageX,
+        16,
+        AppSpacing.pageX,
+        24,
+      ),
       itemCount: items.length,
       itemBuilder: (_, i) => IncomingRequestTile(
         friendship: items[i],
@@ -372,22 +377,17 @@ class _OutgoingTab extends StatelessWidget {
       return ListView(
         physics: const BouncingScrollPhysics(),
         children: [
-          const SizedBox(height: 48),
-          Center(
-            child: Text(
-              'Không có lời mời đang gửi.',
-              style: GoogleFonts.inter(
-                color: AppColors.homeTextLight,
-                fontSize: 13,
-              ),
-            ),
+          const SizedBox(height: 24),
+          EditorialEmptyState(
+            message: context.t('friends.emptyOutgoing'),
+            icon: EditorialEmptyIcon.friends,
           ),
         ],
       );
     }
     return ListView.builder(
       physics: const BouncingScrollPhysics(),
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(AppSpacing.pageX),
       itemCount: items.length,
       itemBuilder: (_, i) {
         final friendship = items[i];
@@ -442,24 +442,25 @@ class _OutgoingRequestTileState extends State<_OutgoingRequestTile> {
 
   @override
   Widget build(BuildContext context) {
+    final p = context.palette;
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: FriendUserTile(
         user: widget.user,
         onTap: widget.onOpen,
         trailing: _busy
-            ? const SizedBox(
+            ? SizedBox(
                 width: 18,
                 height: 18,
                 child: CircularProgressIndicator(
                   strokeWidth: 2,
-                  color: AppColors.primaryBrown,
+                  color: p.accent,
                 ),
               )
             : TextButton(
                 onPressed: _cancel,
                 style: TextButton.styleFrom(
-                  foregroundColor: AppColors.error,
+                  foregroundColor: p.danger,
                   padding: const EdgeInsets.symmetric(
                     horizontal: 8,
                     vertical: 4,
@@ -468,12 +469,11 @@ class _OutgoingRequestTileState extends State<_OutgoingRequestTile> {
                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 ),
                 child: Text(
-                  'HỦY',
-                  style: GoogleFonts.inter(
-                    fontSize: 9,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 1,
-                  ),
+                  context.t('friends.actionCancelInvite').toUpperCase(),
+                  style: AppTypography.meta(
+                    context,
+                    color: p.danger,
+                  ).copyWith(fontWeight: FontWeight.bold, letterSpacing: 1),
                 ),
               ),
       ),

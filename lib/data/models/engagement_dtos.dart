@@ -80,3 +80,35 @@ class StreakSnapshotDto {
     );
   }
 }
+
+/// `GET /api/feed/trending` — mirror web `TrendingItem`.
+class TrendingItemDto {
+  final String id;
+  final String title;
+  final String excerpt;
+  final String? titleImageUrl;
+  final String? authorUsername;
+  final int likeCount;
+  final int commentCount;
+
+  const TrendingItemDto({
+    required this.id,
+    required this.title,
+    this.excerpt = '',
+    this.titleImageUrl,
+    this.authorUsername,
+    this.likeCount = 0,
+    this.commentCount = 0,
+  });
+
+  factory TrendingItemDto.fromJson(Map<String, dynamic> json) =>
+      TrendingItemDto(
+        id: json['id']?.toString() ?? '',
+        title: json['title']?.toString() ?? '',
+        excerpt: json['excerpt']?.toString() ?? '',
+        titleImageUrl: json['titleImageUrl']?.toString(),
+        authorUsername: json['authorUsername']?.toString(),
+        likeCount: (json['likeCount'] as num?)?.toInt() ?? 0,
+        commentCount: (json['commentCount'] as num?)?.toInt() ?? 0,
+      );
+}

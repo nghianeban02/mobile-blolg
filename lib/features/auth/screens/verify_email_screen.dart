@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mobile/core/constants/app_colors.dart';
+import 'package:mobile/core/theme/app_palette.dart';
+import 'package:mobile/core/theme/app_typography.dart';
 import 'package:mobile/data/auth/auth_repository.dart';
 import 'package:mobile/features/auth/widgets/auth_form_field.dart';
 
@@ -116,29 +118,17 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
                 ),
               ),
               const SizedBox(height: 28),
-              Text(
-                'Check your inbox',
-                style: GoogleFonts.playfairDisplay(
-                  fontSize: 32,
-                  color: AppColors.homeTextDark,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
+              Text('Check your inbox', style: AppTypography.pageTitle(context)),
               const SizedBox(height: 12),
               Text.rich(
                 TextSpan(
-                  style: GoogleFonts.inter(
-                    fontSize: 14,
-                    color: AppColors.homeTextLight,
-                    height: 1.5,
-                  ),
+                  style: AppTypography.subtitle(context),
                   children: [
                     const TextSpan(text: 'Chúng tôi đã gửi link xác nhận tới '),
                     TextSpan(
                       text: widget.email,
-                      style: GoogleFonts.inter(
-                        fontSize: 14,
-                        color: AppColors.homeTextDark,
+                      style: AppTypography.subtitle(context).copyWith(
+                        color: context.palette.foreground,
                         fontWeight: FontWeight.w600,
                       ),
                     ),

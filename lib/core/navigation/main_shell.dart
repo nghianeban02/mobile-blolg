@@ -4,14 +4,13 @@ import 'package:mobile/core/widgets/app_drawer.dart';
 import 'package:mobile/core/widgets/main_bottom_nav.dart';
 import 'package:mobile/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:mobile/features/home/screens/home_screen.dart';
+import 'package:mobile/features/messages/screens/conversations_screen.dart';
 import 'package:mobile/features/posts/screens/create_post_screen.dart';
-import 'package:mobile/features/profile/screens/user_profile_screen.dart';
 import 'package:mobile/features/reading_list/screens/reading_list_screen.dart';
-import 'package:mobile/features/search/screens/search_screen.dart';
+import 'package:mobile/features/settings/screens/settings_screen.dart';
 
-/// Root scaffold after login — bottom nav mirror web MobileNav:
-/// Home · Search · Write · Library · Me (profile).
-/// Sidebar drawer mirror web AppShell for notes/messages/settings/…
+/// Root scaffold after login — bottom nav mirror web `MobileNav`:
+/// Home · Messages · Write · Library · Settings.
 class MainShell extends StatefulWidget {
   final int initialIndex;
   final String? initialSearchQuery;
@@ -27,6 +26,7 @@ class _MainShellState extends State<MainShell> {
 
   final _homeKey = GlobalKey<HomeScreenState>();
   final _libraryKey = GlobalKey<ReadingListScreenState>();
+  final _settingsKey = GlobalKey<SettingsScreenState>();
 
   @override
   void initState() {
@@ -56,12 +56,15 @@ class _MainShellState extends State<MainShell> {
     if (index == 2) {
       _libraryKey.currentState?.ensureLoaded();
     }
+    if (index == 3) {
+      _settingsKey.currentState?.refreshProfile();
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final profile = context.watch<AuthBloc>().state.profile;
-    final meId = profile?.id;
+    // Rebuild when auth profile changes (settings/messages need user id).
+    context.watch<AuthBloc>();
 
     return Scaffold(
       drawer: const AppDrawer(),
@@ -69,24 +72,11 @@ class _MainShellState extends State<MainShell> {
         index: _currentIndex,
         children: [
           RepaintBoundary(child: HomeScreen(key: _homeKey)),
-          RepaintBoundary(
-            child: SearchScreen(initialQuery: widget.initialSearchQuery),
-          ),
+          const RepaintBoundary(child: ConversationsScreen()),
           RepaintBoundary(
             child: ReadingListScreen(key: _libraryKey, loadOnMount: false),
           ),
-          RepaintBoundary(
-            child: meId == null
-                ? const Center(child: CircularProgressIndicator())
-                : UserProfileScreen(
-                    userId: meId,
-                    embeddedInShell: true,
-                    initialDisplayName:
-                        profile?.title?.trim().isNotEmpty == true
-                        ? profile!.title!.trim()
-                        : profile?.username,
-                  ),
-          ),
+          RepaintBoundary(child: SettingsScreen(key: _settingsKey)),
         ],
       ),
       bottomNavigationBar: MainBottomNavBar(

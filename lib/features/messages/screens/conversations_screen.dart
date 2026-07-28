@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mobile/core/constants/app_colors.dart';
+import 'package:mobile/core/i18n/locale_controller.dart';
 import 'package:mobile/core/services/chat_realtime_service.dart';
 import 'package:mobile/data/messaging/chat_models.dart';
 import 'package:mobile/data/messaging/messaging_api.dart';
@@ -85,8 +86,8 @@ class _ConversationsView extends StatelessWidget {
         return Scaffold(
           appBar: AppBar(
             title: Text(
-              'Tin nhắn',
-              style: GoogleFonts.playfairDisplay(
+              context.t('nav.messages'),
+              style: GoogleFonts.inter(
                 fontSize: 22,
                 fontWeight: FontWeight.w600,
               ),

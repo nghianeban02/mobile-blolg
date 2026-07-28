@@ -4,8 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mobile/core/constants/app_colors.dart';
 import 'package:mobile/core/i18n/locale_controller.dart';
+import 'package:mobile/core/theme/app_spacing.dart';
 
-/// Bottom nav mirror web `MobileNav`: Home · Search · Write · Library · Me.
+/// Bottom nav mirror web `MobileNav`: Home · Messages · Write · Library · Settings.
 class MainBottomNavBar extends StatelessWidget {
   final int currentIndex;
   final ValueChanged<int>? onIndexChanged;
@@ -33,9 +34,9 @@ class MainBottomNavBar extends StatelessWidget {
         label: context.t('nav.home'),
       ),
       (
-        icon: Icons.search_rounded,
-        activeIcon: Icons.search_rounded,
-        label: context.t('nav.search'),
+        icon: Icons.chat_bubble_outline_rounded,
+        activeIcon: Icons.chat_bubble_rounded,
+        label: context.t('nav.messages'),
       ),
       (
         icon: Icons.auto_stories_outlined,
@@ -43,9 +44,9 @@ class MainBottomNavBar extends StatelessWidget {
         label: context.t('nav.library'),
       ),
       (
-        icon: Icons.person_outline_rounded,
-        activeIcon: Icons.person_rounded,
-        label: context.t('common.me'),
+        icon: Icons.settings_outlined,
+        activeIcon: Icons.settings_rounded,
+        label: context.t('nav.settings'),
       ),
     ];
 
@@ -66,7 +67,7 @@ class MainBottomNavBar extends StatelessWidget {
           ),
           child: SafeArea(
             child: SizedBox(
-              height: 62,
+              height: AppSpacing.mobileNavHeight,
               child: Row(
                 children: [
                   Expanded(child: _tab(context, items, 0)),
